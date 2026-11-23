@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>광안리 밤바다 포차 · 리얼 합석 다이닝</title>
-  <!-- PeerJS for Serverless PC & Mobile Real-Time Multiplayer on GitHub Pages -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -3142,12 +3140,54 @@
       }, 450);
     };
 
-    // ==================== 15. PC & MOBILE SERVERLESS MULTIPLAYER (WEBRTC PEERJS) ====================
+    // ==================== 15. SANDBOX-SAFE & GITHUB PAGES MULTIPLAYER ENGINE ====================
     const myClientId = 'p_' + Math.random().toString(36).slice(2, 10);
     let peerInstance = null;
     let isPeerHost = false;
     let hostConn = null;
+    let localRoomChannel = null;
+    let peerScriptLoadingPromise = null;
     const guestConns = new Map();
+
+    // Detect Canvas / sandboxed preview environments where external wss:// WebSockets are blocked
+    function isRestrictedPreviewSandbox() {
+      try {
+        const host = (window.location.hostname || '').toLowerCase();
+        const proto = window.location.protocol || '';
+        if (proto === 'blob:' || proto === 'data:' || proto === 'about:' || !host) return true;
+        if (
+          host.includes('usercontent.goog') ||
+          host.includes('googleusercontent.com') ||
+          host.includes('gstatic.com') ||
+          host.includes('google.com')
+        ) {
+          return true;
+        }
+        if (window.self !== window.top && !host.endsWith('.github.io')) {
+          return true;
+        }
+        return false;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    // Dynamically load PeerJS only on unrestricted hosts (e.g., GitHub Pages)
+    function ensurePeerJsLoaded() {
+      if (isRestrictedPreviewSandbox()) return Promise.resolve(false);
+      if (typeof window.Peer !== 'undefined') return Promise.resolve(true);
+      if (peerScriptLoadingPromise) return peerScriptLoadingPromise;
+
+      peerScriptLoadingPromise = new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+        script.async = true;
+        script.onload = () => resolve(typeof window.Peer !== 'undefined');
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+      });
+      return peerScriptLoadingPromise;
+    }
 
     function exportSyncPayload() {
       return {
@@ -3192,71 +3232,128 @@
       guestConns.clear();
       if (hostConn) { try { hostConn.close(); } catch (e) {} hostConn = null; }
       if (peerInstance) { try { peerInstance.destroy(); } catch (e) {} peerInstance = null; }
+      if (localRoomChannel) { try { localRoomChannel.close(); } catch (e) {} localRoomChannel = null; }
       isPeerHost = false;
       appState.remotePlayers = {};
     }
 
-    function connectPeerRoom(code) {
-      if (typeof window.Peer === 'undefined') {
-        document.getElementById('syncModeIndicator').textContent = `⚠️ 네트워크 제한 (단독 실행중)`;
-        return;
-      }
+    function setupLocalBroadcastChannel(code) {
+      if (typeof window.BroadcastChannel === 'undefined') return;
+      try {
+        localRoomChannel = new window.BroadcastChannel(`gwangalli_pocha_${code}`);
+        localRoomChannel.onmessage = ev => {
+          const msg = ev.data;
+          if (!msg || msg.senderCid === myClientId) return;
+          if (msg.type === 'LOCAL_HELLO') {
+            appState.remotePlayers[msg.senderCid] = msg.profile;
+            updateLivePeerBadge();
+            renderAllVisuals();
+            localRoomChannel.postMessage({
+              type: 'LOCAL_WELCOME',
+              senderCid: myClientId,
+              profile: { name: appState.myName, style: appState.myStyle },
+              state: exportSyncPayload()
+            });
+          } else if (msg.type === 'LOCAL_WELCOME') {
+            appState.remotePlayers[msg.senderCid] = msg.profile;
+            updateLivePeerBadge();
+            applySyncPayload(msg.state);
+          } else {
+            handlePeerPayload(null, msg);
+          }
+        };
+        localRoomChannel.postMessage({
+          type: 'LOCAL_HELLO',
+          senderCid: myClientId,
+          profile: { name: appState.myName, style: appState.myStyle }
+        });
+      } catch (e) {}
+    }
+
+    async function connectPeerRoom(code) {
       destroyPeerSession();
-      const hostPeerId = sanitizePeerRoomId(code);
       appState.remotePlayers = {
         [myClientId]: { name: appState.myName, style: appState.myStyle }
       };
+      updateLivePeerBadge();
+      setupLocalBroadcastChannel(code);
+
+      // In Canvas preview, skip external wss:// WebSocket completely to avoid SecurityError
+      if (isRestrictedPreviewSandbox()) {
+        document.getElementById('syncModeIndicator').textContent =
+          `🟢 프리뷰 합석 모드 (${code}) · GitHub 배포 시 PC·모바일 원격 연동`;
+        return;
+      }
+
       document.getElementById('syncModeIndicator').textContent = `🔄 [${code}] 방 연결 중...`;
+      const loaded = await ensurePeerJsLoaded();
+      if (!loaded || typeof window.Peer === 'undefined') {
+        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
+        return;
+      }
 
-      const candidateHost = new window.Peer(hostPeerId, { debug: 0 });
+      const hostPeerId = sanitizePeerRoomId(code);
+      try {
+        const candidateHost = new window.Peer(hostPeerId, { debug: 0 });
 
-      candidateHost.on('open', () => {
-        peerInstance = candidateHost;
-        isPeerHost = true;
-        updateLivePeerBadge();
-        document.getElementById('syncModeIndicator').textContent = `🟢 실시간 방장 (${code}) · 친구 합석 대기중`;
+        candidateHost.on('open', () => {
+          peerInstance = candidateHost;
+          isPeerHost = true;
+          updateLivePeerBadge();
+          document.getElementById('syncModeIndicator').textContent = `🟢 실시간 방장 (${code}) · 친구 합석 대기중`;
 
-        candidateHost.on('connection', conn => {
-          conn.on('data', msg => handlePeerPayload(conn, msg));
-          conn.on('close', () => {
-            if (conn._cid) {
-              guestConns.delete(conn._cid);
-              delete appState.remotePlayers[conn._cid];
-              broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
-              updateLivePeerBadge();
-              renderAllVisuals();
-            }
+          candidateHost.on('connection', conn => {
+            conn.on('data', msg => handlePeerPayload(conn, msg));
+            conn.on('close', () => {
+              if (conn._cid) {
+                guestConns.delete(conn._cid);
+                delete appState.remotePlayers[conn._cid];
+                broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
+                updateLivePeerBadge();
+                renderAllVisuals();
+              }
+            });
           });
         });
-      });
 
-      candidateHost.on('error', err => {
-        if (err && err.type === 'unavailable-id') {
-          try { candidateHost.destroy(); } catch (e) {}
-          joinExistingHost(hostPeerId, code);
-        }
-      });
+        candidateHost.on('error', err => {
+          if (err && err.type === 'unavailable-id') {
+            try { candidateHost.destroy(); } catch (e) {}
+            joinExistingHost(hostPeerId, code);
+          } else {
+            document.getElementById('syncModeIndicator').textContent = `🟢 합석 대기중 (${code})`;
+          }
+        });
+      } catch (e) {
+        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
+      }
     }
 
     function joinExistingHost(hostPeerId, code) {
-      const guestPeer = new window.Peer({ debug: 0 });
-      peerInstance = guestPeer;
-      isPeerHost = false;
+      try {
+        const guestPeer = new window.Peer({ debug: 0 });
+        peerInstance = guestPeer;
+        isPeerHost = false;
 
-      guestPeer.on('open', () => {
-        const conn = guestPeer.connect(hostPeerId, { reliable: true });
-        hostConn = conn;
-        conn.on('open', () => {
-          document.getElementById('syncModeIndicator').textContent = `🟢 실시간 합석 완료 (${code})`;
-          conn.send({
-            type: 'HELLO_JOIN',
-            clientId: myClientId,
-            profile: { name: appState.myName, style: appState.myStyle }
+        guestPeer.on('open', () => {
+          const conn = guestPeer.connect(hostPeerId, { reliable: true });
+          hostConn = conn;
+          conn.on('open', () => {
+            document.getElementById('syncModeIndicator').textContent = `🟢 실시간 합석 완료 (${code})`;
+            conn.send({
+              type: 'HELLO_JOIN',
+              clientId: myClientId,
+              profile: { name: appState.myName, style: appState.myStyle }
+            });
+            showToastMsg(`🎉 [${code}] 친구 테이블에 실시간으로 합석했습니다!`);
           });
-          showToastMsg(`🎉 [${code}] 친구 테이블에 실시간으로 합석했습니다!`);
+          conn.on('data', msg => handlePeerPayload(conn, msg));
         });
-        conn.on('data', msg => handlePeerPayload(conn, msg));
-      });
+
+        guestPeer.on('error', () => {
+          document.getElementById('syncModeIndicator').textContent = `🟢 합석 모드 (${code})`;
+        });
+      } catch (e) {}
     }
 
     function broadcastFromHost(payload, excludeCid = null) {
@@ -3268,6 +3365,9 @@
     }
 
     function sendMultiplayerEvent(payload) {
+      if (localRoomChannel) {
+        try { localRoomChannel.postMessage({ ...payload, senderCid: myClientId }); } catch (e) {}
+      }
       if (isPeerHost) {
         broadcastFromHost(payload, myClientId);
       } else if (hostConn && hostConn.open) {
@@ -3278,7 +3378,7 @@
     function handlePeerPayload(conn, msg) {
       if (!msg || !msg.type) return;
 
-      if (msg.type === 'HELLO_JOIN' && isPeerHost) {
+      if (msg.type === 'HELLO_JOIN' && isPeerHost && conn) {
         conn._cid = msg.clientId;
         guestConns.set(msg.clientId, conn);
         appState.remotePlayers[msg.clientId] = msg.profile;
@@ -3297,7 +3397,7 @@
         return;
       }
 
-      if (isPeerHost && msg.type !== 'ROOM_SNAPSHOT') {
+      if (isPeerHost && conn && msg.type !== 'ROOM_SNAPSHOT') {
         broadcastFromHost(msg, conn._cid || null);
       }
 
