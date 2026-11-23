@@ -17,6 +17,10 @@
       color: #f8fafc;
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background 0.9s ease;
+    }
+    body.xmas-theme {
+      background: radial-gradient(circle at 50% 10%, #2a1018 0%, #0d241c 58%, #06100d 100%);
     }
     body {
       display: flex;
@@ -101,6 +105,11 @@
       border: 1px solid rgba(71, 85, 105, 0.7);
       background: rgba(9, 14, 28, 0.95);
       box-shadow: 0 24px 55px rgba(0, 0, 0, 0.8);
+      transition: border-color 0.6s ease, box-shadow 0.6s ease;
+    }
+    body.xmas-theme .pocha-main-card {
+      border-color: rgba(248, 113, 113, 0.72);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 28px rgba(220, 38, 38, 0.22);
     }
 
     /* 1. Sky Header & Top Controls */
@@ -215,11 +224,11 @@
       transition: width 0.45s ease;
     }
 
-    /* 2. Pocha Arena: Surrounded Seats + Chef + Round Silver Table */
+    /* 2. Pocha Arena: Surrounded Seats + Chef + Round Silver Table + Surrounding Tables */
     #pochaArena {
       position: relative;
       width: 100%;
-      padding: 16px 10px 18px;
+      padding: 16px 10px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -227,6 +236,11 @@
       overflow: hidden;
       background:
         radial-gradient(circle at 50% 46%, rgba(251, 146, 60, 0.16) 0%, rgba(15, 23, 42, 0.96) 66%, #070b14 100%);
+      transition: background 0.7s ease;
+    }
+    body.xmas-theme #pochaArena {
+      background:
+        radial-gradient(circle at 50% 44%, rgba(225, 29, 72, 0.22) 0%, rgba(16, 185, 129, 0.11) 42%, rgba(15, 23, 42, 0.96) 72%, #07110e 100%);
     }
 
     /* Warm Pocha String Bulbs */
@@ -239,7 +253,8 @@
       margin-top: -8px;
       margin-bottom: 6px;
       pointer-events: none;
-      opacity: 0.9;
+      opacity: 0.95;
+      z-index: 16;
     }
     .pocha-bulb {
       width: 10px;
@@ -247,6 +262,144 @@
       border-radius: 9999px;
       background: #fef08a;
       box-shadow: 0 0 12px 3px rgba(251, 191, 36, 0.75);
+      transition: all 0.5s ease;
+    }
+    body.xmas-theme .pocha-bulb:nth-child(odd) {
+      background: #ff6b6b;
+      box-shadow: 0 0 13px 4px rgba(248, 113, 113, 0.85);
+    }
+    body.xmas-theme .pocha-bulb:nth-child(even) {
+      background: #4ade80;
+      box-shadow: 0 0 13px 4px rgba(74, 222, 128, 0.85);
+    }
+
+    /* Christmas Tree & Decor Badge in 2차 */
+    #xmasDecorBanner {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 18;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(127, 29, 29, 0.92);
+      border: 1px solid rgba(252, 211, 77, 0.75);
+      color: #fef3c7;
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.55);
+      pointer-events: none;
+    }
+
+    /* Surrounding AI Tables (Left & Right Neighbor Tables) */
+    .neighbor-table-pod {
+      position: absolute;
+      top: 52%;
+      transform: translateY(-50%);
+      z-index: 11;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      max-width: 112px;
+      pointer-events: auto;
+    }
+    .neighbor-table-left { left: 6px; }
+    .neighbor-table-right { right: 6px; }
+    @media (max-width: 540px) {
+      .neighbor-table-pod { display: none; }
+    }
+    .neighbor-mini-table {
+      width: 78px;
+      height: 36px;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 50% 30%, #cbd5e1, #475569);
+      border: 2px solid #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #0f172a;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+    }
+    body.xmas-theme .neighbor-mini-table {
+      background: radial-gradient(circle at 50% 30%, #fecdd3, #be123c);
+      border-color: #fde047;
+      color: #ffffff;
+    }
+    .neighbor-guests-row {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .neighbor-mini-avatar {
+      width: 38px;
+      height: 44px;
+      cursor: pointer;
+      transition: transform 0.16s ease;
+    }
+    .neighbor-mini-avatar:hover { transform: scale(1.08); }
+    .neighbor-speech-chip {
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      color: #fef3c7;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 1.25;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.55);
+    }
+
+    /* Approaching Flirt / Hunting Guest Overlay Card */
+    #huntingApproachBanner {
+      position: absolute;
+      top: 46px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 36;
+      width: min(94%, 440px);
+      background: rgba(15, 23, 42, 0.97);
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      padding: 10px 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hunting-top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hunting-mini-portrait {
+      width: 52px;
+      height: 58px;
+      flex-shrink: 0;
+    }
+    .hunting-btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .hunt-btn-accept {
+      padding: 6px 14px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .hunt-btn-decline {
+      padding: 6px 14px;
+      border-radius: 12px;
+      background: #334155;
+      border: 1px solid #64748b;
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 800;
     }
 
     #sceneStatusToast {
@@ -462,7 +615,7 @@
     .silver-round-table {
       position: relative;
       width: 326px;
-      height: 312px;
+      height: 332px;
       border-radius: 9999px;
       display: flex;
       align-items: center;
@@ -478,11 +631,20 @@
         inset 0 -12px 24px rgba(15, 23, 42, 0.65),
         0 24px 48px rgba(0, 0, 0, 0.82),
         0 0 0 2px #475569;
+      transition: border-color 0.6s ease, box-shadow 0.6s ease;
+    }
+    body.xmas-theme .silver-round-table {
+      border-color: #fda4af;
+      box-shadow:
+        inset 0 4px 14px rgba(255, 255, 255, 0.92),
+        inset 0 -12px 24px rgba(159, 18, 57, 0.45),
+        0 24px 48px rgba(0, 0, 0, 0.82),
+        0 0 24px rgba(244, 63, 94, 0.35);
     }
     @media (min-width: 640px) {
       .silver-round-table {
-        width: 516px;
-        height: 426px;
+        width: 536px;
+        height: 456px;
       }
     }
     .silver-round-table::after {
@@ -495,14 +657,18 @@
     }
 
     .table-dish-grid {
-      width: 90%;
-      height: 84%;
+      width: 92%;
+      height: 86%;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       place-items: center;
-      gap: 6px;
-      padding-top: 14px;
+      gap: 4px;
+      padding-top: 12px;
+      overflow-y: auto;
+      scrollbar-width: none;
     }
+    .table-dish-grid::-webkit-scrollbar { display: none; }
+
     .dish-slot {
       display: flex;
       flex-direction: column;
@@ -514,27 +680,27 @@
     .dish-slot:hover { transform: translateY(-3px) scale(1.04); }
     .dish-slot:active { transform: scale(0.95); }
 
-    .dish-art-lg { width: 88px; height: 68px; position: relative; }
-    .dish-art-md { width: 80px; height: 64px; position: relative; }
-    .dish-art-sm { width: 70px; height: 58px; position: relative; }
+    .dish-art-lg { width: 82px; height: 62px; position: relative; }
+    .dish-art-md { width: 74px; height: 58px; position: relative; }
+    .dish-art-sm { width: 66px; height: 52px; position: relative; }
     @media (min-width: 640px) {
-      .dish-art-lg { width: 132px; height: 98px; }
-      .dish-art-md { width: 116px; height: 88px; }
-      .dish-art-sm { width: 98px; height: 80px; }
+      .dish-art-lg { width: 118px; height: 84px; }
+      .dish-art-md { width: 106px; height: 76px; }
+      .dish-art-sm { width: 92px; height: 68px; }
     }
 
     .dish-pill-tag {
       margin-top: -3px;
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 9999px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(251, 191, 36, 0.48);
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       color: #f8fafc;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       white-space: nowrap;
       box-shadow: 0 3px 8px rgba(0,0,0,0.5);
     }
@@ -664,6 +830,7 @@
     .chat-row-system { font-size: 11px; color: #7dd3fc; background: rgba(12,74,110,0.35); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 4px 10px; }
     .chat-row-chef { font-size: 11px; color: #fde68a; background: rgba(69,26,3,0.55); border: 1px solid rgba(251,191,36,0.35); border-radius: 8px; padding: 4px 10px; }
     .chat-row-action { font-size: 11px; color: #a7f3d0; background: rgba(6,78,59,0.38); border-radius: 8px; padding: 4px 10px; }
+    .chat-row-hunt { font-size: 11.5px; color: #fbcfe8; background: rgba(131,24,67,0.48); border: 1px solid rgba(244,114,182,0.45); border-radius: 8px; padding: 5px 10px; }
     .chat-row-me { font-size: 12px; color: #fffbeb; background: rgba(30,41,59,0.95); border-radius: 8px; padding: 6px 10px; }
     .chat-row-other { font-size: 12px; color: #f1f5f9; background: rgba(15,23,42,0.92); border: 1px solid #1e293b; border-radius: 8px; padding: 6px 10px; }
 
@@ -699,6 +866,10 @@
       color: #1e293b;
       border: 2px solid #eab308;
       box-shadow: 0 20px 45px rgba(0,0,0,0.65);
+    }
+    body.xmas-theme .pocha-bill-paper {
+      background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
+      border-color: #e11d48;
     }
     #liveBillAside {
       display: none;
@@ -922,7 +1093,7 @@
         <!-- Top Controls Bar -->
         <div class="sky-top-bar" onclick="event.stopPropagation()">
           <div class="sky-brand-group">
-            <h1 class="pocha-title">🌉 광안리 밤바다 포차</h1>
+            <h1 id="mainPochaTitle" class="pocha-title">🌉 광안리 밤바다 포차</h1>
             <button onclick="openInviteModal()" class="top-pill top-pill-invite">
               <span id="roomCodeText" style="color:#fcd34d;font-family:monospace;">GWANG-82</span>
               <span>📲 친구초대</span>
@@ -962,7 +1133,7 @@
         </div>
       </div>
 
-      <!-- 2. POCHA ARENA: SURROUNDED SEATS + REAL CHEF + ROUND SILVER TABLE -->
+      <!-- 2. POCHA ARENA: SURROUNDED SEATS + NEIGHBOR TABLES + CHEF + ROUND SILVER TABLE -->
       <div id="pochaArena">
 
         <!-- Warm Pocha String Lights -->
@@ -974,6 +1145,40 @@
           <span class="pocha-bulb"></span>
           <span class="pocha-bulb"></span>
           <span class="pocha-bulb"></span>
+        </div>
+
+        <!-- 2차 Christmas Theme Decor Badge -->
+        <div id="xmasDecorBanner" class="hidden">
+          🎄 2차 크리스마스 포차 · 반짝전구 & 캐롤 무드 ✨
+        </div>
+
+        <!-- Neighbor AI Table A (Left) -->
+        <div id="neighborTableLeft" class="neighbor-table-pod neighbor-table-left">
+          <div id="neighborSpeechLeft" class="neighbor-speech-chip">옆테이블 건배~ 🍻</div>
+          <div id="neighborAvatarsLeft" class="neighbor-guests-row"></div>
+          <div class="neighbor-mini-table">A테이블</div>
+        </div>
+
+        <!-- Neighbor AI Table B (Right) -->
+        <div id="neighborTableRight" class="neighbor-table-pod neighbor-table-right">
+          <div id="neighborSpeechRight" class="neighbor-speech-chip">광안리 야경 굿! ✨</div>
+          <div id="neighborAvatarsRight" class="neighbor-guests-row"></div>
+          <div class="neighbor-mini-table">B테이블</div>
+        </div>
+
+        <!-- Approaching Flirt / Hunting Guest Banner ("괜찮아요" / "좋아요") -->
+        <div id="huntingApproachBanner" class="hidden">
+          <div class="hunting-top-row">
+            <div id="huntingGuestPortrait" class="hunting-mini-portrait"></div>
+            <div style="flex:1;min-width:0;">
+              <div id="huntingGuestTitle" style="font-size:12px;font-weight:900;color:#fcd34d;"></div>
+              <div id="huntingGuestLine" style="font-size:12px;color:#f8fafc;margin-top:2px;line-height:1.35;"></div>
+            </div>
+          </div>
+          <div class="hunting-btn-row">
+            <button onclick="respondToHuntingApproach('accept')" class="hunt-btn-accept">💚 좋아요 (합석!)</button>
+            <button onclick="respondToHuntingApproach('decline')" class="hunt-btn-decline">🙅‍♀️ 괜찮아요</button>
+          </div>
         </div>
 
         <!-- Floating Status Toast -->
@@ -1064,7 +1269,7 @@
           <div id="tableCenterAnchor" style="position:absolute;left:50%;top:50%;width:4px;height:4px;transform:translate(-50%,-50%);pointer-events:none;"></div>
 
           <!-- Pocha Stainless Chopstick Tin Decor -->
-          <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);opacity:0.88;pointer-events:none;">
+          <div style="position:absolute;top:9px;left:50%;transform:translateX(-50%);opacity:0.88;pointer-events:none;">
             <div style="padding:2px 10px;border-radius:6px;background:rgba(51,65,85,0.72);border:1px solid rgba(255,255,255,0.5);font-size:9.5px;font-weight:800;color:#f1f5f9;">
               🥢 수저 · 냅킨통
             </div>
@@ -1142,6 +1347,42 @@
               <div class="dish-pill-tag">
                 <span>🍣 후토마끼</span>
                 <span id="futoCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+              </div>
+            </div>
+
+            <!-- 9. New Dish 4: Fluffy Egg Roll (도톰 계란말이) -->
+            <div id="dishSlot-gyeranmari" onclick="eatGyeranmari()" class="hidden dish-slot" title="클릭해서 도톰 계란말이 먹기">
+              <div id="gyeranSvgHolder" class="dish-art-md"></div>
+              <div class="dish-pill-tag">
+                <span>🥚 계란말이</span>
+                <span id="gyeranCountPill" style="color:#fcd34d;font-family:monospace;">8/8</span>
+              </div>
+            </div>
+
+            <!-- 10. New Dish 5: Spicy Malatang (얼큰 마라탕) -->
+            <div id="dishSlot-maratang" onclick="eatMaratang()" class="hidden dish-slot" title="클릭해서 얼큰 마라탕 먹기">
+              <div id="maraSvgHolder" class="dish-art-md"></div>
+              <div class="dish-pill-tag">
+                <span>🍲 마라탕</span>
+                <span id="maraCountPill" style="color:#fcd34d;font-family:monospace;">7/7</span>
+              </div>
+            </div>
+
+            <!-- 11. New Dish 6: Charcoal Chicken Skewers (숯불 닭꼬치) -->
+            <div id="dishSlot-dakkochi" onclick="eatDakkochi()" class="hidden dish-slot" title="클릭해서 숯불 닭꼬치 먹기">
+              <div id="dakkSvgHolder" class="dish-art-md"></div>
+              <div class="dish-pill-tag">
+                <span>🍢 닭꼬치</span>
+                <span id="dakkCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+              </div>
+            </div>
+
+            <!-- 12. New Dish 7: Ice Pineapple Sherbet (시원 파인샤베트) -->
+            <div id="dishSlot-pinesherbet" onclick="eatPineSherbet()" class="hidden dish-slot" title="클릭해서 시원 파인샤베트 먹기">
+              <div id="pineSvgHolder" class="dish-art-md"></div>
+              <div class="dish-pill-tag">
+                <span>🍍 파인샤베트</span>
+                <span id="pineCountPill" style="color:#fcd34d;font-family:monospace;">5/5</span>
               </div>
             </div>
 
@@ -1280,7 +1521,7 @@
     </div>
   </div>
 
-  <!-- MODAL B: NEW ANJU MENU ORDER MODAL (산더미유린기, 떡볶이, 후토마끼 포함) -->
+  <!-- MODAL B: NEW ANJU MENU ORDER MODAL -->
   <div id="menuModal" class="hidden pocha-modal-backdrop">
     <div class="pocha-modal-box" style="max-width:460px;">
       <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;padding-bottom:12px;margin-bottom:14px;">
@@ -1292,6 +1533,38 @@
       </div>
 
       <div style="max-height:62vh;overflow-y:auto;padding-right:2px;">
+        <button onclick="orderMenuItem('gyeranmari')" class="menu-item-btn">
+          <div>
+            <div style="font-weight:800;font-size:14px;color:#fef08a;">🥚 도톰 포차 계란말이 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#059669;color:#fff;margin-left:4px;">신메뉴</span></div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">쪽파·당근 송송 썰어 넣은 폭신 촉촉 집밥 스타일 (8조각)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">14,000원</span>
+        </button>
+
+        <button onclick="orderMenuItem('maratang')" class="menu-item-btn">
+          <div>
+            <div style="font-weight:800;font-size:14px;color:#fda4af;">🍲 얼큰 화끈 마라탕 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#e11d48;color:#fff;margin-left:4px;">신메뉴</span></div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">숙주·청경채·분모자·건두부·소고기 듬뿍 얼큰 국물 (7국자)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">21,000원</span>
+        </button>
+
+        <button onclick="orderMenuItem('dakkochi')" class="menu-item-btn">
+          <div>
+            <div style="font-weight:800;font-size:14px;color:#fed7aa;">🍢 숯불 매콤달콤 닭꼬치 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">신메뉴</span></div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">직화 불향 가득 통닭다리살 + 파닭꼬치 (6꼬치)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">17,000원</span>
+        </button>
+
+        <button onclick="orderMenuItem('pinesherbet')" class="menu-item-btn">
+          <div>
+            <div style="font-weight:800;font-size:14px;color:#fef9c3;">🍍 시원 상큼 파인샤베트 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#0284c7;color:#fff;margin-left:4px;">신메뉴</span></div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">통파인애플 얼음 샤베트 · 술기운 싹 내려주는 입가심 (5스쿱)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">12,000원</span>
+        </button>
+
         <button onclick="orderMenuItem('yuringi')" class="menu-item-btn">
           <div>
             <div style="font-weight:800;font-size:14px;color:#fef08a;">🍗🌶️ 산더미유린기 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#e11d48;color:#fff;margin-left:4px;">인기신메뉴</span></div>
@@ -1355,7 +1628,7 @@
   <div id="finalReceiptModal" class="hidden pocha-modal-backdrop">
     <div class="pocha-receipt-box">
       <div style="text-align:center;border-bottom:2px dashed #cbd5e1;padding-bottom:12px;margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:800;color:#d97706;">부산 수영구 광안해변로 · 밤바다포차 1호점</div>
+        <div id="receiptStoreSubtitle" style="font-size:12px;font-weight:800;color:#d97706;">부산 수영구 광안해변로 · 밤바다포차 1호점</div>
         <h3 style="margin:4px 0;font-size:24px;font-weight:900;">🧾 정산 영수증</h3>
         <p id="finalReceiptTimestamp" style="margin:0;font-size:11px;color:#64748b;"></p>
       </div>
@@ -1379,11 +1652,11 @@
       </div>
 
       <p style="text-align:center;font-size:12px;font-weight:800;color:#475569;margin-bottom:16px;">
-        👨‍🍳 "오늘 광안리 밤바다에서 좋은 추억 되셨지예~ 조심히 들어가이소!!"
+        👨‍🍳 "오늘 광안리 밤바다에서 좋은 추억 되셨지예~ 2차는 크리스마스 감성으로 싹 바꿨습니데이!!"
       </p>
 
-      <button onclick="resetForNewParty()" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(90deg,#f59e0b,#ea580c);color:#0f172a;font-weight:900;font-size:14px;">
-        🌊 새 테이블 세팅하고 2차 달리기!
+      <button id="nextRoundBtn" onclick="resetForNewParty()" style="width:100%;padding:14px;border-radius:16px;background:linear-gradient(90deg,#e11d48,#16a34a);color:#ffffff;font-weight:900;font-size:14px;">
+        🎄 1차 정산 완료! 크리스마스 2차로 넘어가기!
       </button>
     </div>
   </div>
@@ -1525,6 +1798,10 @@
       yuringi: { name: '산더미 유린기', unitPrice: 24000 },
       tteokbokki: { name: '포차 국물떡볶이', unitPrice: 16000 },
       futomaki: { name: '특대 대왕후토마끼', unitPrice: 26000 },
+      gyeranmari: { name: '도톰 포차 계란말이', unitPrice: 14000 },
+      maratang: { name: '얼큰 화끈 마라탕', unitPrice: 21000 },
+      dakkochi: { name: '숯불 매콤달콤 닭꼬치', unitPrice: 17000 },
+      pinesherbet: { name: '시원 상큼 파인샤베트', unitPrice: 12000 },
       serviceRamen: { name: '해물짬뽕 컵라면', unitPrice: 3500, isService: true }
     };
 
@@ -1544,6 +1821,10 @@
       emptyBottles: 0,
       eatenPiecesTotal: 0,
 
+      // 2nd Round & Christmas Atmosphere after first checkout
+      checkoutCount: 0,
+      isSecondRoundXmas: false,
+
       // Food & Drink Remaining Counts
       bangeoLeft: 10,
       kimbapLeft: 8,
@@ -1556,6 +1837,14 @@
       tteokLeft: 0,
       futoOrdered: false,
       futoLeft: 0,
+      gyeranOrdered: false,
+      gyeranLeft: 0,
+      maraOrdered: false,
+      maraLeft: 0,
+      dakkOrdered: false,
+      dakkLeft: 0,
+      pineOrdered: false,
+      pineLeft: 0,
 
       // Live Bill Quantities
       billQty: {
@@ -1565,10 +1854,15 @@
         yuringi: 0,
         tteokbokki: 0,
         futomaki: 0,
+        gyeranmari: 0,
+        maratang: 0,
+        dakkochi: 0,
+        pinesherbet: 0,
         serviceRamen: 1
       },
 
-      remotePlayers: {}
+      remotePlayers: {},
+      activeApproachingGuest: null
     };
 
     // ==================== 3. REALISTIC EDITORIAL PORTRAIT SVG GENERATOR ====================
@@ -1579,7 +1873,6 @@
       const sleepyLidOffset = drunkPct >= 75 ? 1.5 : (drunkPct >= 45 ? 0.7 : 0);
       const isFemale = st.gender === 'f';
 
-      // Back hair layer
       let backHairSVG = '';
       if (st.id === 'jisu') {
         backHairSVG = `
@@ -1600,7 +1893,6 @@
         `;
       }
 
-      // Fashionable Outfit & Coat Draping
       let outfitSVG = '';
       if (isFemale) {
         if (st.id === 'jisu') {
@@ -1649,7 +1941,6 @@
         }
       }
 
-      // Front Hair Styling
       let frontHairSVG = '';
       if (st.id === 'jisu') {
         frontHairSVG = `
@@ -1685,7 +1976,6 @@
         `;
       }
 
-      // Accessories
       let accSVG = '';
       if (st.accType === 'dropEarring') {
         accSVG = `
@@ -1709,6 +1999,15 @@
         `;
       }
 
+      // Festive Santa / Christmas Hat in 2차 Christmas Theme!
+      const xmasHatSVG = appState.isSecondRoundXmas ? `
+        <g transform="translate(0, -3)">
+          <path d="M 38,24 C 46,6 76,6 86,23 L 94,28 L 36,26 Z" fill="#dc2626" stroke="#ffffff" stroke-width="1"/>
+          <rect x="35" y="22" width="52" height="6.5" rx="3.2" fill="#ffffff"/>
+          <circle cx="88" cy="24" r="5" fill="#ffffff"/>
+        </g>
+      ` : '';
+
       const jawPath = isFemale
         ? 'M 37,42 C 37,24 83,24 83,42 C 83,59 76,72 60,78 C 44,72 37,59 37,42 Z'
         : 'M 36,41 C 36,23 84,23 84,41 C 84,58 78,72 60,79 C 42,72 36,58 36,41 Z';
@@ -1716,29 +2015,23 @@
       return `
         <svg id="portraitSvg-${seatKey}" viewBox="0 0 120 136" class="portrait-breathe" style="filter:drop-shadow(0 8px 14px rgba(0,0,0,0.55));">
           ${backHairSVG}
-          <!-- Neck & Clavicle Shadow -->
           <rect x="51" y="71" width="18" height="22" rx="6" fill="${st.skin}"/>
           <path d="M 52,77 Q 60,82 68,77" fill="none" stroke="rgba(160,100,80,0.28)" stroke-width="1.5"/>
           ${outfitSVG}
-          <!-- Ears + Drunk Warmth on Ears -->
           <ellipse cx="35.5" cy="54" rx="3.8" ry="6.5" fill="${st.skin}"/>
           <ellipse cx="84.5" cy="54" rx="3.8" ry="6.5" fill="${st.skin}"/>
           <ellipse cx="35.5" cy="54" rx="3.5" ry="6" fill="#f43f5e" opacity="${(blushAlpha * 0.55).toFixed(2)}"/>
           <ellipse cx="84.5" cy="54" rx="3.5" ry="6" fill="#f43f5e" opacity="${(blushAlpha * 0.55).toFixed(2)}"/>
 
-          <!-- Realistic Editorial Face Contour -->
           <path d="${jawPath}" fill="${st.skin}"/>
 
-          <!-- Progressive Drunk Blush on Cheeks & Nose Bridge -->
           <ellipse cx="46" cy="58" rx="9.5" ry="6" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
           <ellipse cx="74" cy="58" rx="9.5" ry="6" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
           <ellipse cx="60" cy="56" rx="6" ry="3.2" fill="url(#drunkCheekGrad)" opacity="${noseBlushAlpha.toFixed(2)}"/>
 
-          <!-- Eyebrows -->
           <path d="M 43,${isFemale ? 44 : 43} Q 49,${isFemale ? 41.5 : 41} 55,${isFemale ? 43.5 : 43}" fill="none" stroke="${st.hairMain}" stroke-width="${isFemale ? 1.7 : 2.3}" stroke-linecap="round"/>
           <path d="M 65,${isFemale ? 43.5 : 43} Q 71,${isFemale ? 41.5 : 41} 77,${isFemale ? 44 : 43}" fill="none" stroke="${st.hairMain}" stroke-width="${isFemale ? 1.7 : 2.3}" stroke-linecap="round"/>
 
-          <!-- Detailed Almond Eyes with Double Eyelid, Iris & Catchlight -->
           <g class="blink-lid">
             <path d="M 43.5,48.5 Q 49.5,45.5 55,48.5" fill="none" stroke="#9a6b56" stroke-width="0.8"/>
             <path d="M 65,48.5 Q 70.5,45.5 76.5,48.5" fill="none" stroke="#9a6b56" stroke-width="0.8"/>
@@ -1757,11 +2050,9 @@
             <path d="M 64.8,${(50.2 + sleepyLidOffset).toFixed(1)} Q 70.5,${(46.8 + sleepyLidOffset).toFixed(1)} 76.5,${(50 + sleepyLidOffset).toFixed(1)}" fill="none" stroke="#18181b" stroke-width="${isFemale ? 1.8 : 1.5}" stroke-linecap="round"/>
           </g>
 
-          <!-- Realistic Nose Bridge Highlight & Nostril Shadow -->
           <path d="M 59.6,49 L 59.2,58.5 Q 60,60.5 62.2,59.5" fill="none" stroke="#b8846e" stroke-width="1.25" stroke-linecap="round"/>
           <line x1="60.4" y1="50" x2="60.2" y2="57.5" stroke="#ffffff" stroke-width="0.9" opacity="0.55"/>
 
-          <!-- Gradient Lips (Animates when eating!) -->
           <g class="mouth-group">
             <path d="M 54.5,66.2 Q 57.5,64.8 60,65.8 Q 62.5,64.8 65.5,66.2 Q 60,69.8 54.5,66.2 Z" fill="${st.lipColor}" opacity="0.92"/>
             <path d="M 55,66.4 Q 60,67.4 65,66.4" fill="none" stroke="#7f1d1d" stroke-width="0.75"/>
@@ -1770,6 +2061,7 @@
 
           ${accSVG}
           ${frontHairSVG}
+          ${xmasHatSVG}
         </svg>
       `;
     }
@@ -1798,7 +2090,6 @@
         <svg viewBox="0 0 150 112" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));">
           <ellipse cx="75" cy="60" rx="68" ry="44" fill="#1e293b" stroke="#94a3b8" stroke-width="2.2"/>
           <ellipse cx="75" cy="60" rx="59" ry="36" fill="#f1f5f9" opacity="0.92"/>
-          <!-- Perilla Leaves & Wasabi & Chojang -->
           <ellipse cx="52" cy="52" rx="22" ry="15" fill="#15803d" opacity="0.82"/>
           <ellipse cx="94" cy="54" rx="22" ry="15" fill="#166534" opacity="0.82"/>
           <circle cx="28" cy="68" r="8" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
@@ -1821,7 +2112,6 @@
             <ellipse cx="0" cy="4" rx="11.5" ry="9" fill="#0f172a"/>
             <ellipse cx="0" cy="0" rx="11.5" ry="8.5" fill="#1e293b" stroke="#09090b" stroke-width="1.2"/>
             <ellipse cx="0" cy="0" rx="9.2" ry="6.5" fill="#f8fafc"/>
-            <!-- Creamy Orange Ankimo (Monkfish Liver) + Scallion + Coarse Salt -->
             <ellipse cx="0" cy="-1.5" rx="6.8" ry="4.5" fill="url(#ankimoCream)"/>
             <circle cx="-1.5" cy="-2" r="1.3" fill="#16a34a"/>
             <circle cx="2" cy="-1" r="1.1" fill="#22c55e"/>
@@ -1838,29 +2128,24 @@
       `;
       document.getElementById('kimbapCountPill').textContent = `${appState.kimbapLeft}/8`;
 
-      // 3. Chamisul Bottle & Shot Glasses (Liquid dynamically lowers!)
+      // 3. Chamisul Bottle & Shot Glasses
       const ratio = appState.sojuShotsLeft / 7;
       const liquidTopY = Math.round(98 - ratio * 46);
       const liquidH = Math.max(0, 99 - liquidTopY);
       document.getElementById('sojuSvgHolder').innerHTML = `
         <svg viewBox="0 0 120 122" style="width:100%;height:100%;filter:drop-shadow(0 7px 10px rgba(0,0,0,0.55));">
-          <!-- Green Chamisul Bottle -->
           <rect x="44" y="10" width="14" height="9" rx="2" fill="#dc2626"/>
           <path d="M 45,19 L 45,34 L 33,50 L 33,102 Q 33,107 39,107 L 63,107 Q 69,107 69,102 L 69,50 L 57,34 L 57,19 Z" fill="url(#sojuBottleGlass)" stroke="#6ee7b7" stroke-width="1"/>
-          <!-- Dynamic Clear Soju Liquid Level Inside Bottle -->
           ${liquidH > 1 ? `
             <rect x="35" y="${liquidTopY}" width="32" height="${liquidH}" rx="3" fill="rgba(224, 242, 254, 0.45)"/>
             <ellipse cx="51" cy="${liquidTopY}" rx="15.5" ry="2.6" fill="rgba(255,255,255,0.78)"/>
           ` : ''}
-          <!-- White & Green Chamisul Label with Blue Dewdrop -->
           <rect x="35" y="61" width="32" height="24" rx="2" fill="#ffffff" opacity="0.95"/>
           <rect x="35" y="61" width="32" height="4" fill="#16a34a"/>
           <path d="M 51,68 C 54,72 55,76 51,79 C 47,76 48,72 51,68 Z" fill="#0ea5e9"/>
-          <!-- Cold Condensation Water Droplets -->
           <circle cx="39" cy="54" r="1.3" fill="#e0f2fe"/>
           <circle cx="63" cy="57" r="1.5" fill="#e0f2fe"/>
           <circle cx="42" cy="92" r="1.4" fill="#e0f2fe"/>
-          <!-- Two Filled Glass Shot Glasses Next to Bottle -->
           <polygon points="77,82 95,82 92,106 80,106" fill="rgba(255,255,255,0.32)" stroke="#e2e8f0" stroke-width="1.3"/>
           <polygon points="78.5,88 93.5,88 91.5,104 80.5,104" fill="rgba(224,242,254,0.68)"/>
         </svg>
@@ -1903,7 +2188,7 @@
       `;
       document.getElementById('ramenCountPill').textContent = appState.ramenLeft > 0 ? `${appState.ramenLeft}/5입` : '서비스벨';
 
-      // 6. Mountain Yuringi (산더미유린기 8점)
+      // 6. Mountain Yuringi
       const ySlot = document.getElementById('dishSlot-yuringi');
       if (appState.yuringiOrdered) {
         ySlot.classList.remove('hidden');
@@ -1934,7 +2219,7 @@
         ySlot.classList.add('hidden');
       }
 
-      // 7. Pocha Soup Tteokbokki (포차 국물떡볶이 8개)
+      // 7. Pocha Soup Tteokbokki
       const tSlot = document.getElementById('dishSlot-tteokbokki');
       if (appState.tteokOrdered) {
         tSlot.classList.remove('hidden');
@@ -1965,7 +2250,7 @@
         tSlot.classList.add('hidden');
       }
 
-      // 8. Jumbo Futomaki (대왕 후토마끼 6피스)
+      // 8. Jumbo Futomaki
       const fSlot = document.getElementById('dishSlot-futomaki');
       if (appState.futoOrdered) {
         fSlot.classList.remove('hidden');
@@ -1998,6 +2283,110 @@
         fSlot.classList.add('hidden');
       }
 
+      // 9. New Dish: Gyeranmari (계란말이 8조각)
+      const gSlot = document.getElementById('dishSlot-gyeranmari');
+      if (appState.gyeranOrdered) {
+        gSlot.classList.remove('hidden');
+        let gPieces = '';
+        for (let i = 0; i < appState.gyeranLeft; i++) {
+          const gx = 34 + (i % 4) * 23;
+          const gy = i < 4 ? 46 : 68;
+          gPieces += `
+            <g transform="translate(${gx},${gy})">
+              <rect x="-9.5" y="-6.5" width="19" height="13" rx="4" fill="#fde047" stroke="#eab308" stroke-width="1.2"/>
+              <circle cx="-3" cy="-1" r="1.6" fill="#16a34a"/>
+              <circle cx="3" cy="1" r="1.4" fill="#ea580c"/>
+            </g>
+          `;
+        }
+        document.getElementById('gyeranSvgHolder').innerHTML = `
+          <svg viewBox="0 0 145 106" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));">
+            <ellipse cx="72" cy="58" rx="58" ry="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+            <path d="M 106,66 Q 116,60 122,66" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+            ${gPieces || '<text x="72" y="61" text-anchor="middle" font-size="11" font-weight="800" fill="#64748b">계란말이 완식!</text>'}
+          </svg>
+        `;
+        document.getElementById('gyeranCountPill').textContent = `${appState.gyeranLeft}/8`;
+      } else {
+        gSlot.classList.add('hidden');
+      }
+
+      // 10. New Dish: Maratang (마라탕 7국자)
+      const mSlot = document.getElementById('dishSlot-maratang');
+      if (appState.maraOrdered) {
+        mSlot.classList.remove('hidden');
+        let mItems = '';
+        for (let i = 0; i < appState.maraLeft; i++) {
+          const mx = 44 + (i % 3) * 28;
+          const my = 46 + Math.floor(i / 3) * 16;
+          mItems += `<circle cx="${mx}" cy="${my}" r="5" fill="${i % 2 === 0 ? '#86efac' : '#fde047'}" stroke="#7f1d1d" stroke-width="0.9"/>`;
+        }
+        document.getElementById('maraSvgHolder').innerHTML = `
+          <svg viewBox="0 0 145 106" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));">
+            <ellipse cx="72" cy="60" rx="60" ry="35" fill="#7f1d1d" stroke="#fca5a5" stroke-width="2"/>
+            <ellipse cx="72" cy="58" rx="50" ry="27" fill="#dc2626"/>
+            ${appState.maraLeft > 0 ? `
+              <path d="M 55,24 Q 51,14 57,7" fill="none" stroke="#ffffff" stroke-width="2" class="steam-wisp"/>
+              <path d="M 85,25 Q 89,15 83,7" fill="none" stroke="#ffffff" stroke-width="2" class="steam-wisp"/>
+            ` : ''}
+            ${mItems || '<text x="72" y="62" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fef08a">얼큰 완탕!</text>'}
+          </svg>
+        `;
+        document.getElementById('maraCountPill').textContent = `${appState.maraLeft}/7`;
+      } else {
+        mSlot.classList.add('hidden');
+      }
+
+      // 11. New Dish: Dakkochi (닭꼬치 6꼬치)
+      const dSlot = document.getElementById('dishSlot-dakkochi');
+      if (appState.dakkOrdered) {
+        dSlot.classList.remove('hidden');
+        let dSkewers = '';
+        for (let i = 0; i < appState.dakkLeft; i++) {
+          const sy = 30 + i * 11;
+          dSkewers += `
+            <g transform="translate(22, ${sy})">
+              <line x1="0" y1="0" x2="104" y2="0" stroke="#fde68a" stroke-width="2.4"/>
+              <rect x="20" y="-5" width="14" height="10" rx="3" fill="#c2410c"/>
+              <rect x="38" y="-5" width="14" height="10" rx="3" fill="#16a34a"/>
+              <rect x="56" y="-5" width="14" height="10" rx="3" fill="#ea580c"/>
+              <rect x="74" y="-5" width="14" height="10" rx="3" fill="#b91c1c"/>
+            </g>
+          `;
+        }
+        document.getElementById('dakkSvgHolder').innerHTML = `
+          <svg viewBox="0 0 145 106" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));">
+            <rect x="14" y="20" width="118" height="72" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="1.8"/>
+            ${dSkewers || '<text x="73" y="60" text-anchor="middle" font-size="11" font-weight="800" fill="#cbd5e1">꼬치 올클리어!</text>'}
+          </svg>
+        `;
+        document.getElementById('dakkCountPill').textContent = `${appState.dakkLeft}/6`;
+      } else {
+        dSlot.classList.add('hidden');
+      }
+
+      // 12. New Dish: Pine Sherbet (파인샤베트 5스쿱)
+      const pSlot = document.getElementById('dishSlot-pinesherbet');
+      if (appState.pineOrdered) {
+        pSlot.classList.remove('hidden');
+        let pScoops = '';
+        for (let i = 0; i < appState.pineLeft; i++) {
+          const px = 42 + i * 15;
+          const py = i % 2 === 0 ? 52 : 58;
+          pScoops += `<circle cx="${px}" cy="${py}" r="8.5" fill="#fef08a" stroke="#eab308" stroke-width="1"/>`;
+        }
+        document.getElementById('pineSvgHolder').innerHTML = `
+          <svg viewBox="0 0 145 106" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));">
+            <ellipse cx="72" cy="64" rx="46" ry="24" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+            <path d="M 32,48 L 112,48 L 96,68 L 48,68 Z" fill="#fef9c3" stroke="#facc15" stroke-width="1.5"/>
+            ${pScoops || '<text x="72" y="60" text-anchor="middle" font-size="10.5" font-weight="800" fill="#475569">시원 완식!</text>'}
+          </svg>
+        `;
+        document.getElementById('pineCountPill').textContent = `${appState.pineLeft}/5`;
+      } else {
+        pSlot.classList.add('hidden');
+      }
+
       // Empty Soju Crate Visual Rack
       const rack = document.getElementById('emptyBottleVisualRack');
       let bottlesHTML = '';
@@ -2015,7 +2404,7 @@
       document.getElementById('emptyBottleCountPill').textContent = `🍾 빈병 ${appState.emptyBottles}`;
     }
 
-    // ==================== 5. SYNTHESIZED SOUND EFFECTS (CLINK, SLURP, CHEW, FIREWORK) ====================
+    // ==================== 5. SYNTHESIZED SOUND EFFECTS ====================
     let audioCtx = null;
     function getAudioCtx() {
       if (!appState.soundEnabled) return null;
@@ -2049,7 +2438,6 @@
       const ctx = getAudioCtx();
       if (!ctx) return;
       const now = ctx.currentTime;
-      // Filtered noise sweep + suction pitch glide ("후루룩~!")
       const bufferSize = ctx.sampleRate * 0.55;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -2116,7 +2504,7 @@
       src.start(now);
     }
 
-    // ==================== 6. GWANGALLI BRIDGE & FIREWORKS CANVAS ENGINE ====================
+    // ==================== 6. GWANGALLI BRIDGE, SNOW & FIREWORKS CANVAS ENGINE ====================
     const skyCanvas = document.getElementById('gwangalliSkyCanvas');
     const skyCtx = skyCanvas.getContext('2d');
     const fireworksRockets = [];
@@ -2126,6 +2514,13 @@
       y: Math.random() * 0.55,
       r: Math.random() * 1.3 + 0.4,
       twinkle: Math.random() * Math.PI * 2
+    }));
+    const snowFlakes = Array.from({ length: 48 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      r: Math.random() * 2.2 + 0.9,
+      speedY: Math.random() * 0.0045 + 0.002,
+      drift: Math.random() * Math.PI * 2
     }));
 
     function resizeSkyCanvas() {
@@ -2140,7 +2535,9 @@
       const h = skyCanvas.height;
       const targetX = normX * w;
       const targetY = normY * h;
-      const palette = ['#fbbf24', '#f43f5e', '#38bdf8', '#a855f7', '#34d399', '#fb923c'];
+      const palette = appState.isSecondRoundXmas
+        ? ['#ef4444', '#22c55e', '#fde047', '#ffffff', '#fb7185', '#4ade80']
+        : ['#fbbf24', '#f43f5e', '#38bdf8', '#a855f7', '#34d399', '#fb923c'];
       const color = palette[Math.floor(Math.random() * palette.length)];
       fireworksRockets.push({
         x: targetX + (Math.random() - 0.5) * 24,
@@ -2182,7 +2579,9 @@
           spawnFireworkAt(0.2 + Math.random() * 0.6, 0.2 + Math.random() * 0.3);
         }, i * 240);
       }
-      showToastMsg('🎆 광안대교 밤하늘에 폭죽을 쏘아 올렸습니다!');
+      showToastMsg(appState.isSecondRoundXmas
+        ? '🎄 크리스마스 광안대교 밤하늘에 축포가 터집니다!'
+        : '🎆 광안대교 밤하늘에 폭죽을 쏘아 올렸습니다!');
       if (!fromRemote) {
         sendMultiplayerEvent({ type: 'FIREWORK_BARRAGE' });
       }
@@ -2195,15 +2594,19 @@
       const h = skyCanvas.height;
       const horizonY = h * 0.66;
 
-      // Night Sky Gradient
       const skyGrad = skyCtx.createLinearGradient(0, 0, 0, horizonY);
-      skyGrad.addColorStop(0, '#050816');
-      skyGrad.addColorStop(0.6, '#111c3a');
-      skyGrad.addColorStop(1, '#1e2952');
+      if (appState.isSecondRoundXmas) {
+        skyGrad.addColorStop(0, '#091a15');
+        skyGrad.addColorStop(0.6, '#1a1226');
+        skyGrad.addColorStop(1, '#3b121e');
+      } else {
+        skyGrad.addColorStop(0, '#050816');
+        skyGrad.addColorStop(0.6, '#111c3a');
+        skyGrad.addColorStop(1, '#1e2952');
+      }
       skyCtx.fillStyle = skyGrad;
       skyCtx.fillRect(0, 0, w, horizonY);
 
-      // Stars
       stars.forEach(s => {
         const alpha = 0.4 + 0.5 * Math.sin(waveTick + s.twinkle);
         skyCtx.fillStyle = `rgba(255,255,255,${alpha.toFixed(2)})`;
@@ -2212,22 +2615,21 @@
         skyCtx.fill();
       });
 
-      // Gwangalli Sea
       const seaGrad = skyCtx.createLinearGradient(0, horizonY, 0, h);
-      seaGrad.addColorStop(0, '#0c1933');
+      seaGrad.addColorStop(0, appState.isSecondRoundXmas ? '#112922' : '#0c1933');
       seaGrad.addColorStop(1, '#030712');
       skyCtx.fillStyle = seaGrad;
       skyCtx.fillRect(0, horizonY, w, h - horizonY);
 
-      // Gwangalli Diamond Bridge Suspension Towers & LED Cables
       const tower1X = w * 0.28;
       const tower2X = w * 0.72;
       const deckY = horizonY - 6;
       const towerTopY = h * 0.33;
-      const hue = (waveTick * 18) % 360;
+      const hue = appState.isSecondRoundXmas
+        ? (Math.sin(waveTick * 1.4) > 0 ? 350 : 142)
+        : (waveTick * 18) % 360;
       const bridgeColor = `hsl(${hue}, 88%, 68%)`;
 
-      // Shimmering Water Reflections under Bridge Towers
       for (let i = 0; i < 9; i++) {
         const ry = horizonY + 4 + i * 4.5;
         const offset = Math.sin(waveTick * 1.5 + i) * 6;
@@ -2241,7 +2643,6 @@
         skyCtx.stroke();
       }
 
-      // Main Suspension Cables
       skyCtx.strokeStyle = bridgeColor;
       skyCtx.lineWidth = 2;
       skyCtx.beginPath();
@@ -2251,7 +2652,6 @@
       skyCtx.quadraticCurveTo(tower2X + (w - tower2X) * 0.5, deckY + 2, w, deckY - 4);
       skyCtx.stroke();
 
-      // Bridge Deck & Towers
       skyCtx.strokeStyle = '#e2e8f0';
       skyCtx.lineWidth = 2.5;
       skyCtx.beginPath();
@@ -2263,7 +2663,21 @@
       skyCtx.fillRect(tower1X - 3, towerTopY, 6, deckY - towerTopY + 6);
       skyCtx.fillRect(tower2X - 3, towerTopY, 6, deckY - towerTopY + 6);
 
-      // Update & Draw Rockets
+      // Gentle Snowflakes during 2차 Christmas Theme
+      if (appState.isSecondRoundXmas) {
+        snowFlakes.forEach(fl => {
+          fl.y += fl.speedY;
+          fl.drift += 0.03;
+          if (fl.y > 1) { fl.y = -0.05; fl.x = Math.random(); }
+          const sx = fl.x * w + Math.sin(fl.drift) * 6;
+          const sy = fl.y * h;
+          skyCtx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          skyCtx.beginPath();
+          skyCtx.arc(sx, sy, fl.r, 0, Math.PI * 2);
+          skyCtx.fill();
+        });
+      }
+
       for (let i = fireworksRockets.length - 1; i >= 0; i--) {
         const r = fireworksRockets[i];
         r.progress += 0.06;
@@ -2279,7 +2693,6 @@
         }
       }
 
-      // Update & Draw Firework Sparks
       for (let i = fireworkParticles.length - 1; i >= 0; i--) {
         const p = fireworkParticles[i];
         p.x += p.vx;
@@ -2339,7 +2752,6 @@
       `;
       flyer.innerHTML = `
         <svg viewBox="0 0 70 70" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.6));">
-          <!-- Wooden Chopsticks Holding Morsel -->
           <line x1="8" y1="62" x2="36" y2="28" stroke="#d97706" stroke-width="3.2" stroke-linecap="round"/>
           <line x1="18" y1="65" x2="40" y2="30" stroke="#b45309" stroke-width="3.2" stroke-linecap="round"/>
           ${foodEmojiSvg}
@@ -2405,7 +2817,6 @@
         `;
         handEl.innerHTML = `
           <svg viewBox="0 0 56 56" style="width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.6));">
-            <!-- Realistic Hand Holding Clear Soju Glass -->
             <ellipse cx="28" cy="38" rx="11" ry="8" fill="#f3cfb9" stroke="#cfa084" stroke-width="1"/>
             <polygon points="19,14 37,14 34,37 22,37" fill="rgba(255,255,255,0.48)" stroke="#ffffff" stroke-width="1.6"/>
             <polygon points="20.5,21 35.5,21 33.5,35.5 22.5,35.5" fill="rgba(224,242,254,0.85)"/>
@@ -2432,7 +2843,7 @@
         burst.style.cssText = `position:absolute;left:${center.x}px;top:${center.y}px;transform:translate(-50%,-50%);z-index:42;pointer-events:none;`;
         burst.innerHTML = `
           <div style="padding:6px 15px;border-radius:9999px;background:#fbbf24;color:#0f172a;font-weight:900;font-size:14px;box-shadow:0 0 26px rgba(251,191,36,0.95);white-space:nowrap;">
-            🍶 챙~!! 다같이 짠!! ✨
+            ${appState.isSecondRoundXmas ? '🎄 메리 짠~!! 2차 건배!! ✨' : '🍶 챙~!! 다같이 짠!! ✨'}
           </div>
         `;
         layer.appendChild(burst);
@@ -2471,7 +2882,9 @@
     }
 
     window.summonChefService = function (fromRemote = false) {
-      const msg = '👨‍🍳 방어집 사장님: "광안리 단골 서비스 해물컵라면 뜨끈하게 나갑니데이~ 후루룩 드이소!"';
+      const msg = appState.isSecondRoundXmas
+        ? '👨‍🍳 방어집 사장님: "크리스마스 2차 특별 서비스 컵라면 나갑니데이~ 메리 포차!!"'
+        : '👨‍🍳 방어집 사장님: "광안리 단골 서비스 해물컵라면 뜨끈하게 나갑니데이~ 후루룩 드이소!"';
       triggerChefWalkIn(msg, () => {
         appState.ramenLeft = 5;
         appState.billQty.serviceRamen += 1;
@@ -2493,7 +2906,7 @@
       el.textContent = text;
       el.classList.remove('hidden');
       clearTimeout(el._hideTimer);
-      el._hideTimer = setTimeout(() => el.classList.add('hidden'), 2300);
+      el._hideTimer = setTimeout(() => el.classList.add('hidden'), 2600);
     }
 
     function triggerRandomCompanionReaction(lines) {
@@ -2503,7 +2916,8 @@
       const pick = valid[Math.floor(Math.random() * valid.length)];
       if (pick.p.isAI) {
         setTimeout(() => {
-          showSeatSpeechBubble(pick.seat, lines[Math.floor(Math.random() * lines.length)]);
+          const line = lines[Math.floor(Math.random() * lines.length)];
+          showSeatSpeechBubble(pick.seat, line);
         }, 420);
       }
     }
@@ -2524,14 +2938,13 @@
       appState.peakDrunkPct = Math.max(appState.peakDrunkPct, appState.drunkPct);
 
       animateAllHandsSojuClink();
-      showSeatSpeechBubble('me', '짠~!! 캬 시원하다! 🍶');
+      showSeatSpeechBubble('me', appState.isSecondRoundXmas ? '2차도 짠~!! 메리 크리스마스! 🎄🍶' : '짠~!! 캬 시원하다! 🍶');
       triggerRandomCompanionReaction([
         '크~ 살얼음 참이슬 달다 달아! 🍶',
-        '광안대교 보면서 마시니까 최고네!! ✨',
-        '오늘 텐션 미쳤다 짠~!! 🥂'
+        appState.isSecondRoundXmas ? '2차 크리스마스 분위기 미쳤다 짠~!! 🎄' : '광안대교 보면서 마시니까 최고네!! ✨',
+        '오늘 텐션 안 꺾인다 짠~!! 🥂'
       ]);
 
-      // Auto Firework Festival at 100% Drunkenness!
       if (appState.drunkPct >= 100 && !appState.festivalTriggered) {
         appState.festivalTriggered = true;
         document.getElementById('festivalBanner').classList.remove('hidden');
@@ -2549,7 +2962,7 @@
       }
     };
 
-    window.eatBangeo = function (fromRemote = false, actorName = null) {
+    window.eatBangeo = function (fromRemote = false) {
       if (appState.bangeoLeft <= 0) {
         openMenuModal();
         showToastMsg('🐟 대방어회를 다 먹었어요! 차림표에서 리필이나 새 안주를 주문해보세요!');
@@ -2619,48 +3032,82 @@
     };
 
     window.eatYuringi = function (fromRemote = false) {
-      if (appState.yuringiLeft <= 0) {
-        openMenuModal();
-        return;
-      }
+      if (appState.yuringiLeft <= 0) { openMenuModal(); return; }
       appState.yuringiLeft -= 1;
       appState.eatenPiecesTotal += 1;
       animateFoodToMouth('dishSlot-yuringi', '<ellipse cx="38" cy="26" rx="11" ry="7" fill="#f59e0b" stroke="#b45309" stroke-width="1.2"/>', 'me', false);
       showSeatSpeechBubble('me', '바삭바삭 유린기에 청양고추 굿!! 🍗');
       renderAllVisuals();
-      if (!fromRemote) {
-        sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'yuringi', actor: appState.myName, state: exportSyncPayload() });
-      }
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'yuringi', actor: appState.myName, state: exportSyncPayload() });
     };
 
     window.eatTteokbokki = function (fromRemote = false) {
-      if (appState.tteokLeft <= 0) {
-        openMenuModal();
-        return;
-      }
+      if (appState.tteokLeft <= 0) { openMenuModal(); return; }
       appState.tteokLeft -= 1;
       appState.eatenPiecesTotal += 1;
       animateFoodToMouth('dishSlot-tteokbokki', '<rect x="29" y="22" width="18" height="8" rx="4" fill="#ef4444"/>', 'me', false);
       showSeatSpeechBubble('me', '포차 떡볶이 매콤달콤 쫀득해! 🌶️');
       renderAllVisuals();
-      if (!fromRemote) {
-        sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'tteokbokki', actor: appState.myName, state: exportSyncPayload() });
-      }
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'tteokbokki', actor: appState.myName, state: exportSyncPayload() });
     };
 
     window.eatFutomaki = function (fromRemote = false) {
-      if (appState.futoLeft <= 0) {
-        openMenuModal();
-        return;
-      }
+      if (appState.futoLeft <= 0) { openMenuModal(); return; }
       appState.futoLeft -= 1;
       appState.eatenPiecesTotal += 1;
       animateFoodToMouth('dishSlot-futomaki', '<circle cx="38" cy="26" r="10" fill="#0f172a"/><circle cx="38" cy="26" r="7.5" fill="#fb923c"/>', 'me', false);
       showSeatSpeechBubble('me', '대왕 후토마끼 한 입 가득 행복!! 🍣');
       renderAllVisuals();
-      if (!fromRemote) {
-        sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'futomaki', actor: appState.myName, state: exportSyncPayload() });
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'futomaki', actor: appState.myName, state: exportSyncPayload() });
+    };
+
+    window.eatGyeranmari = function (fromRemote = false) {
+      if (appState.gyeranLeft <= 0) { openMenuModal(); return; }
+      appState.gyeranLeft -= 1;
+      appState.eatenPiecesTotal += 1;
+      animateFoodToMouth('dishSlot-gyeranmari', '<rect x="28" y="21" width="20" height="11" rx="4" fill="#fde047" stroke="#eab308" stroke-width="1"/>', 'me', false);
+      showSeatSpeechBubble('me', '계란말이 폭신폭신 집밥 느낌 난다 🥚');
+      triggerRandomCompanionReaction(['계란말이 촉촉해서 소주랑 잘 어울리네!', '간장 살짝 찍어 먹으니까 딱이다 🥚']);
+      renderAllVisuals();
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'gyeranmari', actor: appState.myName, state: exportSyncPayload() });
+    };
+
+    window.eatMaratang = function (fromRemote = false) {
+      if (appState.maraLeft <= 0) { openMenuModal(); return; }
+      appState.maraLeft -= 1;
+      appState.eatenPiecesTotal += 1;
+      animateFoodToMouth('dishSlot-maratang', '<circle cx="38" cy="26" r="8" fill="#dc2626"/><circle cx="38" cy="26" r="4.5" fill="#86efac"/>', 'me', true);
+      showSeatSpeechBubble('me', '얼큰 마라탕 알싸하니 속 풀린다!! 🍲');
+      triggerRandomCompanionReaction(['마라 향 진하다! 해장 겸 안주로 최고 🔥', '숙주랑 분모자 쫀득하네요!']);
+      renderAllVisuals();
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'maratang', actor: appState.myName, state: exportSyncPayload() });
+    };
+
+    window.eatDakkochi = function (fromRemote = false) {
+      if (appState.dakkLeft <= 0) { openMenuModal(); return; }
+      appState.dakkLeft -= 1;
+      appState.eatenPiecesTotal += 1;
+      animateFoodToMouth('dishSlot-dakkochi', '<rect x="28" y="22" width="20" height="9" rx="3" fill="#c2410c"/>', 'me', false);
+      showSeatSpeechBubble('me', '숯불 닭꼬치 불향 미쳤다 🍢🔥');
+      triggerRandomCompanionReaction(['닭꼬치 살이 통통하네! 한 꼬치 더!', '불맛 제대로 살아있네요 🍢']);
+      renderAllVisuals();
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'dakkochi', actor: appState.myName, state: exportSyncPayload() });
+    };
+
+    window.eatPineSherbet = function (fromRemote = false) {
+      if (appState.pineLeft <= 0) { openMenuModal(); return; }
+      appState.pineLeft -= 1;
+      appState.eatenPiecesTotal += 1;
+      appState.drunkPct = Math.max(0, appState.drunkPct - 10);
+      if (appState.drunkPct < 90) {
+        appState.festivalTriggered = false;
+        document.getElementById('festivalBanner').classList.add('hidden');
       }
+      animateFoodToMouth('dishSlot-pinesherbet', '<circle cx="38" cy="26" r="8.5" fill="#fef08a" stroke="#eab308" stroke-width="1"/>', 'me', false);
+      showSeatSpeechBubble('me', '시원한 파인샤베트 입가심 짱!! 🍍❄️');
+      triggerRandomCompanionReaction(['파인샤베트 상큼해서 술 확 깬다 🍍', '이거 먹으니까 또 마실 수 있겠는데요?!']);
+      renderAllVisuals();
+      if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'pinesherbet', actor: appState.myName, state: exportSyncPayload() });
     };
 
     window.eatRandomAnju = function () {
@@ -2671,6 +3118,10 @@
       if (appState.yuringiOrdered && appState.yuringiLeft > 0) available.push(eatYuringi);
       if (appState.tteokOrdered && appState.tteokLeft > 0) available.push(eatTteokbokki);
       if (appState.futoOrdered && appState.futoLeft > 0) available.push(eatFutomaki);
+      if (appState.gyeranOrdered && appState.gyeranLeft > 0) available.push(eatGyeranmari);
+      if (appState.maraOrdered && appState.maraLeft > 0) available.push(eatMaratang);
+      if (appState.dakkOrdered && appState.dakkLeft > 0) available.push(eatDakkochi);
+      if (appState.pineOrdered && appState.pineLeft > 0) available.push(eatPineSherbet);
 
       if (!available.length) {
         openMenuModal();
@@ -2681,7 +3132,7 @@
       fn();
     };
 
-    // ==================== 10. MENU ORDERING & LIVE POCHA BILL + CHECKOUT ENDING ====================
+    // ==================== 10. MENU ORDERING & LIVE POCHA BILL + 2차 CHRISTMAS CHECKOUT ====================
     window.openMenuModal = function () {
       document.getElementById('menuModal').classList.remove('hidden');
     };
@@ -2693,7 +3144,27 @@
       closeMenuModal();
       const who = actorName || appState.myName;
 
-      if (itemKey === 'yuringi') {
+      if (itemKey === 'gyeranmari') {
+        appState.gyeranOrdered = true;
+        appState.gyeranLeft = 8;
+        appState.billQty.gyeranmari += 1;
+        triggerChefWalkIn('👨‍🍳 사장님: "폭신폭신 도톰 계란말이 방금 부쳐 나왔습니데이~!"', () => renderAllVisuals());
+      } else if (itemKey === 'maratang') {
+        appState.maraOrdered = true;
+        appState.maraLeft = 7;
+        appState.billQty.maratang += 1;
+        triggerChefWalkIn('👨‍🍳 사장님: "얼큰 화끈 마라탕 펄펄 끓여서 나왔습니더~!"', () => renderAllVisuals());
+      } else if (itemKey === 'dakkochi') {
+        appState.dakkOrdered = true;
+        appState.dakkLeft = 6;
+        appState.billQty.dakkochi += 1;
+        triggerChefWalkIn('👨‍🍳 사장님: "숯불 향 솔솔 나는 닭꼬치 나왔습니데이~!"', () => renderAllVisuals());
+      } else if (itemKey === 'pinesherbet') {
+        appState.pineOrdered = true;
+        appState.pineLeft = 5;
+        appState.billQty.pinesherbet += 1;
+        triggerChefWalkIn('👨‍🍳 사장님: "시원 상큼 파인샤베트 디저트 나갑니더~!"', () => renderAllVisuals());
+      } else if (itemKey === 'yuringi') {
         appState.yuringiOrdered = true;
         appState.yuringiLeft = 8;
         appState.billQty.yuringi += 1;
@@ -2718,742 +3189,4 @@
         triggerChefWalkIn('👨‍🍳 사장님: "녹진한 아귀간 소금김밥 추가 나왔습니더!"', () => renderAllVisuals());
       } else if (itemKey === 'soju') {
         appState.sojuShotsLeft = 7;
-        appState.billQty.soju += 1;
-        showToastMsg('🍶 살얼음 참이슬 새 병이 테이블에 올라왔습니다!');
-      } else if (itemKey === 'water') {
-        appState.waterLeft = 5;
-        showToastMsg('🧊 시원한 해장 얼음냉수를 리필했습니다!');
-      }
-
-      renderAllVisuals();
-      if (MENU_CATALOG[itemKey]) {
-        appendLocalChat(who, `🍽️ [${MENU_CATALOG[itemKey].name}] 주문 완료!`, 'action');
-      }
-      if (!fromRemote) {
-        sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
-      }
-    };
-
-    function calculateBillSummary() {
-      let grandTotal = 0;
-      let serviceSaved = 0;
-      const rows = [];
-
-      Object.keys(MENU_CATALOG).forEach(key => {
-        const qty = appState.billQty[key] || 0;
-        if (qty <= 0) return;
-        const meta = MENU_CATALOG[key];
-        const lineTotal = meta.unitPrice * qty;
-        if (meta.isService) {
-          serviceSaved += lineTotal;
-          rows.push({ name: meta.name, qty, lineTotal: 0, isService: true });
-        } else {
-          grandTotal += lineTotal;
-          rows.push({ name: meta.name, qty, lineTotal, isService: false });
-        }
-      });
-
-      const seatedCount = 1 + getSeatedCompanions().filter(Boolean).length;
-      const perPerson = Math.ceil(grandTotal / Math.max(1, seatedCount) / 100) * 100;
-      return { grandTotal, serviceSaved, headcount: seatedCount, perPerson, rows };
-    }
-
-    function renderLiveBill() {
-      const { grandTotal, serviceSaved, headcount, perPerson, rows } = calculateBillSummary();
-      const listEl = document.getElementById('liveBillItemsList');
-      listEl.innerHTML = rows.map(r => `
-        <div class="bill-grid-row" style="color:${r.isService ? '#065f46' : '#1e293b'};font-weight:${r.isService ? '800' : '700'};">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.name}</span>
-          <span style="text-align:center;font-family:monospace;">${r.qty}</span>
-          <span style="text-align:right;font-family:monospace;font-weight:900;">${r.isService ? '서비스(0원)' : r.lineTotal.toLocaleString() + '원'}</span>
-        </div>
-      `).join('');
-
-      document.getElementById('billHeadcountText').textContent = `합석 ${headcount}명`;
-      document.getElementById('billServiceSavedText').textContent = `${serviceSaved.toLocaleString()}원 무료`;
-      document.getElementById('billGrandTotalText').textContent = `${grandTotal.toLocaleString()}원`;
-      document.getElementById('billPerPersonText').textContent = `인당 약 ${perPerson.toLocaleString()}원`;
-      document.getElementById('mobileHeaderBillTotal').textContent = `${grandTotal.toLocaleString()}원`;
-    }
-
-    function openFinalCheckoutReceipt(callerName) {
-      const { grandTotal, serviceSaved, headcount, perPerson, rows } = calculateBillSummary();
-      appendLocalChat('방어집 사장님', `네~ ${callerName} 손님! 계산서 여기 있습니데이~ 조심히 들어가이소!`, 'chef');
-      launchManualFireworkBarrage(true);
-
-      document.getElementById('finalReceiptTimestamp').textContent =
-        `방 코드: ${appState.roomCode} · 정산 시각: ${new Date().toLocaleString('ko-KR')}`;
-
-      document.getElementById('finalReceiptItems').innerHTML = rows.map(r => `
-        <div style="display:flex;justify-content:space-between;padding:4px 0;">
-          <span>${r.name} × ${r.qty}</span>
-          <strong style="font-family:monospace;color:${r.isService ? '#059669' : '#0f172a'};">
-            ${r.isService ? '사장님 서비스 (0원)' : r.lineTotal.toLocaleString() + '원'}
-          </strong>
-        </div>
-      `).join('');
-
-      document.getElementById('finalStatSoju').textContent = `${appState.emptyBottles}병 (주문 ${appState.billQty.soju}병)`;
-      document.getElementById('finalStatAnju').textContent = `${appState.eatenPiecesTotal}점`;
-      document.getElementById('finalStatPeakDrunk').textContent = `${appState.peakDrunkPct}%`;
-      document.getElementById('finalStatServiceSaved').textContent = `${serviceSaved.toLocaleString()}원 혜택`;
-      document.getElementById('finalReceiptTotal').textContent = `${grandTotal.toLocaleString()}원`;
-      document.getElementById('finalReceiptSplitLabel').textContent = `1/${headcount} 더치페이 인당`;
-      document.getElementById('finalReceiptSplitAmount').textContent = `${perPerson.toLocaleString()}원`;
-
-      document.getElementById('finalReceiptModal').classList.remove('hidden');
-    }
-
-    window.triggerCheckoutFromButton = function () {
-      const text = '사장님 계산이요~';
-      appendLocalChat(appState.myName, text, 'me');
-      showSeatSpeechBubble('me', text);
-      sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
-      setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
-    };
-
-    window.resetForNewParty = function () {
-      document.getElementById('finalReceiptModal').classList.add('hidden');
-      appState.drunkPct = 0;
-      appState.peakDrunkPct = 0;
-      appState.festivalTriggered = false;
-      appState.emptyBottles = 0;
-      appState.eatenPiecesTotal = 0;
-      appState.bangeoLeft = 10;
-      appState.kimbapLeft = 8;
-      appState.sojuShotsLeft = 7;
-      appState.waterLeft = 5;
-      appState.ramenLeft = 5;
-      appState.yuringiOrdered = false;
-      appState.yuringiLeft = 0;
-      appState.tteokOrdered = false;
-      appState.tteokLeft = 0;
-      appState.futoOrdered = false;
-      appState.futoLeft = 0;
-      appState.billQty = { bangeo: 1, kimbap: 1, soju: 1, yuringi: 0, tteokbokki: 0, futomaki: 0, serviceRamen: 1 };
-      document.getElementById('festivalBanner').classList.add('hidden');
-      renderAllVisuals();
-      showToastMsg('🌊 새 은색 원형 테이블 세팅 완료! 즐거운 2차 시작하세요!');
-      sendMultiplayerEvent({ type: 'SYNC_STATE', state: exportSyncPayload() });
-    };
-
-    // ==================== 11. CHAT & "사장님 계산이요~" DETECTION ====================
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
-    function appendLocalChat(sender, text, kind = 'me') {
-      const feed = document.getElementById('chatFeed');
-      if (!feed) return;
-      const row = document.createElement('div');
-      if (kind === 'system') {
-        row.className = 'chat-row-system';
-        row.innerHTML = `<span style="font-weight:800;">📢 ${escapeHtml(text)}</span>`;
-      } else if (kind === 'chef') {
-        row.className = 'chat-row-chef';
-        row.innerHTML = `<strong style="color:#fcd34d;">👨‍🍳 ${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
-      } else if (kind === 'action') {
-        row.className = 'chat-row-action';
-        row.innerHTML = `<strong>${escapeHtml(sender)}</strong> ${escapeHtml(text)}`;
-      } else if (kind === 'me') {
-        row.className = 'chat-row-me';
-        row.innerHTML = `<strong style="color:#fbbf24;">${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
-      } else {
-        row.className = 'chat-row-other';
-        row.innerHTML = `<strong style="color:#7dd3fc;">${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
-      }
-      feed.appendChild(row);
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    window.handleChatSubmit = function (e) {
-      e.preventDefault();
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      appendLocalChat(appState.myName, text, 'me');
-      showSeatSpeechBubble('me', text);
-
-      const normalized = text.replace(/\s+/g, '');
-      if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
-        sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
-        setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
-        return;
-      }
-
-      sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
-
-      // Friendly AI response if AI companions are seated
-      const aiSeats = getSeatedCompanions()
-        .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
-        .filter(Boolean);
-
-      if (aiSeats.length > 0) {
-        const responder = aiSeats[Math.floor(Math.random() * aiSeats.length)];
-        const replies = [
-          '맞아요ㅋㅋ 광안리 밤바다 분위기 진짜 미쳤어요! 🌉',
-          '이 말에 안 마실 수 없지~ 다같이 짠 한번 해요! 🍶',
-          '대방어랑 아귀간김밥 조합 진짜 예술이지 않아요? 😋',
-          '오늘 텐션 최고다!! 폭죽 한번 더 터뜨려요! 🎆'
-        ];
-        const reply = replies[Math.floor(Math.random() * replies.length)];
-        setTimeout(() => {
-          showSeatSpeechBubble(responder.seat, reply);
-          appendLocalChat(responder.p.shortName, reply, 'other');
-        }, 750);
-      }
-    };
-
-    // ==================== 12. VISUAL RENDERING & DRUNK CAMERA EFFECT ====================
-    function getSeatedCompanions() {
-      const others = Object.entries(appState.remotePlayers)
-        .filter(([cid]) => cid !== myClientId)
-        .map(([, prof]) => ({
-          name: prof.name,
-          shortName: prof.name,
-          style: prof.style,
-          isAI: false
-        }));
-
-      const seats = [null, null, null];
-      for (let i = 0; i < 3; i++) {
-        if (others[i]) {
-          seats[i] = others[i];
-        } else if (appState.aiFillEnabled) {
-          seats[i] = AI_COMPANIONS_DEFAULT[i];
-        }
-      }
-      return seats;
-    }
-
-    function renderAllVisuals() {
-      const clockLabels = ['10시석', '12시석', '2시석'];
-      const seats = getSeatedCompanions();
-
-      seats.forEach((person, idx) => {
-        const seatNum = idx + 1;
-        const portraitEl = document.getElementById(`seatPortrait-${seatNum}`);
-        const badgeEl = document.getElementById(`seatBadge-${seatNum}`);
-        if (person) {
-          portraitEl.innerHTML = renderRealisticPortraitSVG(person.style, appState.drunkPct, String(seatNum));
-          const livePrefix = person.isAI ? '' : '🟢 ';
-          badgeEl.textContent = `${livePrefix}${clockLabels[idx]} · ${person.shortName || person.name}`;
-          badgeEl.className = person.isAI ? 'seat-badge-default' : 'seat-badge-live';
-        } else {
-          portraitEl.innerHTML = `
-            <div onclick="openInviteModal()" class="empty-seat-invite-box">
-              <span>+ 친구초대</span>
-              <span style="font-size:9.5px;color:#94a3b8;margin-top:2px;">${clockLabels[idx]}</span>
-            </div>
-          `;
-          badgeEl.textContent = `${clockLabels[idx]} (비어있음)`;
-          badgeEl.className = 'seat-badge-empty';
-        }
-      });
-
-      document.getElementById('myPortraitContainer').innerHTML =
-        renderRealisticPortraitSVG(appState.myStyle, appState.drunkPct, 'me');
-      document.getElementById('myNicknameBadge').textContent = appState.myName;
-      document.getElementById('roomCodeText').textContent = appState.roomCode;
-
-      // Drunk Gauge & Mood Label
-      const pct = appState.drunkPct;
-      document.getElementById('drunkGaugeFill').style.width = `${pct}%`;
-      let moodTxt = `😊 기분 좋음 ${pct}%`;
-      if (pct >= 90) moodTxt = `🥴🔥 만취 텐션 폭발 ${pct}%`;
-      else if (pct >= 65) moodTxt = `😵‍💫 발그레 알딸딸 ${pct}%`;
-      else if (pct >= 35) moodTxt = `☺️ 술기운 오르는 중 ${pct}%`;
-      document.getElementById('drunkMoodLabel').textContent = moodTxt;
-      document.getElementById('bottleTotalBadge').textContent = `🍶 ${appState.billQty.soju}병째`;
-
-      // Progressive Drunk Screen Sway + Blur + Warm Rosy Vignette
-      const stage = document.getElementById('drunkCameraStage');
-      const vignette = document.getElementById('drunkVignetteOverlay');
-      stage.classList.remove('drunk-stage-1', 'drunk-stage-2', 'drunk-stage-3');
-
-      if (appState.dizzyEffectEnabled && pct >= 35) {
-        vignette.style.opacity = Math.min(0.95, (pct - 25) / 80).toFixed(2);
-        if (pct >= 80) stage.classList.add('drunk-stage-3');
-        else if (pct >= 55) stage.classList.add('drunk-stage-2');
-        else stage.classList.add('drunk-stage-1');
-      } else {
-        vignette.style.opacity = '0';
-      }
-
-      renderAllDishesSVG();
-      renderLiveBill();
-    }
-
-    function showToastMsg(msg) {
-      const box = document.getElementById('sceneStatusToast');
-      const txt = document.getElementById('sceneStatusToastText');
-      if (!box || !txt) return;
-      txt.textContent = msg;
-      box.classList.remove('opacity-0');
-      box.classList.add('opacity-100');
-      clearTimeout(box._timer);
-      box._timer = setTimeout(() => {
-        box.classList.remove('opacity-100');
-        box.classList.add('opacity-0');
-      }, 2800);
-    }
-
-    // ==================== 13. UI CONTROLS & INVITE / QR MODAL ====================
-    window.toggleAICompanions = function () {
-      appState.aiFillEnabled = !appState.aiFillEnabled;
-      document.getElementById('aiFillToggleBtn').textContent =
-        appState.aiFillEnabled ? '👥 AI 채움' : '👤 친구전용';
-      renderAllVisuals();
-    };
-
-    window.toggleDizzyEffect = function () {
-      appState.dizzyEffectEnabled = !appState.dizzyEffectEnabled;
-      document.getElementById('dizzyToggleBtn').textContent =
-        appState.dizzyEffectEnabled ? '🌀 취기ON' : '🌀 취기OFF';
-      renderAllVisuals();
-    };
-
-    window.toggleSound = function () {
-      appState.soundEnabled = !appState.soundEnabled;
-      document.getElementById('sfxToggleBtn').textContent =
-        appState.soundEnabled ? '🔊 ON' : '🔇 OFF';
-    };
-
-    window.toggleMobileBill = function () {
-      document.getElementById('liveBillAside').classList.toggle('mobile-bill-open');
-    };
-
-    function getShareableInviteUrl() {
-      try {
-        const u = new URL(window.location.href);
-        u.searchParams.set('room', appState.roomCode);
-        return u.toString();
-      } catch (e) {
-        return `https://82leesuji82-hue.github.io/pocha/?room=${encodeURIComponent(appState.roomCode)}`;
-      }
-    }
-
-    function copyTextSafe(text, toastMessage) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        document.execCommand('copy');
-        showToastMsg(toastMessage);
-      } catch (e) {
-        showToastMsg(`복사 주소: ${text}`);
-      }
-      document.body.removeChild(ta);
-    }
-
-    window.openInviteModal = function () {
-      const inviteUrl = getShareableInviteUrl();
-      document.getElementById('inviteModalRoomCode').textContent = appState.roomCode;
-      document.getElementById('inviteCopyCodeSpan').textContent = appState.roomCode;
-      document.getElementById('inviteQrImg').src =
-        `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(inviteUrl)}`;
-      document.getElementById('inviteModal').classList.remove('hidden');
-    };
-
-    window.closeInviteModal = function () {
-      document.getElementById('inviteModal').classList.add('hidden');
-    };
-
-    window.copyInviteLink = function () {
-      copyTextSafe(getShareableInviteUrl(), '💬 초대 링크가 복사되었습니다! 카톡 단톡방에 붙여넣어 주세요!');
-      closeInviteModal();
-    };
-
-    window.copyRoomCode = function () {
-      copyTextSafe(appState.roomCode, `📋 방 코드 [${appState.roomCode}] 복사 완료!`);
-      closeInviteModal();
-    };
-
-    // ==================== 14. ENTRY MODAL & CHARACTER SELECTOR ====================
-    function renderCharacterSelectorGrid() {
-      const grid = document.getElementById('characterSelectorGrid');
-      if (!grid) return;
-      grid.innerHTML = CHARACTER_STYLES.map(c => {
-        const selected = c.id === appState.myStyle;
-        return `
-          <button type="button" onclick="selectMyCharacter('${c.id}')"
-            class="char-card-btn ${selected ? 'selected' : ''}">
-            <div class="char-card-avatar">
-              ${renderRealisticPortraitSVG(c.id, 8, `sel_${c.id}`)}
-            </div>
-            <div style="font-size:12px;font-weight:800;color:#fef3c7;margin-top:2px;">${c.name}</div>
-            <div style="font-size:10px;color:#94a3b8;">${c.tag}</div>
-          </button>
-        `;
-      }).join('');
-    }
-
-    window.selectMyCharacter = function (styleId) {
-      appState.myStyle = styleId;
-      renderCharacterSelectorGrid();
-    };
-
-    window.openEntryModal = function () {
-      renderCharacterSelectorGrid();
-      document.getElementById('entryModal').classList.remove('hidden');
-    };
-
-    window.enterPocha = function (mode) {
-      const nickVal = document.getElementById('modalNicknameInput').value.trim() || '광안리러버';
-      const roomVal = (document.getElementById('modalRoomInput').value.trim() || 'GWANG-82').toUpperCase();
-
-      appState.myName = nickVal;
-      appState.roomCode = roomVal;
-      appState.mode = mode;
-
-      document.getElementById('entryModal').classList.add('hidden');
-      getAudioCtx();
-
-      if (mode === 'room') {
-        connectPeerRoom(roomVal);
-      } else {
-        destroyPeerSession();
-        appState.aiFillEnabled = true;
-        document.getElementById('aiFillToggleBtn').textContent = '👥 AI 채움';
-        document.getElementById('syncModeIndicator').textContent = '🌊 광안리 단골 합석 모드';
-        document.getElementById('livePeerBadge').textContent = '🟢 나 + AI단골';
-      }
-
-      renderAllVisuals();
-      appendLocalChat('시스템', `🌉 [${appState.myName}]님이 광안리 은색 원형 테이블에 착석하셨습니다!`, 'system');
-
-      // Chef walks out right away to welcome & deliver steaming service cup ramen!
-      setTimeout(() => {
-        triggerChefWalkIn(
-          `👨‍🍳 방어집 사장님: "${appState.myName} 손님 어서오이소~! 광안리 단골 서비스 컵라면부터 놓아드립니더!"`,
-          () => showToastMsg('👨‍🍳 사장님이 따뜻한 환영 인사와 함께 서비스 컵라면을 내어주셨습니다!')
-        );
-      }, 450);
-    };
-
-    // ==================== 15. SANDBOX-SAFE & GITHUB PAGES MULTIPLAYER ENGINE ====================
-    const myClientId = 'p_' + Math.random().toString(36).slice(2, 10);
-    let peerInstance = null;
-    let isPeerHost = false;
-    let hostConn = null;
-    let localRoomChannel = null;
-    let peerScriptLoadingPromise = null;
-    const guestConns = new Map();
-
-    // Detect Canvas / sandboxed preview environments where external wss:// WebSockets are blocked
-    function isRestrictedPreviewSandbox() {
-      try {
-        const host = (window.location.hostname || '').toLowerCase();
-        const proto = window.location.protocol || '';
-        if (proto === 'blob:' || proto === 'data:' || proto === 'about:' || !host) return true;
-        if (
-          host.includes('usercontent.goog') ||
-          host.includes('googleusercontent.com') ||
-          host.includes('gstatic.com') ||
-          host.includes('google.com')
-        ) {
-          return true;
-        }
-        if (window.self !== window.top && !host.endsWith('.github.io')) {
-          return true;
-        }
-        return false;
-      } catch (e) {
-        return true;
-      }
-    }
-
-    // Dynamically load PeerJS only on unrestricted hosts (e.g., GitHub Pages)
-    function ensurePeerJsLoaded() {
-      if (isRestrictedPreviewSandbox()) return Promise.resolve(false);
-      if (typeof window.Peer !== 'undefined') return Promise.resolve(true);
-      if (peerScriptLoadingPromise) return peerScriptLoadingPromise;
-
-      peerScriptLoadingPromise = new Promise(resolve => {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
-        script.async = true;
-        script.onload = () => resolve(typeof window.Peer !== 'undefined');
-        script.onerror = () => resolve(false);
-        document.head.appendChild(script);
-      });
-      return peerScriptLoadingPromise;
-    }
-
-    function exportSyncPayload() {
-      return {
-        drunkPct: appState.drunkPct,
-        peakDrunkPct: appState.peakDrunkPct,
-        emptyBottles: appState.emptyBottles,
-        eatenPiecesTotal: appState.eatenPiecesTotal,
-        bangeoLeft: appState.bangeoLeft,
-        kimbapLeft: appState.kimbapLeft,
-        sojuShotsLeft: appState.sojuShotsLeft,
-        waterLeft: appState.waterLeft,
-        ramenLeft: appState.ramenLeft,
-        yuringiOrdered: appState.yuringiOrdered,
-        yuringiLeft: appState.yuringiLeft,
-        tteokOrdered: appState.tteokOrdered,
-        tteokLeft: appState.tteokLeft,
-        futoOrdered: appState.futoOrdered,
-        futoLeft: appState.futoLeft,
-        billQty: { ...appState.billQty }
-      };
-    }
-
-    function applySyncPayload(st) {
-      if (!st) return;
-      Object.assign(appState, st);
-      if (st.billQty) appState.billQty = { ...st.billQty };
-      renderAllVisuals();
-    }
-
-    function sanitizePeerRoomId(code) {
-      const hex = Array.from(code).map(ch => ch.charCodeAt(0).toString(16)).join('');
-      return `gwangalli-pocha-live-${hex}`;
-    }
-
-    function updateLivePeerBadge() {
-      const count = Math.max(1, Object.keys(appState.remotePlayers).length);
-      document.getElementById('livePeerBadge').textContent = `🟢 실시간 ${count}명`;
-    }
-
-    function destroyPeerSession() {
-      guestConns.forEach(c => { try { c.close(); } catch (e) {} });
-      guestConns.clear();
-      if (hostConn) { try { hostConn.close(); } catch (e) {} hostConn = null; }
-      if (peerInstance) { try { peerInstance.destroy(); } catch (e) {} peerInstance = null; }
-      if (localRoomChannel) { try { localRoomChannel.close(); } catch (e) {} localRoomChannel = null; }
-      isPeerHost = false;
-      appState.remotePlayers = {};
-    }
-
-    function setupLocalBroadcastChannel(code) {
-      if (typeof window.BroadcastChannel === 'undefined') return;
-      try {
-        localRoomChannel = new window.BroadcastChannel(`gwangalli_pocha_${code}`);
-        localRoomChannel.onmessage = ev => {
-          const msg = ev.data;
-          if (!msg || msg.senderCid === myClientId) return;
-          if (msg.type === 'LOCAL_HELLO') {
-            appState.remotePlayers[msg.senderCid] = msg.profile;
-            updateLivePeerBadge();
-            renderAllVisuals();
-            localRoomChannel.postMessage({
-              type: 'LOCAL_WELCOME',
-              senderCid: myClientId,
-              profile: { name: appState.myName, style: appState.myStyle },
-              state: exportSyncPayload()
-            });
-          } else if (msg.type === 'LOCAL_WELCOME') {
-            appState.remotePlayers[msg.senderCid] = msg.profile;
-            updateLivePeerBadge();
-            applySyncPayload(msg.state);
-          } else {
-            handlePeerPayload(null, msg);
-          }
-        };
-        localRoomChannel.postMessage({
-          type: 'LOCAL_HELLO',
-          senderCid: myClientId,
-          profile: { name: appState.myName, style: appState.myStyle }
-        });
-      } catch (e) {}
-    }
-
-    async function connectPeerRoom(code) {
-      destroyPeerSession();
-      appState.remotePlayers = {
-        [myClientId]: { name: appState.myName, style: appState.myStyle }
-      };
-      updateLivePeerBadge();
-      setupLocalBroadcastChannel(code);
-
-      // In Canvas preview, skip external wss:// WebSocket completely to avoid SecurityError
-      if (isRestrictedPreviewSandbox()) {
-        document.getElementById('syncModeIndicator').textContent =
-          `🟢 프리뷰 합석 모드 (${code}) · GitHub 배포 시 PC·모바일 원격 연동`;
-        return;
-      }
-
-      document.getElementById('syncModeIndicator').textContent = `🔄 [${code}] 방 연결 중...`;
-      const loaded = await ensurePeerJsLoaded();
-      if (!loaded || typeof window.Peer === 'undefined') {
-        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
-        return;
-      }
-
-      const hostPeerId = sanitizePeerRoomId(code);
-      try {
-        const candidateHost = new window.Peer(hostPeerId, { debug: 0 });
-
-        candidateHost.on('open', () => {
-          peerInstance = candidateHost;
-          isPeerHost = true;
-          updateLivePeerBadge();
-          document.getElementById('syncModeIndicator').textContent = `🟢 실시간 방장 (${code}) · 친구 합석 대기중`;
-
-          candidateHost.on('connection', conn => {
-            conn.on('data', msg => handlePeerPayload(conn, msg));
-            conn.on('close', () => {
-              if (conn._cid) {
-                guestConns.delete(conn._cid);
-                delete appState.remotePlayers[conn._cid];
-                broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
-                updateLivePeerBadge();
-                renderAllVisuals();
-              }
-            });
-          });
-        });
-
-        candidateHost.on('error', err => {
-          if (err && err.type === 'unavailable-id') {
-            try { candidateHost.destroy(); } catch (e) {}
-            joinExistingHost(hostPeerId, code);
-          } else {
-            document.getElementById('syncModeIndicator').textContent = `🟢 합석 대기중 (${code})`;
-          }
-        });
-      } catch (e) {
-        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
-      }
-    }
-
-    function joinExistingHost(hostPeerId, code) {
-      try {
-        const guestPeer = new window.Peer({ debug: 0 });
-        peerInstance = guestPeer;
-        isPeerHost = false;
-
-        guestPeer.on('open', () => {
-          const conn = guestPeer.connect(hostPeerId, { reliable: true });
-          hostConn = conn;
-          conn.on('open', () => {
-            document.getElementById('syncModeIndicator').textContent = `🟢 실시간 합석 완료 (${code})`;
-            conn.send({
-              type: 'HELLO_JOIN',
-              clientId: myClientId,
-              profile: { name: appState.myName, style: appState.myStyle }
-            });
-            showToastMsg(`🎉 [${code}] 친구 테이블에 실시간으로 합석했습니다!`);
-          });
-          conn.on('data', msg => handlePeerPayload(conn, msg));
-        });
-
-        guestPeer.on('error', () => {
-          document.getElementById('syncModeIndicator').textContent = `🟢 합석 모드 (${code})`;
-        });
-      } catch (e) {}
-    }
-
-    function broadcastFromHost(payload, excludeCid = null) {
-      guestConns.forEach((conn, cid) => {
-        if (cid !== excludeCid && conn.open) {
-          try { conn.send(payload); } catch (e) {}
-        }
-      });
-    }
-
-    function sendMultiplayerEvent(payload) {
-      if (localRoomChannel) {
-        try { localRoomChannel.postMessage({ ...payload, senderCid: myClientId }); } catch (e) {}
-      }
-      if (isPeerHost) {
-        broadcastFromHost(payload, myClientId);
-      } else if (hostConn && hostConn.open) {
-        try { hostConn.send(payload); } catch (e) {}
-      }
-    }
-
-    function handlePeerPayload(conn, msg) {
-      if (!msg || !msg.type) return;
-
-      if (msg.type === 'HELLO_JOIN' && isPeerHost && conn) {
-        conn._cid = msg.clientId;
-        guestConns.set(msg.clientId, conn);
-        appState.remotePlayers[msg.clientId] = msg.profile;
-        updateLivePeerBadge();
-        renderAllVisuals();
-
-        broadcastFromHost({
-          type: 'ROOM_SNAPSHOT',
-          state: exportSyncPayload(),
-          players: appState.remotePlayers
-        });
-        const joinNotice = `🌊 [${msg.profile.name}]님이 우리 원형 테이블에 실시간 합석했습니다! 다같이 짠 해주세요!`;
-        appendLocalChat('시스템', joinNotice, 'system');
-        broadcastFromHost({ type: 'CHAT_MSG', sender: '시스템', text: joinNotice, kind: 'system' });
-        showToastMsg(`🙌 ${msg.profile.name}님이 테이블에 앉았습니다!`);
-        return;
-      }
-
-      if (isPeerHost && conn && msg.type !== 'ROOM_SNAPSHOT') {
-        broadcastFromHost(msg, conn._cid || null);
-      }
-
-      if (msg.type === 'ROOM_SNAPSHOT') {
-        appState.remotePlayers = msg.players || appState.remotePlayers;
-        updateLivePeerBadge();
-        applySyncPayload(msg.state);
-      } else if (msg.type === 'SYNC_STATE') {
-        applySyncPayload(msg.state);
-      } else if (msg.type === 'CHEERS') {
-        applySyncPayload(msg.state);
-        animateAllHandsSojuClink();
-        appendLocalChat(msg.actor, '다같이 소주잔 들고 짠~!! 🍶✨', 'action');
-      } else if (msg.type === 'EAT_DISH') {
-        applySyncPayload(msg.state);
-        if (msg.dish === 'ramen') playRamenSlurpSfx();
-        else playBiteChewSfx();
-        appendLocalChat(msg.actor, '맛있게 안주 한 입 냠냠! 🥢', 'action');
-      } else if (msg.type === 'DRINK_WATER') {
-        applySyncPayload(msg.state);
-        appendLocalChat(msg.actor, '시원한 얼음냉수로 해장! 🧊', 'action');
-      } else if (msg.type === 'ORDER_ITEM') {
-        applySyncPayload(msg.state);
-        if (MENU_CATALOG[msg.itemKey]) {
-          appendLocalChat(msg.actor, `🍽️ [${MENU_CATALOG[msg.itemKey].name}] 추가 주문!`, 'action');
-        }
-      } else if (msg.type === 'CHEF_SERVICE') {
-        summonChefService(true);
-      } else if (msg.type === 'FIREWORK') {
-        spawnFireworkAt(msg.nx, msg.ny);
-      } else if (msg.type === 'FIREWORK_BARRAGE') {
-        launchManualFireworkBarrage(true);
-      } else if (msg.type === 'CHAT_MSG') {
-        appendLocalChat(msg.sender, msg.text, msg.kind || 'other');
-      } else if (msg.type === 'CHAT_CHECKOUT') {
-        appendLocalChat(msg.sender, msg.text, 'other');
-        setTimeout(() => openFinalCheckoutReceipt(msg.sender), 450);
-      }
-    }
-
-    // ==================== 16. INITIALIZATION ON WINDOW LOAD ====================
-    window.addEventListener('DOMContentLoaded', () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const urlRoom = params.get('room');
-        if (urlRoom) {
-          appState.roomCode = urlRoom.trim().toUpperCase().slice(0, 12);
-          document.getElementById('modalRoomInput').value = appState.roomCode;
-        }
-      } catch (e) {}
-
-      resizeSkyCanvas();
-      requestAnimationFrame(animateSkyLoop);
-      renderCharacterSelectorGrid();
-      renderAllVisuals();
-    });
-  </script>
-</body>
-</html>
+        appState
