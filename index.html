@@ -1,1282 +1,1684 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🌊 광안리 밤바다 포차 - 실시간 멀티 술자리</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-    background: #050814;
-    color: #fff;
-    width: 100vw;
-    height: 100dvh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    touch-action: manipulation;
-  }
-  #app {
-    position: relative;
-    width: 100%;
-    max-width: 430px;
-    height: 100dvh;
-    background: #0b1026;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 0 35px rgba(0,0,0,0.9);
-  }
-  /* 만취 흔들림 효과 (오타 수정 완료) */
-  #app.drunk-dizzy { animation: sway 2.8s ease-in-out infinite; }
-  @keyframes sway {
-    0%, 100% { transform: rotate(0deg) scale(1); filter: blur(0px); }
-    25% { transform: rotate(0.9deg) scale(1.01); filter: blur(0.6px); }
-    75% { transform: rotate(-0.9deg) scale(1.01); filter: blur(0.6px); }
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>🌉 광안리 밤바다 포차</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- ... existing code ... -->
+          <!-- Top Header Controls -->
+          <div class="absolute top-0 inset-x-0 px-2.5 sm:px-3 py-2 bg-gradient-to-b from-slate-950/90 via-slate-950/45 to-transparent flex flex-wrap items-center justify-between gap-1.5 z-10" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <h1 class="text-xs sm:text-base font-extrabold tracking-tight text-amber-100 drop-shadow">
+                🌉 광안리 포차
+              </h1>
+              <button onclick="openInviteModal()" class="px-2.5 py-0.5 rounded-full bg-sky-950/90 border border-sky-400/50 text-[10px] sm:text-[11px] font-bold text-sky-100 hover:bg-sky-900 transition flex items-center gap-1 shadow">
+                <span id="roomCodeText" class="font-mono font-extrabold text-amber-300">GWANG-82</span>
+                <span>📲 친구초대</span>
+              </button>
+              <span id="livePeerBadge" class="px-2 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-[10px] font-bold text-emerald-300">
+                🟢 1명
+              </span>
+            </div>
 
-  /* 1. 상단 광안리 밤바다 영역 */
-  #sky-area {
-    position: relative;
-    width: 100%;
-    height: 19.5dvh;
-    min-height: 128px;
-    border-bottom: 3px solid #3a2312;
-    flex-shrink: 0;
-  }
-  #oceanCanvas { width: 100%; height: 100%; display: block; }
-  .top-hud {
-    position: absolute;
-    top: 8px; left: 8px; right: 8px;
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 6px; z-index: 10;
-  }
-  .badge-btn {
-    background: rgba(9, 15, 38, 0.85);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255,209,102,0.5);
-    color: #ffd166;
-    padding: 5px 9px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 4px;
-    max-width: 210px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .badge-btn:active { transform: scale(0.95); }
-  .tipsy-bar-wrap {
-    position: absolute;
-    bottom: 6px; left: 10px; right: 10px;
-    background: rgba(8, 12, 28, 0.84);
-    border-radius: 8px;
-    padding: 4px 8px;
-    display: flex; align-items: center; gap: 8px;
-    border: 1px solid rgba(255,255,255,0.14);
-    z-index: 10;
-  }
-  .tipsy-label { font-size: 10.5px; font-weight: 700; white-space: nowrap; color: #e2eafc; }
-  .tipsy-track { flex: 1; height: 7px; background: #1c2541; border-radius: 4px; overflow: hidden; }
-  .tipsy-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #06d6a0, #ffd166, #ff4d6d); transition: width 0.25s; }
+            <div class="flex flex-wrap items-center gap-1">
+              <button onclick="launchManualFireworkBarrage()" class="px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-700 to-amber-600 hover:from-fuchsia-600 hover:to-amber-500 border border-amber-300/50 text-[10px] sm:text-[11px] font-extrabold text-white shadow transition active:scale-95">
+                🎆 폭죽
+              </button>
+              <button id="aiFillToggleBtn" onclick="toggleAICompanions()" class="px-2 py-1 rounded-full bg-orange-950/85 hover:bg-orange-900/90 border border-orange-400/40 text-[10px] sm:text-[11px] font-semibold text-orange-100 transition">
+                👥 AI 채움
+              </button>
+              <button id="dizzyToggleBtn" onclick="toggleDizzyEffect()" class="px-2 py-1 rounded-full bg-slate-900/85 hover:bg-slate-800 border border-rose-400/35 text-[10px] sm:text-[11px] font-semibold text-rose-200 transition" title="취기 화면 흔들림/흐림 ON/OFF">
+                🌀 취기ON
+              </button>
+              <button id="sfxToggleBtn" onclick="toggleSound()" class="px-2 py-1 rounded-full bg-slate-900/85 hover:bg-slate-800 border border-slate-600/60 text-[10px] sm:text-[11px] font-semibold text-amber-200 transition">
+                🔊 ON
+              </button>
+              <!-- Mobile Live Bill Quick Toggle -->
+              <button onclick="toggleMobileBill()" class="lg:hidden px-2 py-1 rounded-full bg-amber-300 text-slate-950 text-[10px] font-extrabold shadow">
+                🧾 <span id="mobileHeaderBillTotal">61,000원</span>
+              </button>
+            </div>
+          </div>
 
-  /* 2. 포장마차 테이블 & 캐릭터 & 큰 은쟁반 */
-  #pocha-stage {
-    flex: 1;
-    background: radial-gradient(circle at 50% 42%, #2c1d13 0%, #160e09 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 6px 8px 4px;
-    position: relative;
-    overflow: hidden;
-  }
+          <!-- Firework Festival Banner -->
+<!-- ... existing code ... -->
+          <!-- Circular / Perspective Elliptical Brushed Stainless Tabletop -->
+          <div id="silverRoundTable" class="silver-round-table relative w-[312px] h-[304px] sm:w-[500px] sm:h-[420px] rounded-full overflow-visible">
 
-  /* 맞은편 친구 3명 좌석 */
-  .friends-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    height: 94px;
-    align-items: end;
-    z-index: 5;
-  }
-  .seat-box {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .char-svg-wrap {
-    width: 72px;
-    height: 70px;
-    position: relative;
-    transition: transform 0.2s;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
-  }
-  .char-svg-wrap.eating { animation: bounceEat 0.45s ease 2; }
-  @keyframes bounceEat {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-6px) scale(1.06); }
-  }
-  .name-tag {
-    font-size: 10.5px;
-    font-weight: 800;
-    background: rgba(0,0,0,0.72);
-    padding: 2px 7px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
-    margin-top: -4px;
-    z-index: 2;
-    white-space: nowrap;
-  }
-  .name-tag.online { border-color: #06d6a0; color: #80ffdb; }
-  .speech-pop {
-    position: absolute;
-    bottom: 86%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ffffff;
-    color: #111;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 8px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.45);
-    white-space: nowrap;
-    max-width: 135px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 25;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .speech-pop.show { opacity: 1; }
-
-  /* 중앙 큰 은색 포장마차 쟁반 */
-  .silver-tray-wrap {
-    position: relative;
-    margin: 2px auto;
-    width: 96%;
-    max-width: 390px;
-    height: 178px;
-    background: radial-gradient(ellipse at 45% 38%, #f8f9fa 0%, #ced4da 55%, #868e96 92%, #495057 100%);
-    border-radius: 50% / 44%;
-    border: 5px solid #dee2e6;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.75), inset 0 3px 10px rgba(255,255,255,0.85), inset 0 -5px 12px rgba(0,0,0,0.35);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 6;
-  }
-  .tray-dish {
-    position: absolute;
-    cursor: pointer;
-    transition: transform 0.12s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .tray-dish:active { transform: scale(0.92); }
-  .dish-label {
-    font-size: 9.5px;
-    font-weight: 900;
-    color: #fff;
-    background: rgba(15,20,35,0.82);
-    padding: 1px 6px;
-    border-radius: 6px;
-    margin-top: -4px;
-    white-space: nowrap;
-  }
-
-  /* 접시 위치 배치 */
-  #dish-bangeo { left: 10px; top: 14px; width: 132px; }
-  #dish-kimbap { right: 12px; top: 16px; width: 126px; }
-  #dish-soju   { right: 20px; bottom: 8px; width: 92px; }
-  #dish-water  { left: 22px; bottom: 10px; width: 64px; }
-  #dish-service{ left: 50%; bottom: 8px; transform: translateX(-50%); width: 92px; display: none; }
-
-  /* 빈 소주병 카운터 */
-  .bottle-rack {
-    position: absolute;
-    right: 6px;
-    bottom: 6px;
-    display: flex;
-    gap: 2px;
-    align-items: flex-end;
-    z-index: 8;
-    background: rgba(0,0,0,0.52);
-    padding: 3px 7px;
-    border-radius: 8px;
-    font-size: 10px;
-    color: #80ed99;
-    font-weight: 800;
-  }
-
-  /* 내 캐릭터 좌석 (하단 중앙) */
-  .my-seat-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 70px;
-    position: relative;
-    z-index: 9;
-  }
-
-  /* 건배 & 먹방 이펙트 오버레이 */
-  #clink-effect {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 30;
-    font-size: 28px;
-    font-weight: 900;
-    color: #ffd166;
-    text-shadow: 0 3px 14px rgba(0,0,0,0.9);
-    background: radial-gradient(circle, rgba(255,209,102,0.22) 0%, transparent 65%);
-  }
-
-  /* 사장님 등장 배너 */
-  #boss-toast {
-    position: absolute;
-    top: 8px; left: 12px; right: 12px;
-    background: linear-gradient(135deg, #ff9f1c, #e71d36);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 800;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-    z-index: 35;
-    display: none;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* 3. 엄지 빠른 액션 버튼 바 */
-  .quick-actions {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-    padding: 5px 8px;
-    background: #121833;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0;
-  }
-  .act-btn {
-    border: none;
-    border-radius: 10px;
-    padding: 7px 4px;
-    font-size: 11.5px;
-    font-weight: 800;
-    color: #fff;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .act-btn:active { transform: translateY(2px); }
-  .b-fish { background: linear-gradient(135deg, #e63946, #9d0208); }
-  .b-kim  { background: linear-gradient(135deg, #f77f00, #d62828); }
-  .b-soju { background: linear-gradient(135deg, #2b9348, #007f5f); }
-  .b-srv  { background: linear-gradient(135deg, #3a86ff, #4361ee); }
-
-  /* 4. 실시간 채팅 로그 & 입력창 */
-  #chat-panel {
-    height: 18dvh;
-    min-height: 108px;
-    background: #080c1d;
-    border-top: 1px solid rgba(255,255,255,0.12);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-  }
-  #chat-log {
-    flex: 1;
-    overflow-y: auto;
-    padding: 5px 10px;
-    font-size: 12px;
-    line-height: 1.45;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .chat-line b { color: #ffd166; }
-  .chat-line.sys { color: #80ed99; font-size: 11px; }
-  .chat-input-row {
-    display: flex;
-    gap: 6px;
-    padding: 5px 8px 8px;
-    background: #0d132a;
-  }
-  #chatInput {
-    flex: 1;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.22);
-    border-radius: 10px;
-    padding: 7px 11px;
-    color: #fff;
-    font-size: 16px;
-    outline: none;
-  }
-  #sendBtn {
-    background: #ffd166;
-    color: #111;
-    border: none;
-    border-radius: 10px;
-    padding: 0 14px;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  /* 5. 시작 로비 모달 */
-  #lobby-modal {
-    position: absolute;
-    inset: 0;
-    background: rgba(5, 9, 24, 0.96);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 18px;
-    overflow-y: auto;
-  }
-  .lobby-card {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,209,102,0.4);
-    border-radius: 20px;
-    padding: 18px 16px;
-  }
-  .lobby-title { font-size: 21px; font-weight: 900; color: #ffd166; text-align: center; margin-bottom: 4px; }
-  .lobby-sub { font-size: 12px; color: #b8c5e0; text-align: center; margin-bottom: 14px; }
-  .field-label { font-size: 12px; font-weight: 800; color: #ffd166; margin-bottom: 6px; display: block; }
-  .text-in {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(0,0,0,0.45);
-    color: #fff;
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
-  .char-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .char-pick {
-    background: rgba(0,0,0,0.4);
-    border: 2px solid rgba(255,255,255,0.16);
-    border-radius: 12px;
-    padding: 7px 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-  .char-pick.selected {
-    border-color: #06d6a0;
-    background: rgba(6, 214, 160, 0.16);
-  }
-  .char-pick-svg { width: 48px; height: 48px; flex-shrink: 0; }
-  .char-pick-name { font-size: 12px; font-weight: 800; line-height: 1.25; }
-  .lobby-btns { display: flex; flex-direction: column; gap: 8px; }
-  .btn-main {
-    width: 100%; padding: 13px; border-radius: 12px; border: none;
-    background: linear-gradient(90deg, #06d6a0, #118ab2);
-    color: #fff; font-size: 15px; font-weight: 900; cursor: pointer;
-  }
-  .join-row { display: flex; gap: 6px; }
-  .join-in {
-    width: 115px; padding: 11px; border-radius: 12px;
-    border: 1px solid rgba(255,209,102,0.5); background: rgba(0,0,0,0.5);
-    color: #ffd166; font-size: 16px; font-weight: 900; text-align: center;
-  }
-  .btn-join {
-    flex: 1; padding: 11px; border-radius: 12px; border: none;
-    background: linear-gradient(90deg, #ffd166, #f77f00);
-    color: #111; font-size: 14px; font-weight: 900; cursor: pointer;
-  }
-</style>
-</head>
-<body>
-<div id="app">
-  <!-- 상단 광안리 밤바다 & 광안대교 -->
-  <div id="sky-area">
-    <canvas id="oceanCanvas"></canvas>
-    <div class="top-hud">
-      <button class="badge-btn" id="roomBadge" onclick="copyInviteLink()">🍶 방 #---- 🔗초대복사</button>
-      <div style="display:flex; gap:5px;">
-        <button class="badge-btn" onclick="callBossService()">🔔사장님~</button>
-        <button class="badge-btn" onclick="launchFireworkShow(true)">🎆폭죽</button>
-      </div>
+            <!-- Center Clink Target Anchor -->
+<!-- ... existing code ... -->
+        <form id="chatForm" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2 pb-[env(safe-area-inset-bottom)]">
+          <input
+            id="chatInput"
+            type="text"
+            maxlength="100"
+            placeholder='대화 입력 · 끝내려면 "사장님 계산이요~"'
+            class="flex-1 px-3.5 py-2 rounded-xl bg-slate-900/95 border border-slate-700 focus:border-amber-400 focus:outline-none text-base sm:text-sm text-slate-100 placeholder:text-slate-500"
+          />
+          <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs sm:text-sm transition shadow shrink-0">
+            전송
+          </button>
+        </form>
+      </section>
     </div>
-    <div class="tipsy-bar-wrap">
-      <span class="tipsy-label" id="tipsyText">😊 기분 좋음 0%</span>
-      <div class="tipsy-track"><div class="tipsy-fill" id="tipsyFill"></div></div>
-      <span class="tipsy-label" id="bottleCountTop">🍶 0병</span>
+
+    <!-- ========================================================================= -->
+<!-- ... existing code ... -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <button onclick="enterPocha('room')" class="py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 border border-sky-300/50 text-white font-extrabold text-xs sm:text-sm shadow-lg transition active:scale-95">
+          🔑 친구들과 방 코드로 합석 (멀티)
+        </button>
+        <button onclick="enterPocha('ai')" class="py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition active:scale-95">
+          🌊 혼자 바로 입장 (AI 단골 합석)
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- 중앙 포장마차 테이블 -->
-  <div id="pocha-stage">
-    <div id="boss-toast">👨‍🍳 방어집 사장님: "광안리 단골 서비스 나갑니데이~ 맛있게 드이소!"</div>
-    <div id="clink-effect">🍶 짠~! 캬~!! ✨</div>
-
-    <!-- 맞은편 3자리 -->
-    <div class="friends-row" id="friendsRow">
-      <div class="seat-box" id="seat-1">
-        <div class="speech-pop" id="pop-1"></div>
-        <div class="char-svg-wrap" id="avatar-1"></div>
-        <div class="name-tag" id="name-1">자리 1</div>
-      </div>
-      <div class="seat-box" id="seat-2">
-        <div class="speech-pop" id="pop-2"></div>
-        <div class="char-svg-wrap" id="avatar-2"></div>
-        <div class="name-tag" id="name-2">자리 2</div>
-      </div>
-      <div class="seat-box" id="seat-3">
-        <div class="speech-pop" id="pop-3"></div>
-        <div class="char-svg-wrap" id="avatar-3"></div>
-        <div class="name-tag" id="name-3">자리 3</div>
-      </div>
-    </div>
-
-    <!-- 큰 은색 쟁반 & 리얼 음식 SVG -->
-    <div class="silver-tray-wrap">
-      <!-- 1. 제철 대방어회 접시 -->
-      <div class="tray-dish" id="dish-bangeo" onclick="doAction('bangeo')">
-        <svg viewBox="0 0 140 92" width="128" height="84">
-          <ellipse cx="70" cy="48" rx="64" ry="38" fill="#1b263b" stroke="#e0e1dd" stroke-width="3"/>
-          <ellipse cx="70" cy="48" rx="56" ry="31" fill="#f8f9fa" opacity="0.92"/>
-          <ellipse cx="52" cy="42" rx="22" ry="14" fill="#40916c" transform="rotate(-15 52 42)"/>
-          <ellipse cx="86" cy="44" rx="22" ry="14" fill="#52b788" transform="rotate(15 86 44)"/>
-          <g>
-            <path d="M26,48 Q38,26 58,34 L52,58 Q34,60 26,48 Z" fill="#f4a261"/>
-            <path d="M26,48 Q38,28 56,35 L54,43 Q36,38 26,48 Z" fill="#c1121f"/>
-            <path d="M30,49 L50,55" stroke="#fff" stroke-width="1.5" opacity="0.7"/>
-
-            <path d="M48,52 Q62,28 84,36 L78,62 Q58,64 48,52 Z" fill="#ffb5a7"/>
-            <path d="M48,52 Q62,30 82,37 L80,45 Q60,40 48,52 Z" fill="#ae2012"/>
-            <circle cx="66" cy="48" r="2" fill="#ffd166"/>
-
-            <path d="M72,50 Q86,28 110,38 L102,62 Q82,64 72,50 Z" fill="#fec5bb"/>
-            <path d="M72,50 Q86,30 108,39 L105,46 Q86,41 72,50 Z" fill="#9b2226"/>
-            <circle cx="92" cy="50" r="1.8" fill="#ffd166"/>
-          </g>
-          <path d="M104,26 A12,12 0 0,1 122,40 L104,40 Z" fill="#ffd166" stroke="#f4a261" stroke-width="2"/>
-          <circle cx="32" cy="64" r="7" fill="#80ed99"/>
-        </svg>
-        <span class="dish-label">🐟 제철 대방어회</span>
-      </div>
-
-      <!-- 2. 아귀간소금김밥 세트 -->
-      <div class="tray-dish" id="dish-kimbap" onclick="doAction('kimbap')">
-        <svg viewBox="0 0 136 88" width="122" height="80">
-          <rect x="10" y="14" width="116" height="62" rx="12" fill="#2b2d42" stroke="#adb5bd" stroke-width="2.5"/>
-          <g transform="translate(22, 26)">
-            <ellipse cx="14" cy="24" rx="13" ry="10" fill="#111"/>
-            <ellipse cx="14" cy="21" rx="11" ry="8" fill="#fff"/>
-            <ellipse cx="14" cy="15" rx="9" ry="6" fill="#f48c06"/>
-            <circle cx="14" cy="14" r="1.8" fill="#52b788"/>
-          </g>
-          <g transform="translate(48, 22)">
-            <ellipse cx="14" cy="24" rx="13" ry="10" fill="#111"/>
-            <ellipse cx="14" cy="21" rx="11" ry="8" fill="#fff"/>
-            <ellipse cx="14" cy="15" rx="9.5" ry="6.5" fill="#fb8500"/>
-            <circle cx="14" cy="14" r="1.8" fill="#52b788"/>
-          </g>
-          <g transform="translate(74, 26)">
-            <ellipse cx="14" cy="24" rx="13" ry="10" fill="#111"/>
-            <ellipse cx="14" cy="21" rx="11" ry="8" fill="#fff"/>
-            <ellipse cx="14" cy="15" rx="9.5" ry="6.5" fill="#f48c06"/>
-            <circle cx="14" cy="14" r="1.8" fill="#52b788"/>
-          </g>
-          <circle cx="110" cy="56" r="9" fill="#e9ecef"/>
-          <circle cx="110" cy="56" r="6" fill="#e09f3e"/>
-        </svg>
-        <span class="dish-label">🧡🍙 아귀간소금김밥</span>
-      </div>
-
-      <!-- 3. 얼음 냉수 -->
-      <div class="tray-dish" id="dish-water" onclick="doAction('water')">
-        <svg viewBox="0 0 64 64" width="54" height="54">
-          <path d="M18,12 L46,12 L42,54 L22,54 Z" fill="rgba(144,224,239,0.45)" stroke="#caf0f8" stroke-width="2.5"/>
-          <path d="M20,24 L44,24 L41,52 L23,52 Z" fill="rgba(72,202,228,0.65)"/>
-          <rect x="24" y="27" width="7" height="7" rx="1.5" fill="#fff" opacity="0.85"/>
-          <rect x="33" y="30" width="7" height="7" rx="1.5" fill="#fff" opacity="0.85"/>
-        </svg>
-        <span class="dish-label">🧊 해장 냉수</span>
-      </div>
-
-      <!-- 4. 서비스 안주 슬롯 -->
-      <div class="tray-dish" id="dish-service" onclick="doAction('service')">
-        <div id="serviceSvgBox"></div>
-        <span class="dish-label" id="serviceLabel">🍜 서비스 컵라면</span>
-      </div>
-
-      <!-- 5. 초록병 참이슬 & 투명 소주잔 -->
-      <div class="tray-dish" id="dish-soju" onclick="doAction('soju')">
-        <svg viewBox="0 0 96 76" width="88" height="70">
-          <rect x="24" y="6" width="10" height="7" rx="1.5" fill="#e63946"/>
-          <path d="M25,13 L33,13 L35,26 L41,34 L41,66 Q41,70 37,70 L21,70 Q17,70 17,66 L17,34 L23,26 Z" fill="#2b9348" stroke="#52b788" stroke-width="1.5"/>
-          <rect x="19" y="40" width="20" height="17" rx="2" fill="#f8f9fa"/>
-          <text x="29" y="51" font-size="6.5" font-weight="900" fill="#1b4332" text-anchor="middle">참이슬</text>
-          <path d="M50,44 L66,44 L64,66 L52,66 Z" fill="rgba(255,255,255,0.45)" stroke="#fff" stroke-width="1.8"/>
-          <path d="M51,51 L65,51 L63.5,65 L52.5,65 Z" fill="rgba(202,240,248,0.75)"/>
-          <path d="M70,46 L86,46 L84,68 L72,68 Z" fill="rgba(255,255,255,0.45)" stroke="#fff" stroke-width="1.8"/>
-          <path d="M71,53 L85,53 L83.5,67 L72.5,67 Z" fill="rgba(202,240,248,0.75)"/>
-        </svg>
-        <span class="dish-label">🍶 참이슬 짠!</span>
-      </div>
-    </div>
-
-    <!-- 내 캐릭터 좌석 + 빈 병 표시 -->
-    <div class="my-seat-row">
-      <div class="seat-box" id="seat-0">
-        <div class="speech-pop" id="pop-0"></div>
-        <div class="char-svg-wrap" id="avatar-0"></div>
-        <div class="name-tag online" id="name-0">나</div>
-      </div>
-      <div class="bottle-rack" id="bottleRack">🍾 빈병 0</div>
-    </div>
-  </div>
-
-  <!-- 하단 엄지 빠른 먹방 버튼 -->
-  <div class="quick-actions">
-    <button class="act-btn b-fish" onclick="doAction('bangeo')">🐟 대방어 한점</button>
-    <button class="act-btn b-kim" onclick="doAction('kimbap')">🧡 아귀간김밥</button>
-    <button class="act-btn b-soju" onclick="doAction('soju')">🍶 참이슬 짠!</button>
-    <button class="act-btn b-srv" onclick="doAction('water')">🧊 시원한 물</button>
-  </div>
-
-  <!-- 실시간 채팅창 -->
-  <div id="chat-panel">
-    <div id="chat-log"></div>
-    <div class="chat-input-row">
-      <input type="text" id="chatInput" placeholder="친구들에게 한마디 쳐보세요..." maxlength="60" onkeydown="if(event.key==='Enter') sendChat()">
-      <button id="sendBtn" onclick="sendChat()">전송</button>
-    </div>
-  </div>
-
-  <!-- 입장 로비 모달 -->
-  <div id="lobby-modal">
-    <div class="lobby-card">
-      <div class="lobby-title">🌉 광안리 밤바다 포차</div>
-      <div class="lobby-sub">대방어 · 아귀간소금김밥 · 초록병 참이슬 실시간 합석</div>
-
-      <label class="field-label">1. 내 별명 입력</label>
-      <input type="text" id="nickInput" class="text-in" placeholder="예: 광안리주당" maxlength="8" value="">
-
-      <label class="field-label">2. 내 캐릭터 선택 (디테일 인물 스타일)</label>
-      <div class="char-grid" id="charPicker"></div>
-
-      <label class="field-label">3. 테이블 입장하기</label>
-      <div class="lobby-btns">
-        <button class="btn-main" onclick="createRoom()">🍶 새 광안리 테이블 잡기 (방장)</button>
-        <div class="join-row">
-          <input type="text" id="roomInput" class="join-in" placeholder="4자리 번호" maxlength="4" inputmode="numeric">
-          <button class="btn-join" onclick="joinRoom()">🚪 친구 방 합석하기</button>
+  <!-- =========================================================================== -->
+  <!-- MODAL D: MOBILE FRIEND INVITE & QR CODE MODAL (`📲 친구 초대`)               -->
+  <!-- =========================================================================== -->
+  <div id="inviteModal" class="hidden fixed inset-0 z-50 bg-slate-950/88 backdrop-blur-md flex items-center justify-center p-3 overflow-y-auto">
+    <div class="w-full max-w-md rounded-3xl bg-gradient-to-b from-[#162038] to-[#0b101d] border-2 border-sky-400/45 shadow-2xl p-5 my-auto text-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-4">
+        <div>
+          <span class="text-[10px] font-extrabold text-sky-300 uppercase tracking-wider">MOBILE LIVE MULTIPLAYER</span>
+          <h3 class="text-lg font-black text-white">📲 모바일로 친구들과 합석하기</h3>
         </div>
+        <button onclick="closeInviteModal()" class="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold">닫기 ✕</button>
+      </div>
+
+      <!-- Current Room Code & QR -->
+      <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-4 text-center mb-3.5">
+        <div class="text-xs text-slate-400 mb-1">현재 우리 테이블 방 코드 (최대 4인 동시 합석)</div>
+        <div id="inviteModalRoomCode" class="text-2xl font-mono font-black text-amber-300 tracking-widest mb-3">GWANG-82</div>
+
+        <div class="inline-block p-2.5 bg-white rounded-2xl shadow-lg mb-2">
+          <img id="inviteQrImg" alt="초대 QR 코드" class="w-36 h-36 rounded-lg block mx-auto"
+               src="https://placehold.co/180x180/ffffff/0f172a?text=QR+LOADING"
+               onerror="this.src='https://placehold.co/180x180/ffffff/0f172a?text=GWANG-82'" />
+        </div>
+        <div class="text-[11px] text-sky-200/90">옆에 있는 친구는 기본 카메라로 QR을 스캔해 바로 입장!</div>
+      </div>
+
+      <!-- 1-Tap Copy Buttons -->
+      <div class="space-y-2 mb-4">
+        <button onclick="copyInviteLink()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-1.5">
+          <span>💬 카톡 공유용 초대 링크 복사하기</span>
+        </button>
+        <button onclick="copyRoomCode()" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-100 font-bold text-xs transition active:scale-95">
+          📋 방 코드(<span id="inviteCopyCodeSpan">GWANG-82</span>)만 복사하기
+        </button>
+      </div>
+
+      <!-- Quick Mobile Tips -->
+      <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-3.5 text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+        <div class="font-extrabold text-amber-300 text-xs mb-1">💡 친구들과 즐기는 방법</div>
+        <p>1. 이 파일(<code class="text-sky-300">index.html</code>)을 내 GitHub 저장소(<code class="text-sky-300">pocha</code>)에 올리면 내 모바일 주소에서 바로 열립니다.</p>
+        <p>2. 내가 먼저 방 코드를 정해 <strong>[친구들과 방 코드로 합석]</strong>으로 입장한 뒤, 위 <strong>초대 링크</strong>를 단톡방에 보내세요.</p>
+        <p>3. 친구들이 폰으로 접속하면 <strong>10시·12시·2시 좌석에 친구의 캐릭터가 실제로 앉고</strong>, 짠·안주 먹기·폭죽·채팅·계산서가 모두 실시간 연동됩니다!</p>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-/* 1. 현실감·디테일 강화 인물 캐릭터 4종 SVG 생성기 */
-const CHAR_TYPES = [
-  { id: 'long_f',  label: '긴생머리 여자', outfit: '#c95b42', accent: '#f6bd60', hair: '#241712', highlight: '#4a3228' },
-  { id: 'short_f', label: '단발웨이브 여자', outfit: '#d49a45', accent: '#fff1d0', hair: '#362118', highlight: '#5c3b2c' },
-  { id: 'perm_m',  label: '소프트펌 남자', outfit: '#3a6b8c', accent: '#a8dadc', hair: '#1d1612', highlight: '#3d3028' },
-  { id: 'dandy_m', label: '댄디가르마 남자', outfit: '#3d8f6b', accent: '#b7e4c7', hair: '#171c26', highlight: '#333d52' }
-];
+  <!-- =========================================================================== -->
+  <!-- APPLICATION LOGIC                                                           -->
+  <!-- =========================================================================== -->
+<!-- ... existing code ... -->
+    // ==================== 7. DUAL REAL-TIME MULTIPLAYER (CLOUD + P2P WEBRTC FOR MOBILE GITHUB PAGES) ====================
+    let db = null, auth = null, currentUser = null, roomUnsub = null, chatUnsub = null;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gwangalli-pocha-app';
 
-function renderHumanSVG(typeId, tipsy = 0) {
-  const blushOpacity = Math.min(0.85, tipsy / 85);
-  const sleepy = tipsy >= 65;
-  const c = CHAR_TYPES.find(t => t.id === typeId) || CHAR_TYPES[0];
-  const uid = `uid_${typeId}_${Math.round(tipsy)}`;
+    // Unique client ID for this session + P2P WebRTC state (works on GitHub Pages mobile with zero setup!)
+    const myClientId = 'p_' + Math.random().toString(36).slice(2, 10);
+    let peerInstance = null;
+    let isPeerHost = false;
+    let hostConn = null;
+    const guestConns = new Map(); // clientId -> DataConnection
 
-  let backHair = '';
-  let frontHair = '';
-  let earExtras = '';
-
-  if (typeId === 'long_f') {
-    backHair = `
-      <path d="M16,32 C11,54 12,74 17,88 L83,88 C88,74 89,54 84,32 Z" fill="${c.hair}"/>
-      <path d="M21,36 C18,55 18,72 22,87" stroke="${c.highlight}" stroke-width="2.2" fill="none" opacity="0.55" stroke-linecap="round"/>
-      <path d="M79,36 C82,55 82,72 78,87" stroke="${c.highlight}" stroke-width="2.2" fill="none" opacity="0.55" stroke-linecap="round"/>`;
-    frontHair = `
-      <path d="M20,35 C25,14 40,12 50,13 C60,12 75,14 80,35 C71,24 61,21 53,24 L49,33 L45,24 C36,22 27,25 20,35 Z" fill="${c.hair}"/>
-      <path d="M30,21 C42,16 58,16 70,21" stroke="${c.highlight}" stroke-width="1.8" fill="none" opacity="0.5" stroke-linecap="round"/>`;
-    earExtras = `<circle cx="24" cy="49" r="2.2" fill="${c.accent}"/>
-                 <circle cx="76" cy="49" r="2.2" fill="${c.accent}"/>`;
-  } else if (typeId === 'short_f') {
-    backHair = `
-      <path d="M17,34 C13,48 16,62 25,67 L75,67 C84,62 87,48 83,34 Z" fill="${c.hair}"/>
-      <path d="M21,39 C19,50 21,59 27,64" stroke="${c.highlight}" stroke-width="2" fill="none" opacity="0.5" stroke-linecap="round"/>
-      <path d="M79,39 C81,50 79,59 73,64" stroke="${c.highlight}" stroke-width="2" fill="none" opacity="0.5" stroke-linecap="round"/>`;
-    frontHair = `
-      <path d="M20,35 C25,14 39,12 50,13 C61,12 75,14 80,35 C69,24 58,22 46,25 L39,34 L36,25 C29,25 24,29 20,35 Z" fill="${c.hair}"/>
-      <path d="M32,20 C45,16 56,16 68,20" stroke="${c.highlight}" stroke-width="1.8" fill="none" opacity="0.5" stroke-linecap="round"/>`;
-    earExtras = `<circle cx="24" cy="49" r="2" fill="${c.accent}"/>
-                 <circle cx="76" cy="49" r="2" fill="${c.accent}"/>`;
-  } else if (typeId === 'perm_m') {
-    frontHair = `
-      <path d="M22,34 C19,20 31,11 45,12 C56,10 70,13 76,23 C81,28 80,36 76,40 C74,31 68,26 60,26 C53,22 45,23 39,27 C31,26 26,29 22,34 Z" fill="${c.hair}"/>
-      <circle cx="31" cy="21" r="7.5" fill="${c.hair}"/>
-      <circle cx="44" cy="17" r="8.5" fill="${c.hair}"/>
-      <circle cx="58" cy="17" r="8.5" fill="${c.hair}"/>
-      <circle cx="70" cy="22" r="7.5" fill="${c.hair}"/>
-      <circle cx="44" cy="15.5" r="3" fill="${c.highlight}" opacity="0.45"/>
-      <circle cx="58" cy="15.5" r="3" fill="${c.highlight}" opacity="0.45"/>`;
-  } else {
-    frontHair = `
-      <path d="M21,36 C21,16 34,12 50,12 C66,12 79,16 79,36 C74,26 67,22 59,23 L52,32 L46,22 C35,21 26,26 21,36 Z" fill="${c.hair}"/>
-      <path d="M29,21 C40,16 52,16 64,20" stroke="${c.highlight}" stroke-width="1.8" fill="none" opacity="0.5" stroke-linecap="round"/>`;
-  }
-
-  const eyes = sleepy
-    ? `<path d="M35,43 Q40,47 45,43" stroke="#241712" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-       <path d="M55,43 Q60,47 65,43" stroke="#241712" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
-    : `<g>
-         <ellipse cx="40" cy="42.5" rx="3.8" ry="4.3" fill="#18181b"/>
-         <ellipse cx="40" cy="43.5" rx="2.3" ry="2.5" fill="#3b261d"/>
-         <circle cx="41.4" cy="40.8" r="1.35" fill="#fff"/>
-         <circle cx="38.7" cy="43.7" r="0.65" fill="#fff" opacity="0.7"/>
-       </g>
-       <g>
-         <ellipse cx="60" cy="42.5" rx="3.8" ry="4.3" fill="#18181b"/>
-         <ellipse cx="60" cy="43.5" rx="2.3" ry="2.5" fill="#3b261d"/>
-         <circle cx="61.4" cy="40.8" r="1.35" fill="#fff"/>
-         <circle cx="58.7" cy="43.7" r="0.65" fill="#fff" opacity="0.7"/>
-       </g>`;
-
-  const mouth = tipsy >= 50
-    ? `<path d="M44,54.5 Q50,61.5 56,54.5 Z" fill="#d9384e" stroke="#9e1b2d" stroke-width="0.9"/>
-       <path d="M46.5,58.2 Q50,60.5 53.5,58.2" fill="#ff8fa3"/>`
-    : `<path d="M45,54.5 Q50,58.5 55,54.5" stroke="#a85768" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
-
-  return `<svg viewBox="0 0 100 92" width="100%" height="100%">
-    <defs>
-      <linearGradient id="skin_${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ffe9df"/>
-        <stop offset="100%" stop-color="#f5c9b8"/>
-      </linearGradient>
-      <linearGradient id="cloth_${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${c.outfit}"/>
-        <stop offset="100%" stop-color="#1b2236"/>
-      </linearGradient>
-    </defs>
-    ${backHair}
-    <!-- 어깨, 카라/넥라인 & 니트 음영 -->
-    <path d="M16,89 C20,66 35,64 50,64 C65,64 80,66 84,89 Z" fill="url(#cloth_${uid})"/>
-    <path d="M41,64 L50,74 L59,64" fill="none" stroke="${c.accent}" stroke-width="2" opacity="0.75"/>
-    <!-- 목 & 턱선 그림자 -->
-    <rect x="44" y="57" width="12" height="13" rx="5" fill="#ebb9a7"/>
-    <path d="M44,61 Q50,65 56,61" fill="none" stroke="#cf9582" stroke-width="1.5"/>
-    <!-- 귀 -->
-    <ellipse cx="26.5" cy="44" rx="3.4" ry="5.5" fill="#f5c9b8"/>
-    <ellipse cx="73.5" cy="44" rx="3.4" ry="5.5" fill="#f5c9b8"/>
-    ${earExtras}
-    <!-- 얼굴형 & 입체 음영 -->
-    <path d="M27.5,38 C27.5,21 37,16 50,16 C63,16 72.5,21 72.5,38 C72.5,52 62,62 50,62 C38,62 27.5,52 27.5,38 Z" fill="url(#skin_${uid})"/>
-    <!-- 양 볼 취기 홍조 -->
-    <ellipse cx="35.5" cy="49" rx="6.5" ry="3.6" fill="#ff4d6d" opacity="${blushOpacity}"/>
-    <ellipse cx="64.5" cy="49" rx="6.5" ry="3.6" fill="#ff4d6d" opacity="${blushOpacity}"/>
-    <!-- 눈썹 / 콧날 / 눈 / 입 -->
-    <path d="M35,35.5 Q40,33.2 45,35.5" stroke="${c.hair}" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M55,35.5 Q60,33.2 65,35.5" stroke="${c.hair}" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M50,43 L48.8,48.5 L51.3,49.5" stroke="#d49c89" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    ${eyes}
-    ${mouth}
-    ${frontHair}
-  </svg>`;
-}
-
-const SERVICE_SVGS = [
-  {
-    name: '🍜 빨간 컵라면',
-    svg: `<svg viewBox="0 0 90 74" width="84" height="68">
-      <path d="M22,26 L68,26 L62,66 L28,66 Z" fill="#d62828" stroke="#fff" stroke-width="2"/>
-      <ellipse cx="45" cy="26" rx="23" ry="8" fill="#f77f00"/>
-      <path d="M32,25 Q45,12 58,25" stroke="#ffd166" stroke-width="4" fill="none"/>
-      <line x1="48" y1="8" x2="74" y2="18" stroke="#ddb892" stroke-width="3"/>
-      <path d="M36,14 Q33,7 37,2" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none"/>
-      <path d="M48,13 Q45,6 49,1" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none"/>
-    </svg>`
-  },
-  {
-    name: '🧀 철판 콘치즈',
-    svg: `<svg viewBox="0 0 90 74" width="84" height="68">
-      <ellipse cx="45" cy="44" rx="38" ry="20" fill="#212529" stroke="#495057" stroke-width="3"/>
-      <ellipse cx="45" cy="43" rx="31" ry="15" fill="#ffd166"/>
-      <circle cx="35" cy="41" r="3" fill="#ffb703"/><circle cx="48" cy="45" r="3" fill="#ffb703"/>
-      <circle cx="56" cy="39" r="3" fill="#ffb703"/><circle cx="42" cy="38" r="2.5" fill="#52b788"/>
-    </svg>`
-  },
-  {
-    name: '🍲 방어 서더리 매운탕',
-    svg: `<svg viewBox="0 0 90 74" width="84" height="68">
-      <ellipse cx="45" cy="44" rx="37" ry="21" fill="#1d1e2c" stroke="#6c757d" stroke-width="3"/>
-      <ellipse cx="45" cy="43" rx="31" ry="16" fill="#c1121f"/>
-      <rect x="34" y="37" width="10" height="8" rx="1" fill="#fff3b0"/>
-      <circle cx="54" cy="44" r="5" fill="#52b788"/>
-    </svg>`
-  }
-];
-
-/* 2. 상태 관리 및 PeerJS(STUN+TURN + 자동복구) 실시간 멀티플레이 */
-let selectedChar = 'long_f';
-let myNick = '';
-let roomCode = '';
-let isHost = false;
-let peer = null;
-let hostConn = null;
-let clientConns = [];
-
-let state = {
-  glasses: 0,
-  bottles: 0,
-  serviceLevel: 0,
-  seats: [
-    { nick: '나', char: 'long_f', tipsy: 0, isReal: true, peerId: 'local' },
-    { nick: '민지(단골)', char: 'short_f', tipsy: 10, isReal: false, peerId: null },
-    { nick: '준호(주당)', char: 'perm_m', tipsy: 15, isReal: false, peerId: null },
-    { nick: '현우(막내)', char: 'dandy_m', tipsy: 5, isReal: false, peerId: null }
-  ]
-};
-
-function initPicker() {
-  const box = document.getElementById('charPicker');
-  box.innerHTML = '';
-  CHAR_TYPES.forEach(ct => {
-    const div = document.createElement('div');
-    div.className = 'char-pick' + (ct.id === selectedChar ? ' selected' : '');
-    div.onclick = () => { selectedChar = ct.id; initPicker(); };
-    div.innerHTML = `<div class="char-pick-svg">${renderHumanSVG(ct.id, 15)}</div>
-                     <div class="char-pick-name">${ct.label}</div>`;
-    box.appendChild(div);
-  });
-
-  const params = new URLSearchParams(location.search);
-  const r = params.get('room');
-  if (r && /^\d{4}$/.test(r)) {
-    document.getElementById('roomInput').value = r;
-  }
-}
-initPicker();
-
-const PEER_PREFIX = 'gw-pocha-2026-room-';
-
-// 모바일 LTE/5G 및 서로 다른 네트워크 간 P2P 연결을 돕는 ICE 서버 설정
-const PEER_CONFIG = {
-  debug: 1,
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      {
-        urls: 'turn:openrelay.metered.ca:80',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
+    function copyTextSafe(text, successMsg) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToastMsg(successMsg);
+      } catch (err) {
+        showToastMsg(`복사 내용: ${text}`);
       }
-    ]
-  }
-};
+      document.body.removeChild(ta);
+    }
 
-function setupHostPeer() {
-  peer = new Peer(PEER_PREFIX + roomCode, PEER_CONFIG);
-
-  peer.on('open', () => {
-    document.getElementById('roomBadge').textContent = `🟢 방 #${roomCode} 🔗초대복사`;
-  });
-
-  peer.on('connection', conn => {
-    clientConns.push(conn);
-    conn.on('open', () => {
-      conn.send({ type: 'SYNC', state });
-    });
-    conn.on('data', data => handleNetworkData(data, conn));
-    conn.on('close', () => {
-      clientConns = clientConns.filter(c => c !== conn);
-      const idx = state.seats.findIndex(s => s.peerId === conn.peer);
-      if (idx > 0) {
-        addChat('시스템', `${state.seats[idx].nick}님이 자리에서 일어났습니다.`, true);
-        state.seats[idx].isReal = false;
-        state.seats[idx].peerId = null;
-        broadcastState();
-        renderTable();
+    function getShareableInviteUrl() {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', appState.roomCode);
+        return url.toString();
+      } catch (e) {
+        return `https://82leesuji82-hue.github.io/pocha/?room=${encodeURIComponent(appState.roomCode)}`;
       }
-    });
-  });
-
-  peer.on('disconnected', () => {
-    document.getElementById('roomBadge').textContent = `🟡 방 #${roomCode} (재연결중)`;
-    setTimeout(() => {
-      if (peer && !peer.destroyed) peer.reconnect();
-    }, 1000);
-  });
-
-  peer.on('error', err => {
-    if (err.type === 'unavailable-id') {
-      roomCode = String(Math.floor(1000 + Math.random() * 9000));
-      setupHostPeer();
-    } else {
-      document.getElementById('roomBadge').textContent = `⚠️ 방 #${roomCode} (${err.type})`;
     }
-  });
-}
 
-function createRoom() {
-  myNick = (document.getElementById('nickInput').value || '').trim() || '광안리대장';
-  roomCode = String(Math.floor(1000 + Math.random() * 9000));
-  isHost = true;
-
-  const others = CHAR_TYPES.filter(c => c.id !== selectedChar);
-  state.seats[0] = { nick: myNick, char: selectedChar, tipsy: 0, isReal: true, peerId: 'host' };
-  const botNames = ['수빈', '지훈', '다은'];
-  for (let i = 1; i <= 3; i++) {
-    state.seats[i] = { nick: botNames[i-1], char: others[i-1].id, tipsy: 0, isReal: false, peerId: null };
-  }
-
-  enterStage();
-  addChat('시스템', `광안리 #${roomCode}번 테이블을 잡았습니다! 초대 링크를 보내고 화면을 켜둔 채 기다려 주세요.`, true);
-  setupHostPeer();
-}
-
-function joinRoom() {
-  const code = (document.getElementById('roomInput').value || '').trim();
-  if (!/^\d{4}$/.test(code)) {
-    alert('친구에게 받은 4자리 숫자 방 번호를 입력해 주세요!');
-    return;
-  }
-  myNick = (document.getElementById('nickInput').value || '').trim() || '광안리친구';
-  roomCode = code;
-  isHost = false;
-
-  enterStage();
-  addChat('시스템', `#${roomCode}번 광안리 테이블로 합석 연결 중입니다...`, true);
-
-  peer = new Peer(PEER_CONFIG);
-  peer.on('open', myId => {
-    hostConn = peer.connect(PEER_PREFIX + roomCode, { reliable: true });
-
-    const timeout = setTimeout(() => {
-      if (!hostConn || !hostConn.open) {
-        addChat('시스템', '⏳ 연결이 지연되고 있어요. 방장 화면이 켜져 있는지 확인 후 다시 시도해 주세요!', true);
+    async function initFirebaseIfAvailable() {
+      try {
+        if (typeof __firebase_config === 'undefined' || !__firebase_config) return false;
+        const app = initializeApp(JSON.parse(__firebase_config));
+        auth = getAuth(app);
+        db = getFirestore(app);
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+        currentUser = auth.currentUser;
+        return !!currentUser;
+      } catch (e) {
+        return false;
       }
-    }, 8000);
-
-    hostConn.on('open', () => {
-      clearTimeout(timeout);
-      document.getElementById('roomBadge').textContent = `🟢 방 #${roomCode} 🔗초대복사`;
-      hostConn.send({ type: 'JOIN', nick: myNick, char: selectedChar, peerId: myId });
-    });
-
-    hostConn.on('data', data => handleNetworkData(data, hostConn));
-    hostConn.on('close', () => {
-      addChat('시스템', '방장과의 연결이 끊어졌습니다.', true);
-    });
-  });
-
-  peer.on('error', err => {
-    if (err.type === 'peer-unavailable') {
-      addChat('시스템', `❌ #${roomCode}번 방을 찾을 수 없어요! 방장이 카톡을 보고 있다면 게임 화면을 다시 켜달라고 해주세요.`, true);
-    } else {
-      addChat('시스템', `⚠️ 연결 오류 (${err.type}) - 새로고침 후 다시 합석해 주세요.`, true);
-    }
-  });
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && peer && peer.disconnected && !peer.destroyed) {
-    peer.reconnect();
-  }
-});
-
-function enterStage() {
-  document.getElementById('lobby-modal').style.display = 'none';
-  document.getElementById('roomBadge').textContent = `🍶 방 #${roomCode} 🔗초대복사`;
-  renderTable();
-}
-
-function copyInviteLink() {
-  const base = location.origin + location.pathname;
-  const url = `${base}?room=${roomCode}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => {
-      addChat('시스템', `📋 초대 링크 복사 완료! 카톡방에 붙여넣기 하세요: ${url}`, true);
-      showPop(0, '초대 링크 복사 완료! 🔗');
-    });
-  } else {
-    prompt('이 주소를 복사해서 친구들에게 카톡으로 보내세요:', url);
-  }
-}
-
-/* 3. 멀티플레이 패킷 동기화 */
-function broadcast(payload) {
-  clientConns.forEach(c => { if (c.open) c.send(payload); });
-}
-function broadcastState() {
-  broadcast({ type: 'SYNC', state });
-}
-
-function handleNetworkData(data, conn) {
-  if (isHost) {
-    if (data.type === 'JOIN') {
-      let emptyIdx = state.seats.findIndex((s, idx) => idx > 0 && !s.isReal);
-      if (emptyIdx === -1) emptyIdx = 3;
-      state.seats[emptyIdx] = { nick: data.nick, char: data.char, tipsy: 0, isReal: true, peerId: data.peerId };
-      broadcastState();
-      const joinMsg = { type: 'EVENT', kind: 'join', nick: data.nick, seatIdx: emptyIdx };
-      broadcast(joinMsg);
-      applyEvent(joinMsg);
-      renderTable();
-    } else if (data.type === 'ACTION') {
-      const seatIdx = state.seats.findIndex(s => s.peerId === conn.peer);
-      processActionOnHost(seatIdx >= 0 ? seatIdx : 1, data.action);
-    } else if (data.type === 'CHAT') {
-      const seatIdx = state.seats.findIndex(s => s.peerId === conn.peer);
-      const evt = { type: 'EVENT', kind: 'chat', seatIdx: seatIdx >= 0 ? seatIdx : 1, nick: data.nick, text: data.text };
-      broadcast(evt);
-      applyEvent(evt);
-    }
-  } else {
-    if (data.type === 'SYNC') {
-      state = data.state;
-      renderTable();
-    } else if (data.type === 'EVENT') {
-      if (data.state) state = data.state;
-      renderTable();
-      applyEvent(data);
-    }
-  }
-}
-
-function getMyVisualSlot(logicalIdx) {
-  let myLogical = 0;
-  if (!isHost && peer) {
-    const found = state.seats.findIndex(s => s.peerId === peer.id);
-    if (found >= 0) myLogical = found;
-  }
-  if (logicalIdx === myLogical) return 0;
-  const others = [0, 1, 2, 3].filter(i => i !== myLogical);
-  return others.indexOf(logicalIdx) + 1;
-}
-
-function renderTable() {
-  for (let logical = 0; logical < 4; logical++) {
-    const visual = getMyVisualSlot(logical);
-    const s = state.seats[logical];
-    const av = document.getElementById('avatar-' + visual);
-    const nm = document.getElementById('name-' + visual);
-    if (av && s) {
-      av.innerHTML = renderHumanSVG(s.char, s.tipsy);
-      nm.textContent = (visual === 0 ? `⭐ ${s.nick}` : (s.isReal ? `🟢 ${s.nick}` : s.nick));
-      nm.className = 'name-tag' + (s.isReal ? ' online' : '');
-    }
-    if (visual === 0 && s) {
-      document.getElementById('tipsyFill').style.width = s.tipsy + '%';
-      let label = `😊 멀쩡함 ${s.tipsy}%`;
-      if (s.tipsy >= 80) label = `💫 만취직전 ${s.tipsy}%`;
-      else if (s.tipsy >= 45) label = `☺️ 알딸딸~ ${s.tipsy}%`;
-      document.getElementById('tipsyText').textContent = label;
-      document.getElementById('app').className = s.tipsy >= 85 ? 'drunk-dizzy' : '';
-    }
-  }
-  document.getElementById('bottleCountTop').textContent = `🍶 ${state.bottles}병`;
-  document.getElementById('bottleRack').textContent = `🍾 빈병 ${state.bottles}`;
-
-  const srvBox = document.getElementById('dish-service');
-  if (state.serviceLevel > 0) {
-    const srv = SERVICE_SVGS[(state.serviceLevel - 1) % SERVICE_SVGS.length];
-    srvBox.style.display = 'flex';
-    document.getElementById('serviceSvgBox').innerHTML = srv.svg;
-    document.getElementById('serviceLabel').textContent = srv.name;
-  }
-}
-
-/* 4. 먹방 · 건배 · 사장님 서비스 액션 */
-function doAction(action) {
-  if (navigator.vibrate) navigator.vibrate(25);
-  if (isHost || !hostConn || !hostConn.open) {
-    processActionOnHost(0, action);
-  } else {
-    hostConn.send({ type: 'ACTION', action });
-  }
-}
-
-function processActionOnHost(seatIdx, action) {
-  const actor = state.seats[seatIdx];
-  if (!actor) return;
-
-  if (action === 'soju') {
-    state.glasses++;
-    state.seats.forEach(s => { s.tipsy = Math.min(100, s.tipsy + 14); });
-    if (state.glasses % 4 === 0) {
-      state.bottles++;
-      if (state.bottles % 2 === 1) state.serviceLevel++;
-    }
-  } else if (action === 'water') {
-    actor.tipsy = Math.max(0, actor.tipsy - 22);
-  } else if (action === 'service') {
-    actor.tipsy = Math.max(0, actor.tipsy - 12);
-  } else {
-    actor.tipsy = Math.max(0, actor.tipsy - 4);
-  }
-
-  const evt = {
-    type: 'EVENT',
-    kind: 'action',
-    action,
-    seatIdx,
-    nick: actor.nick,
-    bossTriggered: (action === 'soju' && state.glasses % 4 === 0 && state.bottles % 2 === 1),
-    state
-  };
-  broadcast(evt);
-  renderTable();
-  applyEvent(evt);
-}
-
-function callBossService() {
-  if (isHost || !hostConn || !hostConn.open) {
-    state.serviceLevel++;
-    const evt = { type: 'EVENT', kind: 'boss', state };
-    broadcast(evt);
-    renderTable();
-    applyEvent(evt);
-  } else {
-    hostConn.send({ type: 'ACTION', action: 'service' });
-    triggerBossToast();
-  }
-}
-
-function applyEvent(evt) {
-  if (evt.kind === 'join') {
-    addChat('시스템', `🎉 ${evt.nick}님이 광안리 은쟁반 테이블에 합석했습니다!`, true);
-    showPop(getMyVisualSlot(evt.seatIdx), '반가워요!! 짠합시다~ 🍶');
-    return;
-  }
-  if (evt.kind === 'boss') {
-    triggerBossToast();
-    return;
-  }
-  if (evt.kind === 'chat') {
-    const vSlot = getMyVisualSlot(evt.seatIdx);
-    showPop(vSlot, evt.text);
-    addChat(evt.nick, evt.text, false);
-    maybeBotReply(evt.text);
-    return;
-  }
-  if (evt.kind === 'firework') {
-    launchFireworkShow(false);
-    return;
-  }
-  if (evt.kind === 'action') {
-    const vSlot = getMyVisualSlot(evt.seatIdx);
-    const av = document.getElementById('avatar-' + vSlot);
-    if (av) {
-      av.classList.remove('eating');
-      void av.offsetWidth;
-      av.classList.add('eating');
     }
 
-    if (evt.action === 'bangeo') {
-      showPop(vSlot, '대방어 배꼽살 기름기 미쳤다! 🐟');
-      addChat(evt.nick, '제철 대방어회를 와사비 올려 한 점 먹었습니다.', true);
-    } else if (evt.action === 'kimbap') {
-      showPop(vSlot, '아귀간+소금김밥 녹진해~ 🧡🍙');
-      addChat(evt.nick, '아귀간소금김밥 세트를 참기름장에 찍어 먹었습니다.', true);
-    } else if (evt.action === 'soju') {
-      const clink = document.getElementById('clink-effect');
-      clink.style.display = 'flex';
-      setTimeout(() => clink.style.display = 'none', 900);
-      showPop(vSlot, '참이슬 짠~! 캬 달다! 🍶');
-      addChat(evt.nick, '모두 함께 초록병 참이슬 건배! 짠~!', true);
-      if (evt.bossTriggered) triggerBossToast();
-      if (state.bottles > 0 && state.glasses % 4 === 0) launchFireworkShow(false);
-    } else if (evt.action === 'water') {
-      showPop(vSlot, '얼음물로 해장 싹~ 🧊');
-      addChat(evt.nick, '시원한 얼음 냉수를 마셔 취기를 식혔습니다.', true);
-    } else if (evt.action === 'service') {
-      const srv = SERVICE_SVGS[(Math.max(1, state.serviceLevel) - 1) % SERVICE_SVGS.length];
-      showPop(vSlot, `${srv.name} 국물 끝내준다!`);
-      addChat(evt.nick, `사장님 서비스 ${srv.name}을(를) 맛있게 먹었습니다!`, true);
+    function sanitizePeerRoomId(code) {
+      const hex = Array.from(code).map(ch => ch.charCodeAt(0).toString(16)).join('');
+      return `gwangalli-pocha-v2-${hex}`;
     }
-  }
-}
 
-function triggerBossToast() {
-  const srv = SERVICE_SVGS[(Math.max(1, state.serviceLevel) - 1) % SERVICE_SVGS.length];
-  const toast = document.getElementById('boss-toast');
-  toast.textContent = `👨‍🍳 사장님: "광안리 서비스로 ${srv.name} 가져왔습니데이! 따뜻할 때 드이소~"`;
-  toast.style.display = 'flex';
-  addChat('방어집 사장님', `테이블에 서비스 안주 [${srv.name}]을(를) 내어주셨습니다!`, true);
-  setTimeout(() => { toast.style.display = 'none'; }, 3500);
-}
+    function destroyPeerSession() {
+      guestConns.forEach(c => { try { c.close(); } catch (e) {} });
+      guestConns.clear();
+      if (hostConn) { try { hostConn.close(); } catch (e) {} hostConn = null; }
+      if (peerInstance) { try { peerInstance.destroy(); } catch (e) {} peerInstance = null; }
+      isPeerHost = false;
+    }
 
-/* 5. 실시간 채팅 & 솔로 플레이 시 절친 리액션 */
-function sendChat() {
-  const input = document.getElementById('chatInput');
-  const text = (input.value || '').trim();
-  if (!text) return;
-  input.value = '';
+    // Serverless WebRTC Multiplayer via PeerJS (Works out-of-the-box on GitHub Pages & Mobile!)
+    function connectPeerRoom(code) {
+      if (typeof window.Peer === 'undefined') return;
+      destroyPeerSession();
 
-  if (isHost || !hostConn || !hostConn.open) {
-    const evt = { type: 'EVENT', kind: 'chat', seatIdx: 0, nick: myNick || '나', text };
-    broadcast(evt);
-    applyEvent(evt);
-  } else {
-    hostConn.send({ type: 'CHAT', nick: myNick, text });
-  }
-}
+      const hostPeerId = sanitizePeerRoomId(code);
+      appState.remotePlayers = {
+        [myClientId]: { name: appState.myName, style: appState.myStyle, updatedAt: Date.now() }
+      };
 
-function maybeBotReply(userText) {
-  const realCount = state.seats.filter(s => s.isReal).length;
-  if (realCount > 1 || !isHost) return;
-  const replies = [
-    '와 광안대교 보면서 대방어에 참이슬 진짜 최고다 ㅋㅋ',
-    '아귀간소금김밥 위에 방어 올려서 같이 먹어봐 진짜 녹아!',
-    '자자 이야기 좋으니까 참이슬 한 잔 더 짠하자! 🍶',
-    '오늘 광안리 밤바다 분위기 미쳤다~ 폭죽 한 번 터뜨리자!',
-    '사장님 서비스 컵라면 국물 마시니까 술이 쫙 깨는데? ㅋㅋ'
-  ];
-  setTimeout(() => {
-    const botIdx = 1 + Math.floor(Math.random() * 3);
-    const bot = state.seats[botIdx];
-    const msg = replies[Math.floor(Math.random() * replies.length)];
-    showPop(getMyVisualSlot(botIdx), msg);
-    addChat(bot.nick, msg, false);
-  }, 900);
-}
+      const candidateHost = new window.Peer(hostPeerId, { debug: 0 });
 
-function showPop(visualSlot, msg) {
-  const pop = document.getElementById('pop-' + visualSlot);
-  if (!pop) return;
-  pop.textContent = msg;
-  pop.classList.add('show');
-  clearTimeout(pop._timer);
-  pop._timer = setTimeout(() => pop.classList.remove('show'), 2800);
-}
+      candidateHost.on('open', () => {
+        // We are the first person in this Room Code -> Act as Room Host!
+        peerInstance = candidateHost;
+        isPeerHost = true;
+        updateLivePeerBadge();
+        document.getElementById('syncModeIndicator').textContent = `🟢 실시간 방장 (${code}) · 친구 대기중`;
 
-function addChat(sender, msg, isSys) {
-  const log = document.getElementById('chat-log');
-  const div = document.createElement('div');
-  div.className = 'chat-line' + (isSys ? ' sys' : '');
-  div.innerHTML = isSys ? `• ${msg}` : `<b>${sender}:</b> ${msg.replace(/</g, '&lt;')}`;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-}
+        peerInstance.on('connection', (conn) => {
+          conn.on('data', (msg) => handleIncomingPeerData(conn, msg));
+          conn.on('close', () => {
+            if (conn._peerClientId) {
+              guestConns.delete(conn._peerClientId);
+              delete appState.remotePlayers[conn._peerClientId];
+              broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
+              renderAllVisuals();
+              updateLivePeerBadge();
+            }
+          });
+        });
+      });
 
-/* 6. 광안리 밤바다 & 광안대교 & 폭죽 피날레 캔버스 */
-const cvs = document.getElementById('oceanCanvas');
-const ctx = cvs.getContext('2d');
-let particles = [];
-let t = 0;
+      candidateHost.on('error', (err) => {
+        if (err && err.type === 'unavailable-id') {
+          // Room Host already exists! Join as a Guest!
+          try { candidateHost.destroy(); } catch (e) {}
+          joinExistingPeerHost(hostPeerId, code);
+        }
+      });
+    }
 
-function resizeSky() {
-  cvs.width = cvs.clientWidth;
-  cvs.height = cvs.clientHeight;
-}
-window.addEventListener('resize', resizeSky);
-resizeSky();
+    function joinExistingPeerHost(hostPeerId, code) {
+      const guestPeer = new window.Peer({ debug: 0 });
+      peerInstance = guestPeer;
+      isPeerHost = false;
 
-function launchFireworkShow(syncToPeers) {
-  if (syncToPeers && isHost) broadcast({ type: 'EVENT', kind: 'firework' });
-  for (let b = 0; b < 5; b++) {
-    setTimeout(() => {
-      const x = cvs.width * (0.15 + Math.random() * 0.7);
-      const y = cvs.height * (0.18 + Math.random() * 0.35);
-      const palette = ['#ffd166', '#ff4d6d', '#06d6a0', '#4cc9f0', '#f72585'];
-      const col = palette[Math.floor(Math.random() * palette.length)];
-      for (let i = 0; i < 28; i++) {
-        const a = (Math.PI * 2 * i) / 28;
-        const sp = 1.2 + Math.random() * 2.4;
-        particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, alpha: 1, col });
+      guestPeer.on('open', () => {
+        const conn = guestPeer.connect(hostPeerId, { reliable: true });
+        hostConn = conn;
+
+        conn.on('open', () => {
+          document.getElementById('syncModeIndicator').textContent = `🟢 실시간 합석 완료 (${code})`;
+          conn.send({
+            type: 'HELLO_JOIN',
+            clientId: myClientId,
+            profile: { name: appState.myName, style: appState.myStyle, updatedAt: Date.now() }
+          });
+          showToastMsg(`🎉 [${code}] 테이블에 실시간으로 합석했습니다!`);
+        });
+
+        conn.on('data', (msg) => handleIncomingPeerData(conn, msg));
+        conn.on('close', () => {
+          document.getElementById('syncModeIndicator').textContent = `⚠️ 방장 연결 종료 (재연결 시도중)`;
+          setTimeout(() => connectPeerRoom(code), 1800);
+        });
+      });
+    }
+
+    function broadcastFromHost(payload, excludeClientId = null) {
+      guestConns.forEach((conn, cid) => {
+        if (cid !== excludeClientId && conn.open) {
+          try { conn.send(payload); } catch (e) {}
+        }
+      });
+    }
+
+    function sendMultiplayerEvent(eventPayload) {
+      if (isPeerHost) {
+        broadcastFromHost(eventPayload, myClientId);
+      } else if (hostConn && hostConn.open) {
+        try { hostConn.send(eventPayload); } catch (e) {}
       }
-    }, b * 240);
-  }
-}
-
-function animateSky() {
-  t += 0.03;
-  const w = cvs.width, h = cvs.height;
-  const seaY = h * 0.66;
-
-  const sky = ctx.createLinearGradient(0, 0, 0, seaY);
-  sky.addColorStop(0, '#040714');
-  sky.addColorStop(1, '#13224a');
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, w, seaY);
-
-  ctx.fillStyle = '#071128';
-  ctx.fillRect(0, seaY, w, h - seaY);
-
-  const hue = (t * 22) % 360;
-  const t1 = w * 0.28, t2 = w * 0.72, topY = h * 0.24, deckY = seaY - 10;
-
-  ctx.strokeStyle = `hsl(${hue}, 85%, 65%)`;
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(0, deckY - 3);
-  ctx.quadraticCurveTo(t1 * 0.5, deckY, t1, topY);
-  ctx.quadraticCurveTo((t1 + t2) * 0.5, deckY + 6, t2, topY);
-  ctx.quadraticCurveTo(t2 + (w - t2) * 0.5, deckY, w, deckY - 3);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#e9ecef';
-  ctx.lineWidth = 3.5;
-  [t1, t2].forEach(tx => {
-    ctx.beginPath(); ctx.moveTo(tx, topY); ctx.lineTo(tx, seaY); ctx.stroke();
-  });
-
-  ctx.strokeStyle = '#ffd166';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(0, deckY); ctx.lineTo(w, deckY); ctx.stroke();
-
-  for (let i = 0; i < 8; i++) {
-    const wy = seaY + 4 + i * 4.5;
-    const dx = Math.sin(t + i) * 6;
-    ctx.fillStyle = `hsla(${hue}, 85%, 65%, ${0.32 - i * 0.03})`;
-    ctx.fillRect(t1 - 22 + dx, wy, 44, 2);
-    ctx.fillRect(t2 - 22 - dx, wy, 44, 2);
-  }
-
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx; p.y += p.vy; p.vy += 0.035; p.alpha -= 0.02;
-    if (p.alpha <= 0) particles.splice(i, 1);
-    else {
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = p.col;
-      ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1;
     }
-  }
-  requestAnimationFrame(animateSky);
-}
-animateSky();
-</script>
+
+    function handleIncomingPeerData(conn, msg) {
+      if (!msg || !msg.type) return;
+
+      if (msg.type === 'HELLO_JOIN' && isPeerHost) {
+        conn._peerClientId = msg.clientId;
+        guestConns.set(msg.clientId, conn);
+        appState.remotePlayers[msg.clientId] = msg.profile;
+
+        // Auto-prioritize real friends in seats
+        broadcastFromHost({
+          type: 'ROOM_SNAPSHOT',
+          state: exportSyncPayload(),
+          players: appState.remotePlayers
+        });
+        const joinLine = `🌊 [${msg.profile.name}]님이 모바일로 테이블에 합석했습니다! 반갑게 짠 해주세요!`;
+        appendLocalChat('시스템', joinLine, 'system');
+        broadcastFromHost({ type: 'CHAT_MSG', sender: '시스템', text: joinLine, kind: 'system' });
+        showToastMsg(`🙌 ${msg.profile.name}님이 우리 테이블에 합석했습니다!`);
+        renderAllVisuals();
+        updateLivePeerBadge();
+        return;
+      }
+
+      if (msg.type === 'PROFILE_UPDATE') {
+        appState.remotePlayers[msg.clientId] = msg.profile;
+        if (isPeerHost) {
+          broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
+        }
+        renderAllVisuals();
+        updateLivePeerBadge();
+        return;
+      }
+
+      if (msg.type === 'ROOM_SNAPSHOT') {
+        if (msg.state) Object.assign(appState, msg.state);
+        if (msg.players) appState.remotePlayers = msg.players;
+        renderAllVisuals();
+        updateLivePeerBadge();
+        return;
+      }
+
+      if (msg.type === 'STATE_PUSH') {
+        if (msg.state) Object.assign(appState, msg.state);
+        if (isPeerHost) {
+          broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers }, msg.senderId);
+        }
+        renderAllVisuals();
+        return;
+      }
+
+      if (msg.type === 'REMOTE_FX') {
+        if (isPeerHost) broadcastFromHost(msg, msg.senderId);
+        playRemoteFriendEffect(msg);
+        return;
+      }
+
+      if (msg.type === 'CHAT_MSG') {
+        if (isPeerHost) broadcastFromHost(msg, msg.senderId);
+        appendLocalChat(msg.sender, msg.text, msg.kind || 'companion');
+        const seatKey = findSeatKeyByClientId(msg.senderId);
+        if (seatKey && msg.kind === 'me') showSeatBubble(seatKey, msg.text);
+        if (msg.triggerCheckout) runCheckoutEndingSequence(true);
+      }
+    }
+
+    function findSeatKeyByClientId(cid) {
+      if (!cid || cid === myClientId) return 'me';
+      const seats = getCompanionsForSeats();
+      for (let i = 0; i < seats.length; i++) {
+        if (seats[i] && seats[i].clientId === cid) return String(i + 1);
+      }
+      return '1';
+    }
+
+    function playRemoteFriendEffect(msg) {
+      const seatKey = findSeatKeyByClientId(msg.senderId);
+      if (msg.fx === 'CHEERS') {
+        sfxClinkAndGulp();
+        animateAllHandsCheersAndDrink();
+        showToastMsg(`🍶 ${msg.senderName}님의 선창으로 다같이 소주잔 짠~!!`);
+        if (seatKey) showSeatBubble(seatKey, '다같이 잔 들어~ 짠!! 🍶');
+      } else if (msg.fx === 'EAT' && msg.dishSlotId && msg.foodKey) {
+        animateFoodFromDishToMouth(msg.dishSlotId, seatKey, msg.foodKey);
+        if (seatKey) showSeatBubble(seatKey, `아~ 냠냠! ${msg.korLabel} 맛있다 😋`);
+      } else if (msg.fx === 'FIREWORK') {
+        [0, 220, 450].forEach((d, idx) => setTimeout(() => spawnFireworkRocket(0.25 + idx * 0.25, idx === 1), d));
+        showToastMsg(`🎆 ${msg.senderName}님이 광안대교 밤하늘에 폭죽을 쏘아 올렸습니다!`);
+      } else if (msg.fx === 'CHEF_SERVICE') {
+        playChefWalkAnimation(msg.speech, () => renderAllVisuals());
+      }
+    }
+
+    async function connectFirestoreRoom(code) {
+      // Always activate WebRTC P2P room sync so external mobile browsers / GitHub Pages connect seamlessly
+      connectPeerRoom(code);
+
+      if (!db || !currentUser) return;
+      if (roomUnsub) roomUnsub();
+      if (chatUnsub) chatUnsub();
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'pocha_rooms', code);
+      try {
+        const snap = await getDoc(roomRef);
+        const uid = currentUser.uid;
+        const myPresence = { name: appState.myName, style: appState.myStyle, updatedAt: Date.now() };
+        if (!snap.exists()) {
+          await setDoc(roomRef, {
+            roomCode: code,
+            stateJson: JSON.stringify(exportSyncPayload()),
+            players: { [uid]: myPresence }
+          });
+        } else {
+          const existing = snap.data();
+          const players = existing.players || {};
+          players[uid] = myPresence;
+          await setDoc(roomRef, { ...existing, players }, { merge: true });
+        }
+      } catch (e) {}
+
+      roomUnsub = onSnapshot(roomRef, (snap) => {
+        if (!snap.exists()) return;
+        const d = snap.data();
+        if (d.stateJson) {
+          try {
+            const p = JSON.parse(d.stateJson);
+            Object.assign(appState, p);
+          } catch (e) {}
+        }
+        if (d.players) {
+          appState.remotePlayers = { ...appState.remotePlayers, ...d.players };
+        }
+        renderAllVisuals();
+        updateLivePeerBadge();
+      }, () => {});
+
+      const chatsCol = collection(db, 'artifacts', appId, 'public', 'data', 'pocha_chats');
+      chatUnsub = onSnapshot(chatsCol, (qs) => {
+        const items = [];
+        qs.forEach(docSnap => {
+          const c = docSnap.data();
+          if (c.roomCode === code) items.push(c);
+        });
+        items.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        if (items.length > 0) renderSyncedChats(items.slice(-30));
+      }, () => {});
+    }
+
+    function exportSyncPayload() {
+      return {
+        bangeoMask: appState.bangeoMask,
+        kimbapMask: appState.kimbapMask,
+        yuringiOrdered: appState.yuringiOrdered,
+        yuringiMask: appState.yuringiMask,
+        tteokOrdered: appState.tteokOrdered,
+        tteokMask: appState.tteokMask,
+        futoOrdered: appState.futoOrdered,
+        futoMask: appState.futoMask,
+        sojuShotsLeft: appState.sojuShotsLeft,
+        emptyBottles: appState.emptyBottles,
+        ramenSlurpsLeft: appState.ramenSlurpsLeft,
+        chefVisits: appState.chefVisits,
+        billCounts: appState.billCounts
+      };
+    }
+
+    async function syncRoomTableState() {
+      // 1) Broadcast over WebRTC P2P for GitHub Pages / Mobile Friends
+      if (isPeerHost) {
+        broadcastFromHost({
+          type: 'ROOM_SNAPSHOT',
+          state: exportSyncPayload(),
+          players: appState.remotePlayers
+        });
+      } else if (hostConn && hostConn.open) {
+        sendMultiplayerEvent({
+          type: 'STATE_PUSH',
+          senderId: myClientId,
+          state: exportSyncPayload()
+        });
+      }
+
+      // 2) Sync to Cloud Room if active
+      if (!db || !currentUser) return;
+      try {
+        const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'pocha_rooms', appState.roomCode);
+        await setDoc(roomRef, { stateJson: JSON.stringify(exportSyncPayload()) }, { merge: true });
+      } catch (e) {}
+    }
+
+    function updateLivePeerBadge() {
+      const myUid = currentUser?.uid;
+      const realOthers = Object.entries(appState.remotePlayers || {}).filter(([k, p]) => k !== myClientId && k !== myUid && p && p.name);
+      const totalReal = 1 + realOthers.length;
+      const badge = document.getElementById('livePeerBadge');
+      if (badge) {
+        badge.textContent = `🟢 접속 ${totalReal}명`;
+      }
+    }
+
+    // ==================== 8. SURROUNDED SEATS & LIVE POCHA BILL RENDERER ====================
+    function getCompanionsForSeats() {
+      const others = [];
+      const myUid = currentUser?.uid;
+      if (appState.remotePlayers) {
+        Object.entries(appState.remotePlayers).forEach(([uid, p]) => {
+          if (uid !== myClientId && uid !== myUid && p && p.name) {
+            others.push({ clientId: uid, name: p.name, shortName: p.name, style: p.style || 'dohyun', isAI: false });
+          }
+        });
+      }
+      if (appState.aiCompanionsEnabled) {
+        const usedStyles = new Set([appState.myStyle, ...others.map(o => o.style)]);
+        const pool = CHARACTER_STYLES.filter(c => !usedStyles.has(c.id));
+        let i = 0;
+        while (others.length < 3 && i < pool.length) {
+          others.push({
+            clientId: `ai_${pool[i].id}`,
+            name: `${pool[i].name} (${pool[i].aiBio})`,
+            shortName: pool[i].name,
+            style: pool[i].id,
+            isAI: true,
+            lines: pool[i].lines
+          });
+          i++;
+        }
+      }
+      return [others[0] || null, others[1] || null, others[2] || null];
+    }
+
+    function getActiveHeadcount() {
+      const seats = getCompanionsForSeats();
+      return 1 + seats.filter(Boolean).length;
+    }
+
+    function renderSeatsAndMyPortrait() {
+      const seats = getCompanionsForSeats();
+      const clockLabels = ['10시석', '12시석', '2시석'];
+
+      seats.forEach((person, idx) => {
+        const seatNum = idx + 1;
+        const portraitEl = document.getElementById(`seatPortrait-${seatNum}`);
+        const badgeEl = document.getElementById(`seatBadge-${seatNum}`);
+
+        if (person) {
+          portraitEl.innerHTML = renderRealisticPortraitSVG(person.style, appState.drunkPct, String(seatNum));
+          const liveTag = person.isAI ? '' : '🟢 ';
+          badgeEl.textContent = `${liveTag}${clockLabels[idx]} · ${person.shortName || person.name}`;
+          badgeEl.className = person.isAI
+            ? 'mt-[-6px] z-10 px-2.5 py-0.5 rounded-full bg-slate-900/95 border border-amber-300/45 text-[10px] sm:text-[11px] font-bold text-amber-100 shadow'
+            : 'mt-[-6px] z-10 px-2.5 py-0.5 rounded-full bg-emerald-950/95 border border-emerald-400/70 text-[10px] sm:text-[11px] font-extrabold text-emerald-200 shadow';
+        } else {
+          portraitEl.innerHTML = `
+            <div onclick="openInviteModal()" class="cursor-pointer w-16 sm:w-20 h-20 sm:h-24 rounded-2xl border border-dashed border-sky-400/45 bg-slate-900/45 hover:bg-slate-800/60 flex flex-col items-center justify-center text-sky-200/80 text-[10px] transition">
+              <span>+ 친구초대</span>
+              <span class="text-[9px] text-slate-400">${clockLabels[idx]}</span>
+            </div>
+          `;
+          badgeEl.textContent = `${clockLabels[idx]} (대기중)`;
+          badgeEl.className = 'mt-[-6px] z-10 px-2.5 py-0.5 rounded-full bg-slate-900/70 border border-slate-700 text-[10px] text-slate-400';
+        }
+      });
+
+      document.getElementById('myPortraitContainer').innerHTML = renderRealisticPortraitSVG(appState.myStyle, appState.drunkPct, 'me');
+      document.getElementById('myNicknameBadge').textContent = appState.myName;
+    }
+
+    function calculateBillSummary() {
+      let grandTotal = 0;
+      let serviceSaved = 0;
+      const rows = [];
+
+      Object.keys(MENU_CATALOG).forEach(key => {
+        const qty = appState.billCounts[key] || 0;
+        if (qty <= 0) return;
+        const item = MENU_CATALOG[key];
+        const lineTotal = item.price * qty;
+        grandTotal += lineTotal;
+        if (item.isService) serviceSaved += (item.savedValue || 0) * qty;
+        rows.push({ ...item, qty, lineTotal });
+      });
+
+      const headcount = getActiveHeadcount();
+      const perPerson = Math.ceil(grandTotal / headcount / 100) * 100;
+      return { grandTotal, serviceSaved, headcount, perPerson, rows };
+    }
+
+    function renderLiveBill() {
+      const { grandTotal, serviceSaved, headcount, perPerson, rows } = calculateBillSummary();
+      const listEl = document.getElementById('liveBillItemsList');
+
+      listEl.innerHTML = rows.map(r => `
+        <div class="pocha-bill-row grid grid-cols-12 items-center py-1 px-1 ${r.isService ? 'text-emerald-800 font-bold' : 'text-slate-800'}">
+          <span class="col-span-6 truncate">${r.name}</span>
+          <span class="col-span-2 text-center font-mono">${r.qty}</span>
+          <span class="col-span-4 text-right font-mono font-bold">${r.isService ? '서비스(0원)' : r.lineTotal.toLocaleString() + '원'}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('billHeadcountText').textContent = `합석 ${headcount}명`;
+      document.getElementById('billServiceSavedText').textContent = serviceSaved > 0 ? `-${serviceSaved.toLocaleString()}원 무료혜택` : '0원';
+      document.getElementById('billGrandTotalText').textContent = `${grandTotal.toLocaleString()}원`;
+      document.getElementById('billPerPersonText').textContent = `인당 약 ${perPerson.toLocaleString()}원`;
+      document.getElementById('mobileHeaderBillTotal').textContent = `${grandTotal.toLocaleString()}원`;
+    }
+
+    // ==================== 9. REAL FOOD-TO-MOUTH & 4-HAND SOJU CLINK ANIMATIONS ====================
+    function getRelativeCoords(el) {
+      const arena = document.getElementById('pochaArena');
+      if (!el || !arena) return { x: 240, y: 200 };
+      const aRect = arena.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      return {
+        x: eRect.left - aRect.left + eRect.width / 2,
+        y: eRect.top - aRect.top + eRect.height / 2
+      };
+    }
+
+    function getMorselSVG(foodType) {
+      switch (foodType) {
+        case 'bangeo':
+          return `
+            <path d="M -18,-8 C -4,-14 14,-11 20,-1 C 21,7 13,13 1,13 C -13,13 -19,6 -18,-8 Z" fill="url(#bangeoBellyCut)" stroke="#ffffff" stroke-width="1"/>
+            <circle cx="4" cy="-2" r="4" fill="#dc2626"/>
+          `;
+        case 'kimbap':
+          return `
+            <ellipse cx="0" cy="2" rx="15" ry="9" fill="#111812"/>
+            <ellipse cx="0" cy="0" rx="13" ry="7.5" fill="#f8fafc"/>
+            <ellipse cx="0" cy="-4" rx="10" ry="5.5" fill="url(#ankimoPaté)"/>
+            <circle cx="0" cy="-5" r="2" fill="#22c55e"/>
+          `;
+        case 'yuringi':
+          return `
+            <path d="M -16,-7 C -10,-15 9,-15 17,-6 C 20,2 12,10 -2,10 C -14,10 -19,2 -16,-7 Z" fill="url(#yuringiGoldGrad)" stroke="#fef08a" stroke-width="0.9"/>
+            <circle cx="-2" cy="-3" r="3" fill="none" stroke="#16a34a" stroke-width="2"/>
+            <circle cx="5" cy="-1" r="2.8" fill="none" stroke="#dc2626" stroke-width="2"/>
+          `;
+        case 'tteokbokki':
+          return `
+            <rect x="-15" y="-6" width="30" height="12" rx="6" fill="url(#tteokStickGrad)" stroke="#fecdd3" stroke-width="0.8"/>
+            <circle cx="-2" cy="-1" r="1.4" fill="#fef08a"/>
+            <circle cx="5" cy="1" r="2" fill="#22c55e"/>
+          `;
+        case 'futomaki':
+          return `
+            <path d="M 9,-10 L 20,-18 L 17,-9 L 21,-5 L 10,-5 Z" fill="#f97316"/>
+            <ellipse cx="0" cy="0" rx="16" ry="10" fill="#0f1712"/>
+            <ellipse cx="0" cy="0" rx="13.8" ry="8.2" fill="#f8fafc"/>
+            <circle cx="-3" cy="-2" r="4" fill="#fb923c"/>
+            <circle cx="4" cy="-2" r="3.5" fill="#dc2626"/>
+            <circle cx="0" cy="3" r="3.5" fill="#facc15"/>
+          `;
+        case 'ramen':
+          return `
+            <g class="slurp-noodles">
+              <path d="M -8,0 Q -12,12 -6,24 T -8,46" fill="none" stroke="#fde047" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M -2,0 Q 3,13 -2,26 T 0,48" fill="none" stroke="#facc15" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M 5,0 Q 10,12 4,25 T 6,44" fill="none" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="-2" cy="8" r="3.5" fill="#ffffff"/>
+              <circle cx="-2" cy="8" r="1.4" fill="#f43f5e"/>
+              <path d="M -6,-8 Q -11,-20 -4,-30 M 6,-8 Q 11,-20 4,-30" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.8"/>
+            </g>
+          `;
+        default:
+          return `<circle cx="0" cy="0" r="10" fill="#fda4af"/>`;
+      }
+    }
+
+    function triggerMouthEatExpression(seatKey, isRamen = false) {
+      const idle = document.getElementById(`mouthIdle-${seatKey}`);
+      const open = document.getElementById(`mouthOpen-${seatKey}`);
+      const chew = document.getElementById(`mouthChew-${seatKey}`);
+      const eyesNorm = document.getElementById(`eyesNormal-${seatKey}`);
+      const eyesHappy = document.getElementById(`eyesHappy-${seatKey}`);
+      if (!idle || !open || !chew) return;
+
+      setTimeout(() => {
+        idle.setAttribute('opacity', '0');
+        chew.setAttribute('opacity', '0');
+        open.setAttribute('opacity', '1');
+      }, 280);
+
+      setTimeout(() => {
+        open.setAttribute('opacity', '0');
+        chew.setAttribute('opacity', '1');
+        if (eyesNorm && eyesHappy) {
+          eyesNorm.setAttribute('opacity', '0');
+          eyesHappy.setAttribute('opacity', '1');
+        }
+      }, isRamen ? 640 : 540);
+
+      setTimeout(() => {
+        chew.setAttribute('opacity', '0');
+        idle.setAttribute('opacity', '1');
+        if (eyesNorm && eyesHappy) {
+          eyesHappy.setAttribute('opacity', '0');
+          eyesNorm.setAttribute('opacity', '1');
+        }
+      }, 1580);
+    }
+
+    function animateFoodFromDishToMouth(dishSlotId, targetSeatKey, foodType) {
+      const layer = document.getElementById('interactionAnimLayer');
+      const dishEl = document.getElementById(dishSlotId);
+      const mouthEl = document.getElementById(`mouthAnchor-${targetSeatKey}`);
+      if (!layer || !dishEl || !mouthEl) return;
+
+      const start = getRelativeCoords(dishEl);
+      const end = getRelativeCoords(mouthEl);
+      const isRamen = foodType === 'ramen';
+
+      if (isRamen) sfxRamenSlurp();
+      else sfxChewMorsel();
+
+      triggerMouthEatExpression(targetSeatKey, isRamen);
+
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.left = '0px';
+      wrapper.style.top = '0px';
+      wrapper.style.width = '120px';
+      wrapper.style.height = '120px';
+      wrapper.style.marginLeft = '-60px';
+      wrapper.style.marginTop = '-60px';
+      wrapper.style.pointerEvents = 'none';
+      wrapper.style.zIndex = '38';
+
+      wrapper.innerHTML = `
+        <svg viewBox="-60 -60 120 120" class="w-full h-full overflow-visible drop-shadow-[0_8px_12px_rgba(0,0,0,0.75)]">
+          <g class="flying-morsel">
+            ${getMorselSVG(foodType)}
+          </g>
+          <g transform="translate(4, -2)">
+            <line x1="-2" y1="0" x2="54" y2="-38" stroke="#f8fafc" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="2" y1="3" x2="58" y2="-28" stroke="#cbd5e1" stroke-width="3.2" stroke-linecap="round"/>
+            <ellipse cx="44" cy="-30" rx="14" ry="9" transform="rotate(-25 44 -30)" fill="#f3cdb6" stroke="#d49e80" stroke-width="0.9"/>
+            <rect x="33" y="-35" width="14" height="5.5" rx="2.7" transform="rotate(-20 40 -32)" fill="#f7d8c5"/>
+          </g>
+        </svg>
+      `;
+      layer.appendChild(wrapper);
+
+      const midX = (start.x + end.x) / 2;
+      const midY = Math.min(start.y, end.y) - (isRamen ? 52 : 34);
+
+      wrapper.animate([
+        { transform: `translate(${start.x}px, ${start.y}px) scale(0.88)` },
+        { transform: `translate(${midX}px, ${midY}px) scale(1.08)`, offset: 0.42 },
+        { transform: `translate(${end.x}px, ${end.y}px) scale(0.96)`, offset: 0.78 },
+        { transform: `translate(${end.x + 18}px, ${end.y - 10}px) scale(0.82)`, opacity: 0 }
+      ], {
+        duration: isRamen ? 1120 : 880,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        fill: 'forwards'
+      });
+
+      const morselNode = wrapper.querySelector('.flying-morsel');
+      if (morselNode) {
+        setTimeout(() => {
+          morselNode.style.transition = 'opacity 0.15s ease, transform 0.2s ease';
+          morselNode.style.opacity = '0';
+          if (isRamen) morselNode.style.transform = 'translateY(-18px) scaleY(0.2)';
+        }, isRamen ? 680 : 560);
+      }
+
+      setTimeout(() => {
+        const yum = document.createElement('div');
+        yum.className = 'yum-floater absolute px-2.5 py-0.5 rounded-full bg-amber-500/95 text-slate-950 font-black text-[11px] shadow-lg whitespace-nowrap';
+        yum.style.left = `${end.x}px`;
+        yum.style.top = `${end.y - 18}px`;
+        yum.textContent = isRamen ? '후루룩~ 캬! 🍜' : '냠냠! 😋';
+        layer.appendChild(yum);
+        setTimeout(() => yum.remove(), 1250);
+      }, isRamen ? 650 : 540);
+
+      setTimeout(() => wrapper.remove(), 1200);
+    }
+
+    function animateAllHandsCheersAndDrink() {
+      const layer = document.getElementById('interactionAnimLayer');
+      const centerAnchor = document.getElementById('tableCenterAnchor');
+      if (!layer || !centerAnchor) return;
+
+      const center = getRelativeCoords(centerAnchor);
+      const participants = [{ seatKey: 'me', sleeve: '#f59e0b' }];
+      const seats = getCompanionsForSeats();
+      const sleevePalette = ['#334155', '#e5d6c5', '#6d2134'];
+      seats.forEach((p, idx) => {
+        if (p) participants.push({ seatKey: String(idx + 1), sleeve: sleevePalette[idx % 3] });
+      });
+
+      participants.forEach((part) => {
+        const mouthEl = document.getElementById(`mouthAnchor-${part.seatKey}`);
+        if (!mouthEl) return;
+        const home = getRelativeCoords(mouthEl);
+
+        const dx = center.x - home.x;
+        const dy = center.y - home.y;
+        const offsetDist = 18;
+        const norm = Math.hypot(dx, dy) || 1;
+        const meetX = center.x - (dx / norm) * offsetDist;
+        const meetY = center.y - (dy / norm) * offsetDist;
+
+        const handNode = document.createElement('div');
+        handNode.style.position = 'absolute';
+        handNode.style.left = '0px';
+        handNode.style.top = '0px';
+        handNode.style.width = '84px';
+        handNode.style.height = '84px';
+        handNode.style.marginLeft = '-42px';
+        handNode.style.marginTop = '-42px';
+        handNode.style.pointerEvents = 'none';
+        handNode.style.zIndex = '39';
+
+        const isBottom = home.y > center.y;
+        handNode.innerHTML = `
+          <svg viewBox="-42 -42 84 84" class="w-full h-full overflow-visible drop-shadow-[0_8px_14px_rgba(0,0,0,0.8)]">
+            <path d="${isBottom ? 'M -10,40 L -4,14 L 12,14 L 18,40 Z' : 'M -10,-40 L -4,-14 L 12,-14 L 18,-40 Z'}" fill="${part.sleeve}"/>
+            <ellipse cx="4" cy="${isBottom ? 12 : -10}" rx="11" ry="8" fill="#f3cdb6"/>
+            <g class="shot-glass-cup">
+              <polygon points="-11,-14 11,-14 8.5,12 -8.5,12" fill="url(#shotCupGlass)" stroke="#ffffff" stroke-width="1.5"/>
+              <polygon class="shot-liquid" points="-9.5,-3 9.5,-3 7.5,10.5 -7.5,10.5" fill="#bae6fd" opacity="0.82"/>
+              <ellipse cx="0" cy="-14" rx="11" ry="2.8" fill="none" stroke="#ffffff" stroke-width="1.2"/>
+            </g>
+          </svg>
+        `;
+        layer.appendChild(handNode);
+
+        handNode.animate([
+          { transform: `translate(${home.x}px, ${home.y + 18}px) scale(0.75) rotate(0deg)`, opacity: 0 },
+          { transform: `translate(${meetX}px, ${meetY}px) scale(1.06) rotate(${dx > 0 ? 10 : -10}deg)`, opacity: 1, offset: 0.32 },
+          { transform: `translate(${meetX}px, ${meetY - 4}px) scale(1.12) rotate(${dx > 0 ? 15 : -15}deg)`, opacity: 1, offset: 0.44 },
+          { transform: `translate(${home.x}px, ${home.y}px) scale(0.95) rotate(${dx >= 0 ? -42 : 42}deg)`, opacity: 1, offset: 0.80 },
+          { transform: `translate(${home.x}px, ${home.y + 14}px) scale(0.8) rotate(0deg)`, opacity: 0 }
+        ], {
+          duration: 1380,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          fill: 'forwards'
+        });
+
+        setTimeout(() => {
+          const idle = document.getElementById(`mouthIdle-${part.seatKey}`);
+          const open = document.getElementById(`mouthOpen-${part.seatKey}`);
+          if (idle && open) {
+            idle.setAttribute('opacity', '0');
+            open.setAttribute('opacity', '1');
+            setTimeout(() => {
+              open.setAttribute('opacity', '0');
+              idle.setAttribute('opacity', '1');
+            }, 340);
+          }
+          const liq = handNode.querySelector('.shot-liquid');
+          if (liq) liq.setAttribute('opacity', '0.1');
+        }, 900);
+
+        setTimeout(() => handNode.remove(), 1420);
+      });
+
+      setTimeout(() => {
+        const burst = document.createElement('div');
+        burst.style.position = 'absolute';
+        burst.style.left = `${center.x}px`;
+        burst.style.top = `${center.y}px`;
+        burst.style.transform = 'translate(-50%, -50%)';
+        burst.style.pointerEvents = 'none';
+        burst.style.zIndex = '40';
+        burst.innerHTML = `
+          <div class="flex flex-col items-center">
+            <div class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-[0_0_25px_rgba(251,191,36,0.95)] whitespace-nowrap animate-bounce">
+              🍶 챙~!! 다같이 짠!! ✨
+            </div>
+          </div>
+        `;
+        layer.appendChild(burst);
+        setTimeout(() => burst.remove(), 760);
+      }, 310);
+    }
+
+    // ==================== 10. VISUAL STATE & DRUNK CAMERA SWAY/BLUR ENGINE ====================
+    function applyDrunkScreenEffects() {
+      const stage = document.getElementById('drunkCameraStage');
+      const vignette = document.getElementById('drunkVignetteOverlay');
+      stage.classList.remove('drunk-stage-1', 'drunk-stage-2', 'drunk-stage-3');
+
+      if (!appState.dizzyEffectOn || appState.drunkPct < 45) {
+        vignette.style.opacity = '0';
+        return;
+      }
+
+      if (appState.drunkPct >= 90) {
+        stage.classList.add('drunk-stage-3');
+        vignette.style.opacity = '0.92';
+      } else if (appState.drunkPct >= 70) {
+        stage.classList.add('drunk-stage-2');
+        vignette.style.opacity = '0.62';
+      } else {
+        stage.classList.add('drunk-stage-1');
+        vignette.style.opacity = '0.32';
+      }
+    }
+
+    function renderAllVisuals() {
+      const pct = Math.max(0, Math.min(100, appState.drunkPct));
+      let moodEmoji = '😊 기분 좋음';
+      if (pct >= 20 && pct < 45) moodEmoji = '☺️ 발그레 기분업';
+      else if (pct >= 45 && pct < 70) moodEmoji = '🥰 알딸딸 흔들~';
+      else if (pct >= 70 && pct < 100) moodEmoji = '🥴 헤롱헤롱 취기!';
+      else if (pct >= 100) moodEmoji = '🎆 광안리 만취대축제!';
+
+      document.getElementById('drunkMoodLabel').textContent = `${moodEmoji} ${pct}%`;
+      document.getElementById('drunkGaugeFill').style.width = `${pct}%`;
+      document.getElementById('bottleTotalBadge').textContent = `🍶 ${appState.emptyBottles}병`;
+
+      applyDrunkScreenEffects();
+
+      // 1. Bangeo
+      let bLeft = 0;
+      appState.bangeoMask.forEach((v, i) => {
+        const el = document.getElementById(`bangeo-unit-${i}`);
+        if (el) { el.classList.toggle('consumed', !v); if (v) bLeft++; }
+      });
+      document.getElementById('bangeoCountPill').textContent = `${bLeft}/10`;
+      document.getElementById('bangeoSoldOutLabel').setAttribute('opacity', bLeft === 0 ? '1' : '0');
+
+      // 2. Kimbap
+      let kLeft = 0;
+      appState.kimbapMask.forEach((v, i) => {
+        const el = document.getElementById(`kimbap-unit-${i}`);
+        if (el) { el.classList.toggle('consumed', !v); if (v) kLeft++; }
+      });
+      document.getElementById('kimbapCountPill').textContent = `${kLeft}/8`;
+      document.getElementById('kimbapSoldOutLabel').setAttribute('opacity', kLeft === 0 ? '1' : '0');
+
+      // 3. Mountain Yuringi
+      const ySlot = document.getElementById('dishSlot-yuringi');
+      ySlot.classList.toggle('hidden', !appState.yuringiOrdered);
+      let yLeft = 0;
+      appState.yuringiMask.forEach((v, i) => {
+        const el = document.getElementById(`yuringi-unit-${i}`);
+        if (el) { el.classList.toggle('consumed', !v); if (v) yLeft++; }
+      });
+      document.getElementById('yuringiCountPill').textContent = `${yLeft}/8`;
+
+      // 4. Pocha Tteokbokki
+      const tSlot = document.getElementById('dishSlot-tteokbokki');
+      tSlot.classList.toggle('hidden', !appState.tteokOrdered);
+      let tLeft = 0;
+      appState.tteokMask.forEach((v, i) => {
+        const el = document.getElementById(`tteok-unit-${i}`);
+        if (el) { el.classList.toggle('consumed', !v); if (v) tLeft++; }
+      });
+      document.getElementById('tteokCountPill').textContent = `${tLeft}/8`;
+
+      // 5. Jumbo Futomaki
+      const fSlot = document.getElementById('dishSlot-futomaki');
+      fSlot.classList.toggle('hidden', !appState.futoOrdered);
+      let fLeft = 0;
+      appState.futoMask.forEach((v, i) => {
+        const el = document.getElementById(`futo-unit-${i}`);
+        if (el) { el.classList.toggle('consumed', !v); if (v) fLeft++; }
+      });
+      document.getElementById('futoCountPill').textContent = `${fLeft}/6`;
+
+      // 6. Cold Water
+      const wRatio = appState.waterSipsLeft / 5;
+      const wHeight = Math.max(6, Math.round(72 * wRatio));
+      const wY = 98 - wHeight;
+      document.getElementById('waterLevelRect').setAttribute('y', wY);
+      document.getElementById('waterLevelRect').setAttribute('height', wHeight);
+      document.getElementById('waterMeniscus').setAttribute('cy', wY);
+      document.getElementById('waterIceGroup').setAttribute('transform', `translate(0, ${(1 - wRatio) * 48})`);
+      document.getElementById('waterCountPill').textContent = `${appState.waterSipsLeft}/5`;
+
+      // 7. Service Ramen
+      const waitBell = document.getElementById('ramenWaitingBell');
+      const activeCup = document.getElementById('ramenActiveCup');
+      const ramenPill = document.getElementById('ramenCountPill');
+      if (appState.ramenSlurpsLeft > 0) {
+        waitBell.setAttribute('opacity', '0');
+        activeCup.setAttribute('opacity', '1');
+        ramenPill.textContent = `라면 ${appState.ramenSlurpsLeft}/5`;
+        document.getElementById('ramenBrothAndNoodles').setAttribute('transform', `translate(0, ${(5 - appState.ramenSlurpsLeft) * 3})`);
+        document.getElementById('bonusShishamoOnCup').setAttribute('opacity', appState.chefVisits >= 2 && appState.ramenSlurpsLeft >= 3 ? '1' : '0');
+      } else {
+        waitBell.setAttribute('opacity', '1');
+        activeCup.setAttribute('opacity', '0');
+        ramenPill.textContent = appState.chefVisits > 0 ? '완식(리필클릭)' : '서비스벨';
+      }
+
+      // 8. Chamisul Bottle & Empty Crate
+      const sRatio = appState.sojuShotsLeft / 7;
+      const sHeight = Math.max(4, Math.round(58 * sRatio));
+      const sY = 112 - sHeight;
+      document.getElementById('sojuBottleLiquidRect').setAttribute('y', sY);
+      document.getElementById('sojuBottleLiquidRect').setAttribute('height', sHeight);
+      document.getElementById('sojuBottleMeniscus').setAttribute('cy', sY);
+      document.getElementById('sojuCountPill').textContent = `${appState.sojuShotsLeft}/7잔`;
+
+      document.getElementById('emptyBottleCountPill').textContent = `🍾 빈병 ${appState.emptyBottles}`;
+      const rack = document.getElementById('emptyBottleVisualRack');
+      let bottlesHtml = '';
+      for (let i = 0; i < Math.min(appState.emptyBottles, 9); i++) {
+        bottlesHtml += `
+          <svg viewBox="0 0 28 56" class="w-4 h-9 drop-shadow">
+            <path d="M 11,4 L 17,4 L 18,18 C 21,22 24,26 24,32 L 24,51 C 24,53 22,54 20,54 L 8,54 C 6,54 4,53 4,51 L 4,32 C 4,26 7,22 10,18 Z" fill="url(#emeraldBottle)" stroke="#6ee7b7" stroke-width="0.9"/>
+            <rect x="5" y="34" width="18" height="10" rx="1" fill="#ffffff"/>
+          </svg>
+        `;
+      }
+      rack.innerHTML = bottlesHtml;
+
+      renderSeatsAndMyPortrait();
+      renderLiveBill();
+    }
+
+    // ==================== 11. USER INTERACTIONS (CHEERS, EAT, MENU ORDER, CHECKOUT) ====================
+    let toastTimer = null;
+    function showToastMsg(msg) {
+      const el = document.getElementById('sceneStatusToast');
+      el.textContent = msg;
+      el.classList.remove('opacity-0');
+      el.classList.add('opacity-100');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove('opacity-100');
+        el.classList.add('opacity-0');
+      }, 2500);
+    }
+
+    const bubbleTimers = {};
+    function showSeatBubble(seatId, text) {
+      const elId = seatId === 'me' ? 'mySeatBubble' : `seatBubble-${seatId}`;
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = text;
+      el.classList.remove('hidden', 'seat-bubble');
+      void el.offsetWidth;
+      el.classList.add('seat-bubble');
+      clearTimeout(bubbleTimers[elId]);
+      bubbleTimers[elId] = setTimeout(() => el.classList.add('hidden'), 3600);
+    }
+
+    function triggerRandomCompanionReaction(contextType) {
+      const seats = getCompanionsForSeats();
+      // Only auto-speak for AI companions so real friends speak for themselves!
+      const aiOccupied = seats
+        .map((p, idx) => (p && p.isAI ? { ...p, seatNum: idx + 1 } : null))
+        .filter(Boolean);
+      if (aiOccupied.length === 0) return;
+
+      const chosen = aiOccupied[Math.floor(Math.random() * aiOccupied.length)];
+      const pools = {
+        cheers: [
+          '짠~!! 은색 원형 포차 테이블에 다 같이 손 모으니까 진짜 술맛 난다!🍶',
+          '크으~ 소주잔 부딪히는 소리 맑은 것 봐! 원샷!!',
+          '다들 볼 발그레해진 거 너무 귀엽다ㅋㅋ 광안리 밤바다 위하여!'
+        ],
+        bangeo: [
+          '방어 기름기 대박이지! 입에 넣자마자 사르르 녹아~🐟',
+          '역시 겨울 광안리는 제철 대방어가 최고야!'
+        ],
+        kimbap: [
+          '아귀간소금김밥 한 입 크게 먹으니까 고소함이 입안 가득 퍼져🧡',
+          '안키모가 진짜 버터처럼 녹진해! 소주 안주로 1등!'
+        ],
+        yuringi: [
+          '산더미유린기 튀김옷 바삭한 소리 들렸어?! 청양고추 소스 새콤매콤 미쳤다🍗',
+          '유린기 산처럼 쌓여있는 거 봐~ 양상추랑 같이 먹으니까 계속 들어가!'
+        ],
+        tteokbokki: [
+          '포차에서는 역시 매콤달콤 국물 떡볶이가 빠질 수 없지!🌶️',
+          '꾸덕한 떡볶이 국물에 김밥이랑 튀김 찍어 먹으면 극락이야~'
+        ],
+        futomaki: [
+          '후토마끼 한 피스 크기 실화야?! 새우튀김 꼬리까지 바삭해🍣',
+          '입 크게 아~ 벌려서 한입에 먹으니까 복이 굴러들어오는 맛이야!'
+        ],
+        ramen: [
+          '와 면발 후루룩 치는 소리 들으니까 나도 침 고인다ㅋㅋ 국물 최고지!🍜',
+          '바닷바람 맞으면서 먹는 해물컵라면이 진짜 보약이네!'
+        ],
+        chef: [
+          '사장님 직접 조리복 입고 가져다주셔서 더 맛있어요 감사합니데이~👏'
+        ],
+        chat: [
+          '맞아맞아ㅋㅋ 오늘 광안리 밤바다 텐션 진짜 최고다!',
+          '오 인정!! 이 분위기면 오늘 새벽까지 달릴 수 있겠는데?🍶',
+          '우리 다음에 부산 오면 또 이 은색 원형 테이블 자리 앉자✨'
+        ]
+      };
+      const list = pools[contextType] || chosen.lines || ['광안리 분위기 너무 좋다!'];
+      const msg = list[Math.floor(Math.random() * list.length)];
+
+      setTimeout(() => {
+        showSeatBubble(chosen.seatNum, msg);
+        appendLocalChat(chosen.shortName || chosen.name, msg, 'companion');
+      }, 520);
+    }
+
+    // Override firework button so friends see fireworks too!
+    const origManualBarrage = window.launchManualFireworkBarrage;
+    window.launchManualFireworkBarrage = function () {
+      origManualBarrage();
+      sendMultiplayerEvent({ type: 'REMOTE_FX', fx: 'FIREWORK', senderId: myClientId, senderName: appState.myName });
+    };
+
+    window.cheersAll = function () {
+      if (appState.isCheckingOut) return;
+      sfxClinkAndGulp();
+      animateAllHandsCheersAndDrink();
+      sendMultiplayerEvent({ type: 'REMOTE_FX', fx: 'CHEERS', senderId: myClientId, senderName: appState.myName });
+
+      const bottleActor = document.getElementById('chamisulBottleActor');
+      bottleActor.classList.remove('wobble-active');
+      void bottleActor.offsetWidth;
+      bottleActor.classList.add('wobble-active');
+
+      const prevDrunk = appState.drunkPct;
+      appState.sojuShotsLeft -= 1;
+      appState.totalShotsDrunk += 1;
+      appState.drunkPct = Math.min(100, appState.drunkPct + 12);
+      appState.peakDrunkPct = Math.max(appState.peakDrunkPct, appState.drunkPct);
+
+      showSeatBubble('me', '다같이 잔 모아 짠~!! 원샷! 🍶');
+      const seats = getCompanionsForSeats();
+      const shortToasts = ['짠~!! 원샷!✨', '광안리 위하여!🍶', '캬~ 시원하다!!'];
+      seats.forEach((p, idx) => {
+        if (p) setTimeout(() => showSeatBubble(idx + 1, shortToasts[idx % 3]), 140 * (idx + 1));
+      });
+
+      if (prevDrunk < 100 && appState.drunkPct === 100) {
+        setTimeout(() => launchDrunkFireworkFestival(), 750);
+      }
+
+      if (appState.sojuShotsLeft <= 0) {
+        appState.emptyBottles += 1;
+        appState.billCounts.soju += 1;
+        setTimeout(() => {
+          appState.sojuShotsLeft = 7;
+          showToastMsg(`🍾 빈병 +1 추가! 새 살얼음 참이슬(5,000원)이 테이블에 올라왔습니다!`);
+          appendLocalChat('시스템', `🍾 참이슬 ${appState.emptyBottles}병 클리어! 새 병 추가 (+5,000원 계산서 반영)`, 'system');
+          renderAllVisuals();
+          syncRoomTableState();
+        }, 950);
+      } else {
+        showToastMsg(`🍶 다같이 손 내밀어 짠~! 꼴깍! (남은 소주 ${appState.sojuShotsLeft}/7잔)`);
+      }
+
+      const actionLine = '🍶 원형 테이블 중앙으로 다같이 소주잔을 모아 짠~!!';
+      appendLocalChat(appState.myName, actionLine, 'action');
+      sendMultiplayerEvent({ type: 'CHAT_MSG', senderId: myClientId, sender: appState.myName, text: actionLine, kind: 'action' });
+      triggerRandomCompanionReaction('cheers');
+      renderAllVisuals();
+      syncRoomTableState();
+    };
+
+    function consumeDishPiece(maskArr, dishSlotId, foodKey, korLabel) {
+      if (appState.isCheckingOut) return;
+      const avail = maskArr.map((v, i) => (v ? i : -1)).filter(i => i !== -1);
+      if (avail.length === 0) {
+        showToastMsg(`${korLabel} 접시가 비었어요! [🍽️ 새 안주 주문]에서 추가해보세요.`);
+        openMenuModal();
+        return;
+      }
+      const idx = avail[0];
+      maskArr[idx] = false;
+      appState.totalAnjuEaten += 1;
+
+      renderAllVisuals();
+      animateFoodFromDishToMouth(dishSlotId, 'me', foodKey);
+      sendMultiplayerEvent({
+        type: 'REMOTE_FX',
+        fx: 'EAT',
+        senderId: myClientId,
+        senderName: appState.myName,
+        dishSlotId,
+        foodKey,
+        korLabel
+      });
+
+      const rem = avail.length - 1;
+      showToastMsg(`🥢 ${korLabel} 한 점을 입에 쏙~! 오물오물 (남은 양 ${rem}/${maskArr.length})`);
+      showSeatBubble('me', `아~ 냠냠! ${korLabel} 진짜 맛있다 😋`);
+      const eatLine = `🥢 ${korLabel} 한 점을 맛있게 먹었습니다. (남은 수량 ${rem})`;
+      appendLocalChat(appState.myName, eatLine, 'action');
+      sendMultiplayerEvent({ type: 'CHAT_MSG', senderId: myClientId, sender: appState.myName, text: eatLine, kind: 'action' });
+      triggerRandomCompanionReaction(foodKey);
+      syncRoomTableState();
+    }
+
+    window.eatBangeo = () => consumeDishPiece(appState.bangeoMask, 'dishSlot-bangeo', 'bangeo', '제철 대방어회');
+    window.eatKimbap = () => consumeDishPiece(appState.kimbapMask, 'dishSlot-kimbap', 'kimbap', '아귀간소금김밥');
+    window.eatYuringi = () => consumeDishPiece(appState.yuringiMask, 'dishSlot-yuringi', 'yuringi', '산더미유린기');
+    window.eatTteokbokki = () => consumeDishPiece(appState.tteokMask, 'dishSlot-tteokbokki', 'tteokbokki', '포차 국물 떡볶이');
+    window.eatFutomaki = () => consumeDishPiece(appState.futoMask, 'dishSlot-futomaki', 'futomaki', '특대 후토마끼');
+
+    window.eatRandomAnju = function () {
+      const candidates = [];
+      if (appState.bangeoMask.some(Boolean)) candidates.push(window.eatBangeo);
+      if (appState.kimbapMask.some(Boolean)) candidates.push(window.eatKimbap);
+      if (appState.yuringiOrdered && appState.yuringiMask.some(Boolean)) candidates.push(window.eatYuringi);
+      if (appState.tteokOrdered && appState.tteokMask.some(Boolean)) candidates.push(window.eatTteokbokki);
+      if (appState.futoOrdered && appState.futoMask.some(Boolean)) candidates.push(window.eatFutomaki);
+      if (appState.ramenSlurpsLeft > 0) candidates.push(window.eatServiceRamen);
+
+      if (candidates.length === 0) {
+        openMenuModal();
+        return;
+      }
+      candidates[Math.floor(Math.random() * candidates.length)]();
+    };
+
+    window.drinkColdWater = function () {
+      if (appState.waterSipsLeft <= 0) {
+        appState.waterSipsLeft = 5;
+        showToastMsg('🧊 시원한 해장 얼음냉수를 가득 리필했습니다! (무료)');
+        renderAllVisuals();
+        return;
+      }
+      sfxChewMorsel();
+      appState.waterSipsLeft -= 1;
+      appState.drunkPct = Math.max(0, appState.drunkPct - 10);
+      showToastMsg(`🧊 해장 냉수 벌컥! 취기가 -10% 내려가며 시야가 맑아집니다!`);
+      showSeatBubble('me', '어우 살 것 같다~ 얼음물 마시니까 취기가 확 깨네🧊');
+      if (appState.waterSipsLeft === 0) {
+        setTimeout(() => { appState.waterSipsLeft = 5; renderAllVisuals(); }, 1100);
+      }
+      renderAllVisuals();
+    };
+
+    // ==================== 12. CHEF SERVICE & MENU MODAL ORDERING ====================
+    function playChefWalkAnimation(bannerLine, onDeliveredCallback) {
+      if (appState.chefWalking) return;
+      appState.chefWalking = true;
+      sfxChefBell();
+
+      const chefActor = document.getElementById('chefWalkActor');
+      document.getElementById('chefSpeechBanner').textContent = bannerLine;
+
+      chefActor.style.transition = 'none';
+      chefActor.className = 'chef-off-left absolute top-4 left-0 right-0 z-35 flex flex-col items-center justify-center pointer-events-none';
+      void chefActor.offsetWidth;
+
+      chefActor.style.transition = 'transform 1.05s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease';
+      chefActor.className = 'chef-center-stage absolute top-4 left-0 right-0 z-35 flex flex-col items-center justify-center pointer-events-none';
+
+      setTimeout(() => {
+        if (onDeliveredCallback) onDeliveredCallback();
+      }, 1150);
+
+      setTimeout(() => {
+        chefActor.className = 'chef-off-right absolute top-4 left-0 right-0 z-35 flex flex-col items-center justify-center pointer-events-none';
+      }, 3250);
+
+      setTimeout(() => {
+        appState.chefWalking = false;
+      }, 4300);
+    }
+
+    window.summonChefService = function () {
+      if (appState.chefWalking || appState.isCheckingOut) return;
+      appState.chefVisits += 1;
+      appState.billCounts.svcRamen += 1;
+      if (appState.chefVisits >= 2) appState.billCounts.svcShishamo += 1;
+
+      const speech = appState.chefVisits >= 2
+        ? '👨‍🍳 방어집 사장님: "단골 서비스 추가요~! 얼큰 해물컵라면에 직화 시샤모구이까지 0원 서비스입니데이!"'
+        : '👨‍🍳 방어집 사장님: "광안리 단골 서비스 나갑니데이~ 뜨끈한 해물컵라면 후루룩 드이소! (0원)"';
+
+      appendLocalChat('방어집 사장님', speech.replace('👨‍🍳 방어집 사장님: ', ''), 'chef');
+      sendMultiplayerEvent({ type: 'REMOTE_FX', fx: 'CHEF_SERVICE', senderId: myClientId, speech });
+
+      playChefWalkAnimation(speech, () => {
+        appState.ramenSlurpsLeft = 5;
+        renderAllVisuals();
+        showToastMsg('🍜 사장님이 서비스 컵라면을 원형 테이블에 내려놓으셨습니다! (실시간 계산서 0원 기록)');
+        triggerRandomCompanionReaction('chef');
+        syncRoomTableState();
+      });
+    };
+
+    window.eatServiceRamen = function () {
+      if (appState.ramenSlurpsLeft <= 0) {
+        window.summonChefService();
+        return;
+      }
+      appState.ramenSlurpsLeft -= 1;
+      appState.totalAnjuEaten += 1;
+      renderAllVisuals();
+
+      animateFoodFromDishToMouth('dishSlot-ramen', 'me', 'ramen');
+      sendMultiplayerEvent({
+        type: 'REMOTE_FX',
+        fx: 'EAT',
+        senderId: myClientId,
+        senderName: appState.myName,
+        dishSlotId: 'dishSlot-ramen',
+        foodKey: 'ramen',
+        korLabel: '해물컵라면'
+      });
+
+      showToastMsg(`🍜 후루루룩~ 짭짭! 캬~! 얼큰한 해물컵라면 면치기! (${appState.ramenSlurpsLeft}/5입)`);
+      showSeatBubble('me', '후루룩~! 캬 국물까지 끝내준다!! 🍜');
+      const slurpLine = `🍜 김이 모락모락 나는 서비스 컵라면을 후루룩~! 면치기했습니다. (${appState.ramenSlurpsLeft}/5입)`;
+      appendLocalChat(appState.myName, slurpLine, 'action');
+      sendMultiplayerEvent({ type: 'CHAT_MSG', senderId: myClientId, sender: appState.myName, text: slurpLine, kind: 'action' });
+      triggerRandomCompanionReaction('ramen');
+      syncRoomTableState();
+    };
+
+    window.openMenuModal = function () {
+      document.getElementById('menuModal').classList.remove('hidden');
+    };
+    window.closeMenuModal = function () {
+      document.getElementById('menuModal').classList.add('hidden');
+    };
+
+    window.orderMenuItem = function (itemKey) {
+      sfxChefBell();
+      let orderChat = '';
+      if (itemKey === 'bangeo') {
+        appState.bangeoMask = Array(10).fill(true);
+        appState.billCounts.bangeo += 1;
+        showToastMsg('🐟 제철 대방어회(38,000원) 새 접시가 은색 원형 테이블에 세팅되었습니다!');
+        orderChat = '🍽️ [주문] 제철 대방어회 1접시 추가! (+38,000원)';
+      } else if (itemKey === 'kimbap') {
+        appState.kimbapMask = Array(8).fill(true);
+        appState.billCounts.kimbap += 1;
+        showToastMsg('🧡🍙 아귀간소금김밥(18,000원) 새 접시가 원형 테이블에 세팅되었습니다!');
+        orderChat = '🍽️ [주문] 아귀간소금김밥 1접시 추가! (+18,000원)';
+      } else if (itemKey === 'yuringi') {
+        appState.yuringiOrdered = true;
+        appState.yuringiMask = Array(8).fill(true);
+        appState.billCounts.yuringi += 1;
+        showToastMsg('🍗🌶️ 바삭한 산더미유린기(24,000원)가 은색 원형 테이블에 올라왔습니다!');
+        orderChat = '🍽️ [주문] 산더미유린기 1접시 주문! (+24,000원)';
+      } else if (itemKey === 'tteokbokki') {
+        appState.tteokOrdered = true;
+        appState.tteokMask = Array(8).fill(true);
+        appState.billCounts.tteokbokki += 1;
+        showToastMsg('🌶️🍢 매콤달콤 포차 국물 떡볶이(16,000원)가 원형 테이블에 올라왔습니다!');
+        orderChat = '🍽️ [주문] 포차 국물 떡볶이 1그릇 주문! (+16,000원)';
+      } else if (itemKey === 'futomaki') {
+        appState.futoOrdered = true;
+        appState.futoMask = Array(6).fill(true);
+        appState.billCounts.futomaki += 1;
+        showToastMsg('🍣 알찬 특대 후토마끼(26,000원)가 원형 테이블에 올라왔습니다!');
+        orderChat = '🍽️ [주문] 특대 후토마끼(6피스) 주문! (+26,000원)';
+      } else if (itemKey === 'soju') {
+        appState.sojuShotsLeft = 7;
+        appState.billCounts.soju += 1;
+        showToastMsg('🍶 살얼음 참이슬 새 병(5,000원)이 추가되었습니다!');
+        orderChat = '🍶 [주문] 살얼음 참이슬 1병 추가! (+5,000원)';
+      } else if (itemKey === 'water') {
+        appState.waterSipsLeft = 5;
+        showToastMsg('🧊 해장 얼음냉수가 가득 리필되었습니다! (무료)');
+      }
+
+      if (orderChat) {
+        appendLocalChat(appState.myName, orderChat, 'chef');
+        sendMultiplayerEvent({ type: 'CHAT_MSG', senderId: myClientId, sender: appState.myName, text: orderChat, kind: 'chef' });
+      }
+      closeMenuModal();
+      renderAllVisuals();
+      syncRoomTableState();
+    };
+
+    // ==================== 13. "사장님 계산이요~" CHECKOUT & FINAL RECEIPT ENDING ====================
+    function isCheckoutMessage(msg) {
+      const normalized = msg.replace(/\s+/g, '');
+      return (
+        normalized.includes('계산이요') ||
+        normalized.includes('계산할게') ||
+        normalized.includes('계산해줘') ||
+        normalized.includes('계산해주세요') ||
+        normalized === '계산' ||
+        (normalized.includes('사장님') && normalized.includes('계산'))
+      );
+    }
+
+    function runCheckoutEndingSequence(fromRemote = false) {
+      if (appState.isCheckingOut) return;
+      appState.isCheckingOut = true;
+
+      const seats = getCompanionsForSeats();
+      const farewells = [
+        '오늘 광안리 밤바다 보면서 진짜 즐거웠어! 조심히 들어가~👋',
+        '대방어랑 술맛 최고였다! 다음에 또 이 멤버로 모이자✨',
+        '오늘 텐션 완전 좋았어ㅋㅋ 집 도착하면 연락해~!'
+      ];
+      seats.forEach((p, idx) => {
+        if (p && p.isAI) {
+          setTimeout(() => {
+            showSeatBubble(idx + 1, farewells[idx % farewells.length]);
+            appendLocalChat(p.shortName || p.name, farewells[idx % farewells.length], 'companion');
+          }, 350 * (idx + 1));
+        }
+      });
+
+      const checkoutLine = '👨‍🍳 방어집 사장님: "아이고 벌써 가시게예? 오늘 광안리 밤바다에서 좋은 추억 되셨지예~ 여기 계산서 있습니데이!"';
+      appendLocalChat('방어집 사장님', '아이고 벌써 가시게예? 여기 정산 영수증 나왔습니데이~ 조심히 가이소!', 'chef');
+
+      appState.chefWalking = false;
+      playChefWalkAnimation(checkoutLine, () => {
+        sfxCashRegister();
+        if (!fromRemote) origManualBarrage();
+        openFinalReceiptModal();
+      });
+    }
+
+    function openFinalReceiptModal() {
+      const { grandTotal, serviceSaved, headcount, perPerson, rows } = calculateBillSummary();
+      const d = new Date();
+      const nowStr = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      document.getElementById('finalReceiptTimestamp').textContent = `발행일시: ${nowStr} · 방코드: ${appState.roomCode}`;
+
+      document.getElementById('finalReceiptItems').innerHTML = rows.map(r => `
+        <div class="flex items-center justify-between py-0.5 ${r.isService ? 'text-emerald-700 font-bold' : 'text-slate-800'}">
+          <span>${r.name} × ${r.qty}</span>
+          <span class="font-mono font-bold">${r.isService ? '0원 (서비스)' : r.lineTotal.toLocaleString() + '원'}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('finalStatSoju').textContent = `${appState.emptyBottles}병 클리어 (총 ${appState.totalShotsDrunk}잔)`;
+      document.getElementById('finalStatAnju').textContent = `총 ${appState.totalAnjuEaten}점`;
+      document.getElementById('finalStatPeakDrunk').textContent = `${appState.peakDrunkPct}%`;
+      document.getElementById('finalStatServiceSaved').textContent = `${serviceSaved.toLocaleString()}원 무료제공`;
+
+      document.getElementById('finalReceiptTotal').textContent = `${grandTotal.toLocaleString()}원`;
+      document.getElementById('finalReceiptSplitLabel').textContent = `1/N 인당 정산금액 (${headcount}명)`;
+      document.getElementById('finalReceiptSplitAmount').textContent = `${perPerson.toLocaleString()}원`;
+
+      document.getElementById('finalReceiptModal').classList.remove('hidden');
+    }
+
+    window.triggerCheckoutFromButton = function () {
+      const msg = '사장님 계산이요~!';
+      showSeatBubble('me', msg);
+      appendLocalChat(appState.myName, msg, 'me');
+      sendMultiplayerEvent({ type: 'CHAT_MSG', senderId: myClientId, sender: appState.myName, text: msg, kind: 'me', triggerCheckout: true });
+      runCheckoutEndingSequence(false);
+    };
+
+    window.resetForNewParty = function () {
+      appState.isCheckingOut = false;
+      appState.drunkPct = 0;
+      appState.peakDrunkPct = 0;
+      appState.totalShotsDrunk = 0;
+      appState.totalAnjuEaten = 0;
+      appState.emptyBottles = 0;
+      appState.sojuShotsLeft = 7;
+      appState.waterSipsLeft = 5;
+      appState.ramenSlurpsLeft = 0;
+      appState.chefVisits = 0;
+
+      appState.bangeoMask = Array(10).fill(true);
+      appState.kimbapMask = Array(8).fill(true);
+      appState.yuringiOrdered = false;
+      appState.yuringiMask = Array(8).fill(false);
+      appState.tteokOrdered = false;
+      appState.tteokMask = Array(8).fill(false);
+      appState.futoOrdered = false;
+      appState.futoMask = Array(6).fill(false);
+
+      appState.billCounts = {
+        bangeo: 1, kimbap: 1, yuringi: 0, tteokbokki: 0, futomaki: 0, soju: 1, svcRamen: 0, svcShishamo: 0
+      };
+
+      document.getElementById('finalReceiptModal').classList.add('hidden');
+      showToastMsg('🌊 새 은색 원형 테이블이 깔끔하게 세팅되었습니다!');
+      appendLocalChat('시스템', '✨ 새 술자리가 시작되었습니다! 다시 신나게 달려볼까요?', 'system');
+      renderAllVisuals();
+      syncRoomTableState();
+    };
+
+    // ==================== 14. LIVE CHAT, CONTROLS, INVITE MODAL & ONBOARDING ====================
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+
+    function appendLocalChat(sender, text, kind = 'me') {
+      const feed = document.getElementById('chatFeed');
+      if (!feed) return;
+      const row = document.createElement('div');
+
+      if (kind === 'system') {
+        row.className = 'text-[11px] text-sky-300/90 bg-sky-950/40 border border-sky-500/20 rounded-lg px-2.5 py-1';
+        row.innerHTML = `<span class="font-bold">📢 ${escapeHtml(text)}</span>`;
+      } else if (kind === 'chef') {
+        row.className = 'text-[11px] text-amber-200 bg-amber-950/50 border border-amber-400/30 rounded-lg px-2.5 py-1';
+        row.innerHTML = `<strong class="text-amber-300">👨‍🍳 ${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
+      } else if (kind === 'action') {
+        row.className = 'text-[11px] text-emerald-200/95 bg-emerald-950/35 rounded-lg px-2.5 py-1';
+        row.innerHTML = `<strong>${escapeHtml(sender)}</strong> ${escapeHtml(text)}`;
+      } else if (kind === 'me') {
+        row.className = 'text-xs text-amber-50 bg-slate-800/90 rounded-lg px-2.5 py-1.5';
+        row.innerHTML = `<strong class="text-amber-400">${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
+      } else {
+        row.className = 'text-xs text-slate-100 bg-slate-900/85 border border-slate-800 rounded-lg px-2.5 py-1.5';
+        row.innerHTML = `<strong class="text-sky-300">${escapeHtml(sender)}:</strong> ${escapeHtml(text)}`;
+      }
+
+      feed.appendChild(row);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function renderSyncedChats(items) {
+      const feed = document.getElementById('chatFeed');
+      if (!feed) return;
+      feed.innerHTML = '';
+      items.forEach(item => {
+        appendLocalChat(item.sender || '단골', item.text || '', item.kind || 'companion');
+      });
+    }
+
+    window.handleChatSubmit = async function (e) {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const msg = (input.value || '').trim();
+      if (!msg) return;
+      input.value = '';
+
+      const checkoutTriggered = isCheckoutMessage(msg);
+      showSeatBubble('me', msg);
+      appendLocalChat(appState.myName, msg, 'me');
+
+      // Broadcast chat to mobile friends via WebRTC P2P
+      sendMultiplayerEvent({
+        type: 'CHAT_MSG',
+        senderId: myClientId,
+        sender: appState.myName,
+        text: msg,
+        kind: 'me',
+        triggerCheckout: checkoutTriggered
+      });
+
+      // Cloud room chat if available
+      if (db && currentUser) {
+        try {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pocha_chats'), {
+            roomCode: appState.roomCode,
+            sender: appState.myName,
+            text: msg,
+            kind: 'me',
+            createdAt: Date.now()
+          });
+        } catch (err) {}
+      }
+
+      if (checkoutTriggered) {
+        runCheckoutEndingSequence(false);
+      } else {
+        triggerRandomCompanionReaction('chat');
+      }
+    };
+
+    window.toggleAICompanions = function () {
+      appState.aiCompanionsEnabled = !appState.aiCompanionsEnabled;
+      const btn = document.getElementById('aiFillToggleBtn');
+      btn.textContent = appState.aiCompanionsEnabled ? '👥 AI 채움' : '👥 친구전용';
+      showToastMsg(appState.aiCompanionsEnabled ? '빈 좌석에 AI 단골들이 합석합니다.' : '친구 전용 모드! 실제 접속한 친구들만 좌석에 표시됩니다.');
+      renderAllVisuals();
+    };
+
+    window.toggleDizzyEffect = function () {
+      appState.dizzyEffectOn = !appState.dizzyEffectOn;
+      document.getElementById('dizzyToggleBtn').textContent = appState.dizzyEffectOn ? '🌀 취기ON' : '🌀 취기OFF';
+      applyDrunkScreenEffects();
+      showToastMsg(appState.dizzyEffectOn ? '취기 화면 흔들림 효과가 켜졌습니다.' : '취기 화면 흔들림 효과가 꺼졌습니다.');
+    };
+
+    window.toggleSound = function () {
+      appState.sfxOn = !appState.sfxOn;
+      document.getElementById('sfxToggleBtn').textContent = appState.sfxOn ? '🔊 ON' : '🔇 OFF';
+    };
+
+    window.toggleMobileBill = function () {
+      const aside = document.getElementById('liveBillAside');
+      aside.classList.toggle('hidden');
+      aside.classList.toggle('flex');
+    };
+
+    window.openInviteModal = function () {
+      const inviteUrl = getShareableInviteUrl();
+      document.getElementById('inviteModalRoomCode').textContent = appState.roomCode;
+      document.getElementById('inviteCopyCodeSpan').textContent = appState.roomCode;
+      const qrImg = document.getElementById('inviteQrImg');
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(inviteUrl)}`;
+      document.getElementById('inviteModal').classList.remove('hidden');
+    };
+
+    window.closeInviteModal = function () {
+      document.getElementById('inviteModal').classList.add('hidden');
+    };
+
+    window.copyRoomCode = function () {
+      copyTextSafe(appState.roomCode, `📋 방 코드 [${appState.roomCode}] 복사 완료! 친구에게 알려주세요.`);
+    };
+
+    window.copyInviteLink = function () {
+      const inviteUrl = getShareableInviteUrl();
+      copyTextSafe(inviteUrl, '💬 카톡 공유용 초대 링크 복사 완료! 단톡방에 붙여넣기 하세요!');
+    };
+
+    window.openEntryModal = function () {
+      document.getElementById('modalNicknameInput').value = appState.myName;
+      document.getElementById('modalRoomInput').value = appState.roomCode;
+      renderCharacterSelectorGrid();
+      document.getElementById('entryModal').classList.remove('hidden');
+    };
+
+    window.selectMyCharacter = function (styleId) {
+      appState.myStyle = styleId;
+      renderCharacterSelectorGrid();
+    };
+
+    function renderCharacterSelectorGrid() {
+      const grid = document.getElementById('characterSelectorGrid');
+      if (!grid) return;
+      grid.innerHTML = CHARACTER_STYLES.map(c => {
+        const selected = c.id === appState.myStyle;
+        return `
+          <button type="button" onclick="selectMyCharacter('${c.id}')"
+            class="p-2 rounded-2xl border text-center transition flex flex-col items-center ${
+              selected
+                ? 'bg-amber-500/20 border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.35)] scale-[1.02]'
+                : 'bg-slate-900/80 border-slate-700/80 hover:border-slate-500'
+            }">
+            <div class="w-14 h-16 overflow-hidden pointer-events-none">
+              ${renderRealisticPortraitSVG(c.id, 10, `sel_${c.id}`)}
+            </div>
+            <div class="text-xs font-extrabold text-amber-100 mt-0.5">${c.name}</div>
+            <div class="text-[10px] text-slate-400">${c.tag}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    window.enterPocha = async function (mode) {
+      ensureAudio();
+      const rawName = (document.getElementById('modalNicknameInput').value || '').trim();
+      const rawRoom = (document.getElementById('modalRoomInput').value || '').trim().toUpperCase();
+      appState.myName = rawName || '광안리러버';
+      appState.roomCode = rawRoom || 'GWANG-82';
+
+      document.getElementById('roomCodeText').textContent = appState.roomCode;
+      document.getElementById('entryModal').classList.add('hidden');
+
+      // Update browser URL query param (?room=...) cleanly without reloading
+      try {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('room', appState.roomCode);
+        window.history.replaceState({}, '', nextUrl.toString());
+      } catch (e) {}
+
+      if (mode === 'room') {
+        // Turn off AI auto-fill or keep hybrid? Keep AI filling remaining empty seats until 3 real friends arrive!
+        document.getElementById('syncModeIndicator').textContent = `🔑 [${appState.roomCode}] 실시간 멀티 연결 중...`;
+        await initFirebaseIfAvailable();
+        await connectFirestoreRoom(appState.roomCode);
+        appendLocalChat('시스템', `🔑 실시간 합석 방 [${appState.roomCode}]에 입장했습니다! 상단 [📲 친구초대]를 눌러 카톡으로 초대 링크를 보내보세요.`, 'system');
+      } else {
+        appState.aiCompanionsEnabled = true;
+        document.getElementById('aiFillToggleBtn').textContent = '👥 AI 채움';
+        document.getElementById('syncModeIndicator').textContent = '🌊 AI 단골들과 오붓하게 합석 중';
+        appendLocalChat('시스템', `🌉 광안리 밤바다 포차에 입장했습니다! 음식을 터치해 먹거나 다같이 짠을 외쳐보세요.`, 'system');
+      }
+
+      renderAllVisuals();
+      if (appState.chefVisits === 0) {
+        setTimeout(() => window.summonChefService(), 900);
+      }
+    };
+
+    // ==================== 15. INITIALIZATION & URL ROOM AUTO-DETECT ====================
+    function bootPochaApp() {
+      // Auto-read ?room=ROOMCODE when a friend clicks a shared KakaoTalk link!
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlRoom = params.get('room');
+        if (urlRoom) {
+          const clean = urlRoom.trim().toUpperCase().slice(0, 12);
+          if (clean) {
+            appState.roomCode = clean;
+            document.getElementById('modalRoomInput').value = clean;
+            document.getElementById('roomCodeText').textContent = clean;
+          }
+        }
+      } catch (e) {}
+
+      buildAllPlatterSVGUnits();
+      initGwangalliCanvas();
+      renderCharacterSelectorGrid();
+      renderAllVisuals();
+    }
+
+    window.addEventListener('DOMContentLoaded', bootPochaApp);
+  </script>
 </body>
 </html>
