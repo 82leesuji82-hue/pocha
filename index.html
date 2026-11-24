@@ -3384,7 +3384,7 @@
       }
     }
 
-    // ==================== 18. INITIALIZATION ====================
+   // ==================== 18. INITIALIZATION ====================
     (function initApp() {
       try {
         const roomParam = new URLSearchParams(window.location.search).get('room');
@@ -3401,6 +3401,756 @@
       renderAllVisuals();
       appendLocalChat('방어집 사장님', '어서오이소~ 진한 사골 얼큰 마라탕이랑 살얼음 소맥 준비돼 있습니데이! 옆 테이블 직접 눌러서 합석하고 술·안주 얻어먹어보이소!', 'chef');
     })();
+
+    // ==================== 19. UPGRADE PACK V4 AUTO-INSTALLER (UI + CSS + 8 SYSTEMS) ====================
+    (function installPochaUpgradePackV4() {
+      // 1. Inject Upgrade CSS Automatically
+      const v4Style = document.createElement('style');
+      v4Style.textContent = `
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        .top-pill-bgm { background: rgba(30, 41, 59, 0.92); border-color: rgba(56, 189, 248, 0.55); color: #bae6fd; }
+        .top-pill-bgm.active { background: linear-gradient(90deg, #0284c7, #0d9488); color: #fff; border-color: #6ee7b7; }
+        .top-pill-stamp { background: linear-gradient(90deg, #7c2d12, #b45309); border-color: #fcd34d; color: #fef3c7; }
+        .top-pill-game { background: linear-gradient(90deg, #4f46e5, #9333ea); border-color: #c084fc; color: #fff; }
+
+        .somaek-glass-stage {
+          width: 124px; height: 184px; margin: 10px auto; position: relative;
+          border: 3px solid #e2e8f0; border-top: none; border-radius: 0 0 18px 18px;
+          background: rgba(255,255,255,0.08); overflow: hidden;
+          box-shadow: inset 0 -8px 18px rgba(255,255,255,0.22), 0 12px 28px rgba(0,0,0,0.65);
+        }
+        .somaek-target-line {
+          position: absolute; left: 0; right: 0; bottom: 72%; height: 2px;
+          border-top: 2px dashed #fde047; z-index: 6; pointer-events: none;
+        }
+        .somaek-liquid-soju {
+          position: absolute; bottom: 0; left: 0; right: 0; background: rgba(186, 230, 253, 0.76);
+          transition: height 0.25s ease;
+        }
+        .somaek-liquid-beer {
+          position: absolute; left: 0; right: 0; background: linear-gradient(180deg, #fde047, #d97706);
+          transition: height 0.25s ease, bottom 0.25s ease;
+        }
+        .somaek-foam-top {
+          position: absolute; left: 0; right: 0; height: 0px; background: #ffffff;
+          border-radius: 8px 8px 0 0; transition: height 0.3s ease, bottom 0.25s ease;
+        }
+
+        .cap-gauge-wrap {
+          position: relative; width: 100%; height: 28px; border-radius: 9999px;
+          background: #0f172a; border: 2px solid #475569; overflow: hidden; margin: 14px 0;
+        }
+        .cap-sweet-spot {
+          position: absolute; top: 0; bottom: 0; left: 70%; width: 14%;
+          background: linear-gradient(90deg, #22c55e, #fde047, #22c55e); opacity: 0.9;
+        }
+        .cap-cursor {
+          position: absolute; top: -2px; bottom: -2px; width: 8px; border-radius: 4px;
+          background: #f43f5e; box-shadow: 0 0 12px #fff; left: 0%;
+        }
+
+        .nunchi-bar-wrap {
+          display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: #fecaca;
+          background: rgba(15,23,42,0.78); padding: 5px 10px; border-radius: 10px;
+        }
+        .nunchi-track { flex: 1; height: 8px; background: #1e293b; border-radius: 9999px; overflow: hidden; }
+        #nunchiGaugeFill { height: 100%; width: 0%; background: linear-gradient(90deg, #fbbf24, #ef4444); transition: width 0.3s ease; }
+
+        .affection-pill {
+          margin-top: 2px; padding: 1.5px 7px; border-radius: 9999px;
+          background: rgba(131, 24, 67, 0.92); border: 1px solid #f472b6;
+          color: #fce7f3; font-size: 9.5px; font-weight: 900; white-space: nowrap; z-index: 15;
+        }
+
+        #streetEventCard {
+          position: fixed; bottom: 148px; left: 50%; transform: translateX(-50%);
+          z-index: 50; width: 92%; max-width: 450px; padding: 11px 14px; border-radius: 18px;
+          background: linear-gradient(135deg, rgba(49, 16, 66, 0.97), rgba(15, 23, 42, 0.98));
+          border: 1.5px solid #fcd34d; box-shadow: 0 16px 38px rgba(0,0,0,0.88);
+          display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+
+        .roulette-slot-box {
+          margin: 10px 0; padding: 12px; border-radius: 14px; background: #0f172a; color: #fde047;
+          text-align: center; font-weight: 900; font-size: 14.5px; border: 2px solid #f59e0b;
+        }
+      `;
+      document.head.appendChild(v4Style);
+
+      // 2. Inject Top Header Pills (파도ASMR, 뚜껑치기, 단골도감)
+      const skyBtnGroup = document.querySelector('.sky-btn-group');
+      if (skyBtnGroup) {
+        const extraBtns = document.createElement('span');
+        extraBtns.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:6px;';
+        extraBtns.innerHTML = `
+          <button id="ambienceToggleBtn" onclick="togglePochaAmbience()" class="top-pill top-pill-bgm">🌊 파도·소음OFF</button>
+          <button onclick="openCapGameModal()" class="top-pill top-pill-game">🍾 뚜껑치기</button>
+          <button onclick="openStampBookModal()" class="top-pill top-pill-stamp">🏅 단골도감</button>
+        `;
+        skyBtnGroup.insertBefore(extraBtns, skyBtnGroup.firstChild);
+      }
+
+      // 3. Inject Suspicion (눈치) Gauge into Neighbor Visit Panel
+      const visitPanel = document.getElementById('neighborVisitPanel');
+      if (visitPanel) {
+        const nunchiDiv = document.createElement('div');
+        nunchiDiv.className = 'nunchi-bar-wrap';
+        nunchiDiv.innerHTML = `
+          <span>👀 안주서리 눈치 게이지</span>
+          <div class="nunchi-track"><div id="nunchiGaugeFill"></div></div>
+          <span id="nunchiPctText">0%</span>
+        `;
+        visitPanel.insertBefore(nunchiDiv, visitPanel.querySelector('.visit-btn-row'));
+      }
+
+      // 4. Connect Action Bar Somaek Button & Soju/Beer Dish Hint to DIY Somaek Mixer
+      const somaekBtn = document.querySelector('.act-somaek');
+      if (somaekBtn) {
+        somaekBtn.setAttribute('onclick', 'openDiySomaekModal()');
+        somaekBtn.textContent = '🌪️ 직접 소맥타기';
+      }
+
+      // 5. Inject Bill Roulette & Contact Exchange Box into Final Receipt Modal
+      const nextRoundBtn = document.getElementById('nextRoundBtn');
+      if (nextRoundBtn && nextRoundBtn.parentElement) {
+        const receiptExtras = document.createElement('div');
+        receiptExtras.innerHTML = `
+          <div id="receiptRouletteArea" style="margin-bottom:12px;">
+            <button onclick="spinBillRoulette()" style="width:100%;padding:10px;border-radius:12px;background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;font-weight:900;font-size:13px;">
+              💳 [영수증 룰렛 돌리기] 오늘 술값 독박 뽑기!
+            </button>
+            <div id="rouletteResultDisplay" class="hidden roulette-slot-box"></div>
+          </div>
+          <div id="contactExchangeBanner" class="hidden" style="margin-bottom:14px;padding:12px;border-radius:14px;background:#fdf2f8;border:2px solid #ec4899;text-align:center;">
+            <div style="font-size:12px;font-weight:900;color:#be185d;" id="contactExchangeTitle">💘 번호 교환 이벤트!</div>
+            <p style="margin:4px 0 8px;font-size:12px;color:#1e293b;font-weight:700;" id="contactExchangeLine"></p>
+            <button id="saveContactBtn" onclick="claimPartnerContact()" style="padding:7px 14px;border-radius:9999px;background:#ec4899;color:#fff;font-size:12px;font-weight:900;">
+              📱 인스타 & 번호 저장하기 (도감 등록)
+            </button>
+          </div>
+        `;
+        nextRoundBtn.parentElement.insertBefore(receiptExtras, nextRoundBtn);
+      }
+
+      // 6. Inject Modals (DIY Somaek, Bottle Cap Game, VIP Stamp Book, Street Busker Banner)
+      const modalsWrapper = document.createElement('div');
+      modalsWrapper.innerHTML = `
+        <div id="streetEventCard" class="hidden">
+          <div style="flex:1;">
+            <div id="streetEventTitle" style="font-size:12px;font-weight:900;color:#fde047;">🎸 광안리 해변 통기타 버스커 등장!</div>
+            <div id="streetEventDesc" style="font-size:11.5px;color:#e2e8f0;margin-top:2px;">신청곡으로 테이블 호감도를 올려보세요!</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button id="streetEventActBtn" onclick="handleStreetEventPurchase()" style="padding:7px 11px;border-radius:10px;background:linear-gradient(90deg,#f59e0b,#ec4899);color:#fff;font-size:11.5px;font-weight:900;">신청</button>
+            <button onclick="closeStreetEventCard()" style="padding:7px 9px;border-radius:10px;background:#1e293b;color:#94a3b8;font-size:11px;font-weight:800;">닫기</button>
+          </div>
+        </div>
+
+        <div id="diySomaekModal" class="hidden pocha-modal-backdrop">
+          <div class="pocha-modal-box" style="max-width:415px;text-align:center;">
+            <span style="font-size:10px;font-weight:800;color:#fde047;">DIY GOLDEN RATIO SOMAEK</span>
+            <h3 style="margin:3px 0 6px;font-size:19px;font-weight:900;">🌪️ 내 손으로 직접 타는 소맥</h3>
+            <p style="margin:0 0 8px;font-size:12px;color:#cbd5e1;">소주와 맥주를 직접 눌러 부어 <strong style="color:#fde047;">황금비율(소주 3 : 맥주 7)</strong>을 맞춰보세요!</p>
+
+            <div class="somaek-glass-stage">
+              <div class="somaek-target-line"><span style="position:absolute;right:5px;top:-14px;font-size:9px;color:#fde047;font-weight:800;">황금선</span></div>
+              <div id="diySojuLayer" class="somaek-liquid-soju" style="height:0%;"></div>
+              <div id="diyBeerLayer" class="somaek-liquid-beer" style="height:0%;bottom:0%;"></div>
+              <div id="diyFoamLayer" class="somaek-foam-top" style="bottom:0%;"></div>
+            </div>
+
+            <div id="diyRatioReadout" style="font-size:12.5px;font-weight:900;color:#bae6fd;margin-bottom:10px;">
+              현재 잔: 비어있음 (소주와 맥주를 부어주세요!)
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <button onclick="pourDiySoju()" style="padding:10px;border-radius:12px;background:#065f46;border:1px solid #34d399;color:#fff;font-weight:900;font-size:12.5px;">
+                🍶 소주 붓기 (+15%)
+              </button>
+              <button onclick="pourDiyBeer()" style="padding:10px;border-radius:12px;background:#b45309;border:1px solid #fde047;color:#fff;font-weight:900;font-size:12.5px;">
+                🍺 맥주 붓기 (+25%)
+              </button>
+            </div>
+
+            <div style="display:flex;gap:8px;">
+              <button onclick="finishAndSnapSomaek()" style="flex:2;padding:12px;border-radius:14px;background:linear-gradient(90deg,#f59e0b,#eab308);color:#0f172a;font-weight:900;font-size:13.5px;">
+                🥄 숟가락 탁!! 쳐서 원샷!
+              </button>
+              <button onclick="resetDiyGlass()" style="padding:12px;border-radius:14px;background:#1e293b;color:#cbd5e1;font-size:12px;font-weight:800;">비우기</button>
+              <button onclick="closeDiySomaekModal()" style="padding:12px;border-radius:14px;background:#0f172a;border:1px solid #334155;color:#94a3b8;font-size:12px;font-weight:800;">닫기</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="capGameModal" class="hidden pocha-modal-backdrop">
+          <div class="pocha-modal-box" style="max-width:420px;text-align:center;">
+            <span style="font-size:10px;font-weight:800;color:#c084fc;">POCHA DRINKING GAME</span>
+            <h3 style="margin:3px 0 6px;font-size:20px;font-weight:900;">🍾 참이슬 병뚜껑 꼬리 치기!</h3>
+            <p style="margin:0 0 10px;font-size:12px;color:#cbd5e1;">초록·노란색 <strong style="color:#fde047;">스윗스팟 구간</strong>에서 딱! 치면 나 빼고 전원 벌칙 원샷!</p>
+
+            <div style="width:110px;height:74px;margin:0 auto;">
+              <svg viewBox="0 0 120 80">
+                <ellipse cx="60" cy="36" rx="28" ry="18" fill="#dc2626" stroke="#fca5a5" stroke-width="2"/>
+                <rect x="32" y="34" width="56" height="14" rx="4" fill="#b91c1c"/>
+                <path id="capTailPath" d="M 86,44 Q 104,52 108,68 L 99,71 Q 94,56 82,47 Z" fill="#ef4444" stroke="#fecaca" stroke-width="1.2"/>
+              </svg>
+            </div>
+
+            <div id="capStatusLabel" style="font-size:12.5px;font-weight:800;color:#fde68a;">타이밍을 맞춰 뚜껑 끝을 딱 치세요!</div>
+
+            <div class="cap-gauge-wrap">
+              <div class="cap-sweet-spot"></div>
+              <div id="capMovingCursor" class="cap-cursor"></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button onclick="strikeBottleCap()" style="flex:1;padding:13px;border-radius:14px;background:linear-gradient(90deg,#ec4899,#8b5cf6);color:#fff;font-weight:900;font-size:14px;">
+                👆 지금 딱!! 손가락 스냅 치기!
+              </button>
+              <button onclick="closeCapGameModal()" style="padding:13px 16px;border-radius:14px;background:#1e293b;color:#cbd5e1;font-weight:800;font-size:12px;">닫기</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="stampBookModal" class="hidden pocha-modal-backdrop">
+          <div class="pocha-modal-box" style="max-width:460px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;padding-bottom:10px;margin-bottom:12px;">
+              <div>
+                <span style="font-size:10px;font-weight:800;color:#fcd34d;">GWANGALLI VIP PASSPORT</span>
+                <h3 style="margin:2px 0 0;font-size:18px;font-weight:900;">🏅 단골 스탬프 · 칭호 · 번호도감</h3>
+              </div>
+              <button onclick="closeStampBookModal()" style="padding:6px 12px;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;">닫기 ✕</button>
+            </div>
+            <div id="stampStatsBox" style="background:rgba(15,23,42,0.9);border:1px solid #334155;border-radius:14px;padding:12px;font-size:12px;margin-bottom:12px;"></div>
+            <div style="font-size:12px;font-weight:900;color:#fde68a;margin-bottom:6px;">👑 획득한 칭호 (클릭 시 닉네임 옆 장착!)</div>
+            <div id="titlesListGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+            <div style="font-size:12px;font-weight:900;color:#f472b6;margin-bottom:6px;">📱 호감도 80%+ 교환 성공 연락처 도감</div>
+            <div id="savedContactsList" style="background:rgba(15,23,42,0.9);border:1px solid #334155;border-radius:14px;padding:10px;font-size:12px;max-height:140px;overflow-y:auto;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalsWrapper);
+    })();
+
+    // --- [A] LOCALSTORAGE VIP STAMP, TITLES & CONTACTS ---
+    const POCHA_SAVE_KEY = 'gwangalli_pocha_vip_v4';
+    function loadVipData() {
+      try {
+        const raw = localStorage.getItem(POCHA_SAVE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return {
+        visits: 1,
+        somaekCrafted: 0,
+        bangeoEaten: 0,
+        stolenCount: 0,
+        capWins: 0,
+        equippedTitle: '🌊 광안리 뉴비',
+        unlockedTitles: ['🌊 광안리 뉴비'],
+        contacts: []
+      };
+    }
+    const vipData = loadVipData();
+    function saveVipData() {
+      try { localStorage.setItem(POCHA_SAVE_KEY, JSON.stringify(vipData)); } catch (e) {}
+    }
+
+    function checkAndUnlockTitles() {
+      const add = t => {
+        if (!vipData.unlockedTitles.includes(t)) {
+          vipData.unlockedTitles.push(t);
+          vipData.equippedTitle = t;
+          showToastMsg(`🏅 새 칭호 획득 & 장착: [${t}]!`);
+          appendLocalChat('시스템', `👑 ${appState.myName}님이 [${t}] 칭호를 획득했습니다!`, 'system');
+        }
+      };
+      if (vipData.visits >= 3) add('🏮 광안리 찐단골');
+      if (vipData.somaekCrafted >= 3) add('🌪️ 소맥 장인');
+      if (vipData.bangeoEaten >= 10) add('🐟 대방어 킬러');
+      if (vipData.stolenCount >= 4) add('🥢 프로 안주서리꾼');
+      if (vipData.capWins >= 2) add('🍾 병뚜껑 스나이퍼');
+      if (vipData.contacts.length >= 1) add('💘 광안리 카사노바');
+      saveVipData();
+    }
+
+    const _origEnterPocha = window.enterPocha;
+    window.enterPocha = function (mode) {
+      vipData.visits = (vipData.visits || 0) + 1;
+      checkAndUnlockTitles();
+      saveVipData();
+      _origEnterPocha(mode);
+      scheduleGoldenBellAndBusker();
+    };
+
+    window.openStampBookModal = function () {
+      const filled = Math.min(10, (vipData.visits % 10) || 10);
+      const stamps = '💮'.repeat(filled) + '⚪'.repeat(10 - filled);
+      document.getElementById('stampStatsBox').innerHTML = `
+        <div style="margin-bottom:6px;font-weight:900;color:#fde047;">단골 도장판 (누적 ${vipData.visits}회 방문): ${stamps}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;color:#cbd5e1;">
+          <span>🌪️ 황금소맥 제조: <strong>${vipData.somaekCrafted}잔</strong></span>
+          <span>🐟 먹은 대방어: <strong>${vipData.bangeoEaten}점</strong></span>
+          <span>🥢 서리한 안주: <strong>${vipData.stolenCount}점</strong></span>
+          <span>🍾 뚜껑치기 승리: <strong>${vipData.capWins}회</strong></span>
+        </div>
+      `;
+      document.getElementById('titlesListGrid').innerHTML = vipData.unlockedTitles.map(t => `
+        <button onclick="equipVipTitle('${t}')" style="padding:5px 10px;border-radius:9999px;font-size:11px;font-weight:900;border:1.5px solid ${vipData.equippedTitle === t ? '#fbbf24' : '#475569'};background:${vipData.equippedTitle === t ? 'rgba(245,158,11,0.28)' : '#1e293b'};color:#fff;">
+          ${vipData.equippedTitle === t ? '✅ ' : ''}${t}
+        </button>
+      `).join('');
+
+      document.getElementById('savedContactsList').innerHTML = vipData.contacts.length
+        ? vipData.contacts.map(c => `
+            <div style="padding:6px 4px;border-bottom:1px dashed #334155;">
+              <strong style="color:#f472b6;">💖 ${c.name}</strong> <span style="color:#38bdf8;font-family:monospace;">${c.insta}</span>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">"${c.msg}"</div>
+            </div>
+          `).join('')
+        : '<div style="color:#64748b;text-align:center;padding:12px;">아직 교환한 번호가 없어요! 대화·소맥·장미선물로 호감도 80%를 달성해보세요!</div>';
+
+      document.getElementById('stampBookModal').classList.remove('hidden');
+    };
+    window.closeStampBookModal = () => document.getElementById('stampBookModal').classList.add('hidden');
+    window.equipVipTitle = function (title) {
+      vipData.equippedTitle = title;
+      saveVipData();
+      renderAllVisuals();
+      openStampBookModal();
+      showToastMsg(`👑 내 칭호가 [${title}](으)로 장착되었습니다!`);
+    };
+
+    // --- [B] DIY SOMAEK MIXER ---
+    const diySomaekState = { sojuPct: 0, beerPct: 0 };
+    window.openDiySomaekModal = function () {
+      diySomaekState.sojuPct = 0; diySomaekState.beerPct = 0;
+      updateDiySomaekVisual();
+      document.getElementById('diySomaekModal').classList.remove('hidden');
+    };
+    window.closeDiySomaekModal = () => document.getElementById('diySomaekModal').classList.add('hidden');
+    window.resetDiyGlass = function () {
+      diySomaekState.sojuPct = 0; diySomaekState.beerPct = 0;
+      updateDiySomaekVisual();
+    };
+
+    function updateDiySomaekVisual() {
+      const total = diySomaekState.sojuPct + diySomaekState.beerPct;
+      document.getElementById('diySojuLayer').style.height = `${diySomaekState.sojuPct}%`;
+      document.getElementById('diyBeerLayer').style.bottom = `${diySomaekState.sojuPct}%`;
+      document.getElementById('diyBeerLayer').style.height = `${diySomaekState.beerPct}%`;
+      document.getElementById('diyFoamLayer').style.bottom = `${total}%`;
+      document.getElementById('diyFoamLayer').style.height = diySomaekState.beerPct > 0 ? '9px' : '0px';
+
+      const readout = document.getElementById('diyRatioReadout');
+      if (total === 0) {
+        readout.textContent = '현재 잔: 비어있음 (소주와 맥주를 부어주세요!)';
+      } else {
+        const sRatio = Math.round((diySomaekState.sojuPct / total) * 10);
+        readout.textContent = `채움 ${total}% · 비율 [소주 ${sRatio} : 맥주 ${10 - sRatio}]`;
+      }
+    }
+
+    window.pourDiySoju = function () {
+      if (diySomaekState.sojuPct + diySomaekState.beerPct >= 95) { showToastMsg('잔이 가득 찼어요! 숟가락 스냅을 쳐주세요!'); return; }
+      diySomaekState.sojuPct = Math.min(95 - diySomaekState.beerPct, diySomaekState.sojuPct + 15);
+      playSojuClinkSfx();
+      updateDiySomaekVisual();
+    };
+
+    window.pourDiyBeer = function () {
+      if (diySomaekState.sojuPct + diySomaekState.beerPct >= 95) { showToastMsg('잔이 가득 찼어요! 숟가락 스냅을 쳐주세요!'); return; }
+      diySomaekState.beerPct = Math.min(95 - diySomaekState.sojuPct, diySomaekState.beerPct + 25);
+      playSomaekFizzSfx();
+      updateDiySomaekVisual();
+    };
+
+    window.finishAndSnapSomaek = function () {
+      const total = diySomaekState.sojuPct + diySomaekState.beerPct;
+      if (total < 25) { showToastMsg('술을 최소 반 잔 이상은 따라주세요! 🍶🍺'); return; }
+      closeDiySomaekModal();
+
+      if (appState.sojuShotsLeft <= 0) { appState.sojuShotsLeft = 7; appState.billQty.soju += 1; }
+      if (appState.beerGlassesLeft <= 0) { appState.beerGlassesLeft = 6; appState.billQty.beer += 1; }
+      if (diySomaekState.sojuPct > 0) {
+        appState.sojuShotsLeft = Math.max(0, appState.sojuShotsLeft - 1);
+        if (appState.sojuShotsLeft === 0) appState.emptyBottles += 1;
+      }
+      if (diySomaekState.beerPct > 0) {
+        appState.beerGlassesLeft = Math.max(0, appState.beerGlassesLeft - 1);
+        if (appState.beerGlassesLeft === 0) appState.emptyBottles += 1;
+      }
+
+      const sRatio = diySomaekState.sojuPct / total;
+      let gradeMsg = '';
+      let drunkAdd = 18;
+      let affectionBonus = 7;
+
+      if (sRatio >= 0.22 && sRatio <= 0.38 && total >= 65 && total <= 90) {
+        gradeMsg = '🌟 전설의 3:7 황금비율 꿀소맥 탄생!! 목넘김이 우유 같습니다!!';
+        drunkAdd = 16; affectionBonus = 16;
+        vipData.somaekCrafted += 1;
+        checkAndUnlockTitles();
+      } else if (sRatio > 0.52) {
+        gradeMsg = '💀 지옥의 주유소 폭탄주 탄생!! 마시자마자 취기가 확 오릅니다!';
+        drunkAdd = 28; affectionBonus = 4;
+      } else {
+        gradeMsg = '🍺 시원하고 청량한 맹소맥 완성! 부드럽게 넘어갑니다!';
+        drunkAdd = 13; affectionBonus = 9;
+      }
+
+      appState.drunkPct = Math.min(100, appState.drunkPct + drunkAdd);
+      checkDrunkFestival();
+      boostCompanionAffection(affectionBonus);
+
+      animateAllHandsClink(true);
+      showToastMsg(gradeMsg);
+      appendLocalChat(appState.myName, `🥄 직접 탄 수제 소맥 원샷! (${gradeMsg})`, 'action');
+      renderAllVisuals();
+      sendMultiplayerEvent({ type: 'SOMAEK_CHEERS', actor: appState.myName, state: exportSyncPayload() });
+    };
+
+    // --- [C] BOTTLE CAP TAIL FLICK MINIGAME ---
+    let capAnimFrame = null;
+    let capPos = 0;
+    let capDir = 1;
+
+    window.openCapGameModal = function () {
+      document.getElementById('capGameModal').classList.remove('hidden');
+      document.getElementById('capStatusLabel').textContent = '초록·노란 스윗스팟(70~84%)에 커서가 왔을 때 딱 치세요!';
+      document.getElementById('capTailPath').style.transform = 'rotate(0deg)';
+      capPos = 0; capDir = 1;
+      cancelAnimationFrame(capAnimFrame);
+      function loopCap() {
+        capPos += capDir * 2.35;
+        if (capPos >= 96) { capPos = 96; capDir = -1; }
+        if (capPos <= 0) { capPos = 0; capDir = 1; }
+        document.getElementById('capMovingCursor').style.left = `${capPos}%`;
+        capAnimFrame = requestAnimationFrame(loopCap);
+      }
+      loopCap();
+    };
+
+    window.closeCapGameModal = function () {
+      cancelAnimationFrame(capAnimFrame);
+      document.getElementById('capGameModal').classList.add('hidden');
+    };
+
+    window.strikeBottleCap = function () {
+      cancelAnimationFrame(capAnimFrame);
+      const isHit = capPos >= 70 && capPos <= 84;
+      const tail = document.getElementById('capTailPath');
+
+      if (isHit) {
+        playSomaekFizzSfx();
+        tail.style.transformOrigin = '85px 45px';
+        tail.style.transition = 'transform 0.35s ease';
+        tail.style.transform = 'translate(28px, -26px) rotate(65deg)';
+        document.getElementById('capStatusLabel').textContent = '🎯 팅~!! 뚜껑 날리기 대성공!! 나 빼고 전원 벌칙 원샷!!';
+        vipData.capWins += 1;
+        checkAndUnlockTitles();
+        boostCompanionAffection(12);
+        appendLocalChat('시스템', `🍾🎯 [${appState.myName}]님이 병뚜껑 꼬리를 날려버렸습니다!! 나머지 멤버 전원 벌칙 원샷!!`, 'system');
+        triggerRandomCompanionReaction(['헐 손가락 스냅 뭐야?! 깔끔하게 인정하고 원샷 할게 🍶', '와 진짜 날아갔어ㅋㅋ 벌칙주 마신다!']);
+        setTimeout(() => { closeCapGameModal(); renderAllVisuals(); }, 1450);
+      } else {
+        playBiteChewSfx();
+        const reason = capPos < 70 ? '너무 약하게 쳤어요!' : '너무 세게 쳐서 손가락만 아파요!';
+        document.getElementById('capStatusLabel').textContent = `💥 실패 (${reason}) · 벌칙으로 내가 단독 원샷!!`;
+        appState.drunkPct = Math.min(100, appState.drunkPct + 16);
+        checkDrunkFestival();
+        appendLocalChat('시스템', `💥 [${appState.myName}]님 병뚜껑 치기 실패! 단독 벌칙주 원샷 당첨!! (+취기 16%)`, 'system');
+        setTimeout(() => { closeCapGameModal(); renderAllVisuals(); }, 1450);
+      }
+    };
+
+    // --- [D] AFFECTION & CONTACT EXCHANGE ---
+    const PARTNER_PREFS = {
+      '서연': { favKeywords: ['소맥', '방어', '바다', '야경', '여행', '음악'], insta: '@seoyeon_gwangalli', dm: '오늘 티키타카 진짜 재밌었어요ㅎㅎ 조만간 해운대에서 또 한잔해요!' },
+      '도현': { favKeywords: ['참이슬', '소주', '마라탕', '영화', '운동', '진솔'], insta: '@dohyun.night', dm: '오늘 대화 진짜 편하고 좋았어요. 집 잘 들어가고 연락해요!' },
+      '지수': { favKeywords: ['김밥', '샤베트', '계란말이', '맛집', '사진', '디저트'], insta: '@jisu_eat_busan', dm: '오늘 맛있는 것도 많이 먹고 너무 설렜어요💖 내일 꼭 카톡해요!' },
+      '준우': { favKeywords: ['소맥', '맥주', '합석', '폭죽', '노래', '산책'], insta: '@junwoo_blue', dm: '용기 내서 말 걸길 정말 잘했네요! 다음엔 둘이서 따로 봐요 😊' },
+      '하윤': { favKeywords: ['샤베트', '떡볶이', '연애', '꽃', '크리스마스', '귀여'], insta: '@hayoon_pink', dm: '오늘 분위기 최고였어요!! 저장해뒀다가 꼭 연락주셔야 해요 💓' },
+      '민재': { favKeywords: ['소주', '닭꼬치', '밤바다', '힙합', '드라이브', '멋있'], insta: '@minjae_noir', dm: '오늘 텐션 마음에 들었어. 다음엔 내가 맛있는 거 살게 연락해.' }
+    };
+    const affectionMap = { '서연': 35, '도현': 35, '지수': 35, '준우': 45, '하윤': 45, '민재': 45 };
+
+    function boostCompanionAffection(amount) {
+      getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
+        affectionMap[p.shortName] = Math.min(100, (affectionMap[p.shortName] || 35) + amount);
+      });
+    }
+
+    const _origHandleChat = window.handleChatSubmit;
+    window.handleChatSubmit = function (e) {
+      const val = document.getElementById('chatInput').value.trim();
+      if (val) {
+        getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
+          const pref = PARTNER_PREFS[p.shortName];
+          const hit = pref && pref.favKeywords.some(k => val.includes(k));
+          affectionMap[p.shortName] = Math.min(100, (affectionMap[p.shortName] || 35) + (hit ? 14 : 6));
+        });
+      }
+      _origHandleChat(e);
+      setTimeout(renderAllVisuals, 100);
+    };
+
+    const _origEatBangeo = window.eatBangeo;
+    window.eatBangeo = function (fromRemote) {
+      if (!fromRemote && appState.bangeoLeft > 0) {
+        vipData.bangeoEaten += 1;
+        checkAndUnlockTitles();
+      }
+      _origEatBangeo(fromRemote);
+    };
+
+    // --- [E] ANJU STEALING SUSPICION (눈치 게이지) ---
+    appState.nunchiPct = 0;
+    const _origStealAnju = window.stealNeighborAnju;
+    window.stealNeighborAnju = function () {
+      if (!appState.visitingSide) return;
+      const info = NEIGHBOR_TABLES_INFO[appState.visitingSide];
+      appState.nunchiPct = Math.min(100, (appState.nunchiPct || 0) + Math.floor(25 + Math.random() * 20));
+      vipData.stolenCount += 1;
+      checkAndUnlockTitles();
+
+      if (appState.nunchiPct >= 100) {
+        appState.nunchiPct = 0;
+        appState.billQty.soju += 1;
+        playFireworkBoomSfx();
+        appendLocalChat(info.patrons[0].name, `야!! 너 아까부터 남의 테이블 메인 안주만 골라 먹지?! 양심적으로 소주 1병(5,000원)은 물어주고 가라!! 😡💢`, 'other');
+        showToastMsg(`🚨 안주 서리 발각!! [${info.title}]에 사과용 소주 1병(+5,000원) 물어주고 쫓겨났습니다!`);
+        appState.visitingSide = null;
+        renderAllVisuals();
+        return;
+      }
+      _origStealAnju();
+      renderAllVisuals();
+    };
+
+    const _origMoochDrink = window.moochNeighborDrink;
+    window.moochNeighborDrink = function () {
+      appState.nunchiPct = Math.max(0, (appState.nunchiPct || 0) - 10);
+      _origMoochDrink();
+      renderAllVisuals();
+    };
+
+    // --- [F] BILL ROULETTE & CONTACT EXCHANGE ON CHECKOUT ---
+    let pendingContactCandidate = null;
+    const _origOpenReceipt = openFinalCheckoutReceipt;
+    openFinalCheckoutReceipt = function (callerName) {
+      _origOpenReceipt(callerName);
+      const rBox = document.getElementById('rouletteResultDisplay');
+      if (rBox) rBox.classList.add('hidden');
+
+      const topPartner = getSeatedCompanions()
+        .filter(p => p && p.isAI)
+        .map(p => ({ ...p, score: affectionMap[p.shortName] || 0 }))
+        .sort((a, b) => b.score - a.score)[0];
+
+      const banner = document.getElementById('contactExchangeBanner');
+      if (banner) {
+        if (topPartner && topPartner.score >= 80) {
+          pendingContactCandidate = topPartner.shortName;
+          document.getElementById('contactExchangeTitle').textContent = `💘 [${topPartner.shortName}] 호감도 ${topPartner.score}% 달성!`;
+          document.getElementById('contactExchangeLine').textContent = `"${topPartner.shortName}: 저기... 가기 전에 인스타나 번호 물어봐도 돼요? 👉👈"`;
+          document.getElementById('saveContactBtn').disabled = false;
+          document.getElementById('saveContactBtn').textContent = '📱 인스타 & 번호 저장하기 (도감 등록)';
+          banner.classList.remove('hidden');
+        } else {
+          pendingContactCandidate = null;
+          banner.classList.add('hidden');
+        }
+      }
+    };
+
+    window.claimPartnerContact = function () {
+      if (!pendingContactCandidate) return;
+      const meta = PARTNER_PREFS[pendingContactCandidate] || { insta: '@pocha_lover', dm: '오늘 즐거웠어요 또 봐요!' };
+      if (!vipData.contacts.some(c => c.name === pendingContactCandidate)) {
+        vipData.contacts.push({ name: pendingContactCandidate, insta: meta.insta, msg: meta.dm, date: new Date().toLocaleDateString('ko-KR') });
+      }
+      checkAndUnlockTitles();
+      saveVipData();
+      document.getElementById('saveContactBtn').disabled = true;
+      document.getElementById('saveContactBtn').textContent = `✅ ${meta.insta} 도감 저장 완료!`;
+      showToastMsg(`💖 [${pendingContactCandidate}]님의 연락처(${meta.insta})가 단골도감에 저장되었습니다!`);
+    };
+
+    window.spinBillRoulette = function () {
+      const box = document.getElementById('rouletteResultDisplay');
+      if (!box) return;
+      box.classList.remove('hidden');
+      const candidates = [appState.myName, ...getSeatedCompanions().filter(Boolean).map(p => p.shortName || p.name)];
+      const { grandTotal } = calculateBillSummary();
+      let ticks = 0;
+      const iv = setInterval(() => {
+        playSojuClinkSfx();
+        box.textContent = `🎰 두구두구... [ ${candidates[ticks % candidates.length]} ] ?!`;
+        ticks++;
+        if (ticks >= 16) {
+          clearInterval(iv);
+          const loser = candidates[Math.floor(Math.random() * candidates.length)];
+          playFireworkBoomSfx();
+          box.innerHTML = `💳 오늘 술값 <strong>${grandTotal.toLocaleString()}원</strong> 전액 독박: <span style="color:#fb7185;font-size:16px;">[${loser}]</span> 당첨!! 🎉`;
+          appendLocalChat('시스템', `🎰💳 영수증 룰렛 결과! 오늘 술값 ${grandTotal.toLocaleString()}원은 [${loser}]님이 전액 독박 결제합니다!!`, 'system');
+        }
+      }, 95);
+    };
+
+    // --- [G] GOLDEN BELL & STREET BUSKER / ROSE VENDOR ---
+    let currentStreetEvent = null;
+    function triggerGoldenBellEvent() {
+      playSojuClinkSfx();
+      launchManualFireworkBarrage(true);
+      appState.sojuShotsLeft = 7;
+      appState.beerGlassesLeft = 6;
+      showToastMsg('🔔 [골든벨 발동!!] 단골 큰손 아저씨가 모든 테이블에 공짜 소주·맥주 1병씩 쐈습니다!!');
+      appendLocalChat('단골 큰손아재', '🔔 오늘 기분이다!! 이 포차 모든 테이블 소주·맥주 1병씩 내가 다 쏜다!! 마셔라~!! 🍻🎉', 'chef');
+      renderAllVisuals();
+    }
+
+    function triggerStreetVendorOrBusker() {
+      const isBusker = Math.random() < 0.5;
+      currentStreetEvent = isBusker
+        ? { type: 'busker', cost: 3000, title: '🎸 광안리 해변 통기타 버스커 등장!', desc: '신청곡(3,000원)으로 낭만 분위기를 띄우면 전원 호감도 +18 상승!', btn: '🎵 신청곡 3,000원' }
+        : { type: 'rose', cost: 4000, title: '🌹 야광 장미꽃 & 불꽃 상인 등장!', desc: '장미꽃(4,000원)을 선물하면 합석 멤버 호감도 +22 급상승!', btn: '🌹 장미선물 4,000원' };
+
+      document.getElementById('streetEventTitle').textContent = currentStreetEvent.title;
+      document.getElementById('streetEventDesc').textContent = currentStreetEvent.desc;
+      document.getElementById('streetEventActBtn').textContent = currentStreetEvent.btn;
+      document.getElementById('streetEventCard').classList.remove('hidden');
+    }
+
+    window.closeStreetEventCard = () => document.getElementById('streetEventCard').classList.add('hidden');
+    window.handleStreetEventPurchase = function () {
+      if (!currentStreetEvent) return;
+      const ev = currentStreetEvent;
+      closeStreetEventCard();
+      MENU_CATALOG.streetGift = { name: ev.type === 'busker' ? '버스커 신청곡 팁' : '광안리 야광장미 선물', unitPrice: ev.cost };
+      appState.billQty.streetGift = (appState.billQty.streetGift || 0) + 1;
+
+      if (ev.type === 'busker') {
+        boostCompanionAffection(18);
+        launchManualFireworkBarrage(true);
+        appendLocalChat('통기타 버스커', `🎸 "${appState.myName}님 테이블 신청곡~ 광안리 밤바다에 바칩니다~" 🎶✨`, 'chef');
+        triggerRandomCompanionReaction(['와 노래 선곡 센스 미쳤다... 분위기 진짜 설레네 💖', '밤바다에 통기타 소리 들으니까 영화 같다!']);
+      } else {
+        boostCompanionAffection(22);
+        playSojuClinkSfx();
+        appendLocalChat(appState.myName, '🌹 테이블 멤버들에게 반짝이는 야광 장미꽃을 선물했습니다! (+호감도 대폭 상승!)', 'action');
+        triggerRandomCompanionReaction(['헐 이런 선물 받아보는 거 진짜 오랜만이야 감동 ㅠㅠ🌹💓', '센스 만점이네!! 오늘 최고다 진짜!']);
+      }
+      renderAllVisuals();
+    };
+
+    function scheduleGoldenBellAndBusker() {
+      clearInterval(window._pochaRandomEventsTimer);
+      window._pochaRandomEventsTimer = setInterval(() => {
+        if (Math.random() < 0.4) triggerGoldenBellEvent();
+        else triggerStreetVendorOrBusker();
+      }, 40000);
+    }
+
+    // --- [H] POCHA WHITE NOISE AMBIENCE (파도 + 포차 웅성거림 + 가스버너 보글보글) ---
+    let ambienceNodes = null;
+    window.togglePochaAmbience = function () {
+      const btn = document.getElementById('ambienceToggleBtn');
+      if (ambienceNodes) {
+        try { ambienceNodes.stopAll(); } catch (e) {}
+        ambienceNodes = null;
+        btn.classList.remove('active');
+        btn.textContent = '🌊 파도·소음OFF';
+        showToastMsg('🔇 광안리 파도·포차 화이트노이즈를 껐습니다.');
+        return;
+      }
+
+      const ctx = getAudioCtx();
+      if (!ctx) { showToastMsg('먼저 상단 🔊 소리를 ON으로 켜주세요!'); return; }
+
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const out = buf.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < len; i++) {
+        const white = Math.random() * 2 - 1;
+        out[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = out[i];
+        out[i] *= 2.8;
+      }
+
+      // 1. Ocean Surf Swell
+      const waveSrc = ctx.createBufferSource();
+      waveSrc.buffer = buf; waveSrc.loop = true;
+      const waveFilter = ctx.createBiquadFilter();
+      waveFilter.type = 'lowpass'; waveFilter.frequency.value = 330;
+      const waveGain = ctx.createGain();
+      waveGain.gain.value = 0.085;
+
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.16;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.05;
+      lfo.connect(lfoGain); lfoGain.connect(waveGain.gain);
+      waveSrc.connect(waveFilter); waveFilter.connect(waveGain); waveGain.connect(ctx.destination);
+
+      // 2. Pocha Crowd Murmur & Simmering Broth
+      const murmurSrc = ctx.createBufferSource();
+      murmurSrc.buffer = buf; murmurSrc.loop = true;
+      const murmurFilter = ctx.createBiquadFilter();
+      murmurFilter.type = 'bandpass'; murmurFilter.frequency.value = 760; murmurFilter.Q.value = 1.4;
+      const murmurGain = ctx.createGain();
+      murmurGain.gain.value = 0.032;
+      murmurSrc.connect(murmurFilter); murmurFilter.connect(murmurGain); murmurGain.connect(ctx.destination);
+
+      waveSrc.start(); lfo.start(); murmurSrc.start();
+      ambienceNodes = { stopAll: () => { waveSrc.stop(); lfo.stop(); murmurSrc.stop(); } };
+
+      btn.classList.add('active');
+      btn.textContent = '🌊 파도·포차ON';
+      showToastMsg('🌊 잔잔한 광안리 파도 소리 & 포차 밤공기 ASMR이 켜졌습니다!');
+    };
+
+    // --- HOOK VISUAL EXTENSION (닉네임 칭호 + 호감도 뱃지 + 눈치 게이지) ---
+    const _origRenderAllVisuals = renderAllVisuals;
+    renderAllVisuals = function () {
+      _origRenderAllVisuals();
+
+      const nickEl = document.getElementById('myNicknameBadge');
+      if (nickEl && vipData.equippedTitle) {
+        nickEl.textContent = `${vipData.equippedTitle} · ${appState.myName}`;
+      }
+
+      const seats = getSeatedCompanions();
+      seats.forEach((p, idx) => {
+        const seatNum = idx + 1;
+        const badgeEl = document.getElementById(`seatBadge-${seatNum}`);
+        if (!badgeEl) return;
+        let heartTag = document.getElementById(`affectionPill-${seatNum}`);
+        if (p && p.isAI) {
+          if (!heartTag) {
+            heartTag = document.createElement('div');
+            heartTag.id = `affectionPill-${seatNum}`;
+            heartTag.className = 'affection-pill';
+            badgeEl.parentElement.appendChild(heartTag);
+          }
+          const sc = affectionMap[p.shortName] || 35;
+          heartTag.textContent = `${sc >= 80 ? '💘번호교환가능' : '💗호감도'} ${sc}%`;
+          heartTag.classList.remove('hidden');
+        } else if (heartTag) {
+          heartTag.classList.add('hidden');
+        }
+      });
+
+      const nFill = document.getElementById('nunchiGaugeFill');
+      const nTxt = document.getElementById('nunchiPctText');
+      if (nFill && nTxt) {
+        const np = appState.nunchiPct || 0;
+        nFill.style.width = `${np}%`;
+        nTxt.textContent = `${np}%`;
+      }
+    };
+
+    renderAllVisuals();
   </script>
 </body>
 </html>
