@@ -2745,9 +2745,12 @@
     };
 
     // ==================== 14. NATURAL FRIEND-LIKE TIKI-TAKA AI CONVERSATION ENGINE ====================
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-    }
+  function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
     function appendLocalChat(sender, text, kind = 'me') {
       const feed = document.getElementById('chatFeed');
@@ -4151,6 +4154,13 @@
     };
 
     renderAllVisuals();
+
+    document.addEventListener('pointerdown', () => {
+  const ctx = getAudioCtx();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
+  }
+}, { passive: true });
   </script>
 </body>
 </html>
