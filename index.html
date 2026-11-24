@@ -3865,51 +3865,50 @@
       }, 26000);
     };
 
-    // ==================== 16. MULTIPLAYER ENGINE ====================
+   // ==================== 16. MULTIPLAYER ENGINE (PC & MOBILE LTE/5G/WIFI UNIVERSAL) ====================
     const myClientId = 'p_' + Math.random().toString(36).slice(2, 10);
-    let peerInstance = null;
-    let isPeerHost = false;
-    let hostConn = null;
+    let mqttClient = null;
+    let currentRoomTopic = '';
+    let presenceTimer = null;
+    let mqttLibLoadingPromise = null;
     let localRoomChannel = null;
-    let peerScriptLoadingPromise = null;
-    const guestConns = new Map();
+    let hasSyncedInitialState = false;
+    const myJoinedAt = Date.now();
 
-    function isRestrictedPreviewSandbox() {
-      try {
-        const host = (window.location.hostname || '').toLowerCase();
-        const proto = window.location.protocol || '';
-        if (proto === 'blob:' || proto === 'data:' || proto === 'about:' || !host) return true;
-        if (
-          host.includes('usercontent.goog') ||
-          host.includes('googleusercontent.com') ||
-          host.includes('gstatic.com') ||
-          host.includes('google.com')
-        ) {
-          return true;
+    // 방화벽(LTE/5G/공유기/카톡 인앱)을 100% 통과하는 HTTPS(443/8084) 기반 글로벌 WSS 브로커 목록 (자동 백업 전환)
+    const WSS_BROKERS = [
+      'wss://broker.emqx.io:8084/mqtt',
+      'wss://broker.hivemq.com:8884/mqtt',
+      'wss://public.mqtthq.com:8084/mqtt'
+    ];
+    let currentBrokerIdx = 0;
+
+    function ensureMqttJsLoaded() {
+      if (typeof window.mqtt !== 'undefined') return Promise.resolve(true);
+      if (mqttLibLoadingPromise) return mqttLibLoadingPromise;
+
+      const cdnUrls = [
+        'https://unpkg.com/mqtt@5.10.3/dist/mqtt.min.js',
+        'https://cdn.jsdelivr.net/npm/mqtt@5.10.3/dist/mqtt.min.js'
+      ];
+
+      mqttLibLoadingPromise = new Promise(resolve => {
+        let idx = 0;
+        function tryLoad() {
+          if (idx >= cdnUrls.length) {
+            resolve(false);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = cdnUrls[idx++];
+          script.async = true;
+          script.onload = () => resolve(typeof window.mqtt !== 'undefined');
+          script.onerror = tryLoad;
+          document.head.appendChild(script);
         }
-        if (window.self !== window.top && !host.endsWith('.github.io')) {
-          return true;
-        }
-        return false;
-      } catch (e) {
-        return true;
-      }
-    }
-
-    function ensurePeerJsLoaded() {
-      if (isRestrictedPreviewSandbox()) return Promise.resolve(false);
-      if (typeof window.Peer !== 'undefined') return Promise.resolve(true);
-      if (peerScriptLoadingPromise) return peerScriptLoadingPromise;
-
-      peerScriptLoadingPromise = new Promise(resolve => {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
-        script.async = true;
-        script.onload = () => resolve(typeof window.Peer !== 'undefined');
-        script.onerror = () => resolve(false);
-        document.head.appendChild(script);
+        tryLoad();
       });
-      return peerScriptLoadingPromise;
+      return mqttLibLoadingPromise;
     }
 
     function exportSyncPayload() {
@@ -3951,9 +3950,29 @@
       renderAllVisuals();
     }
 
-    function sanitizePeerRoomId(code) {
-      const hex = Array.from(code).map(ch => ch.charCodeAt(0).toString(16)).join('');
-      return `gwangalli-pocha-live-${hex}`;
+    function sanitizeRoomTopic(code) {
+      const hex = Array.from(code.trim().toUpperCase())
+        .map(ch => ch.charCodeAt(0).toString(16))
+        .join('');
+      return `gwangalli-pocha-v2/room-${hex}`;
+    }
+
+    function pruneStalePlayers() {
+      const now = Date.now();
+      let changed = false;
+      Object.keys(appState.remotePlayers).forEach(cid => {
+        if (cid === myClientId) return;
+        const p = appState.remotePlayers[cid];
+        // 25초 이상 응답 없는 끊긴 유저 정리
+        if (p && p.lastSeen && now - p.lastSeen > 25000) {
+          delete appState.remotePlayers[cid];
+          changed = true;
+        }
+      });
+      if (changed) {
+        updateLivePeerBadge();
+        renderAllVisuals();
+      }
     }
 
     function updateLivePeerBadge() {
@@ -3962,15 +3981,32 @@
     }
 
     function destroyPeerSession() {
-      guestConns.forEach(c => { try { c.close(); } catch (e) {} });
-      guestConns.clear();
-      if (hostConn) { try { hostConn.close(); } catch (e) {} hostConn = null; }
-      if (peerInstance) { try { peerInstance.destroy(); } catch (e) {} peerInstance = null; }
-      if (localRoomChannel) { try { localRoomChannel.close(); } catch (e) {} localRoomChannel = null; }
-      isPeerHost = false;
+      if (presenceTimer) {
+        clearInterval(presenceTimer);
+        presenceTimer = null;
+      }
+      if (mqttClient) {
+        try {
+          if (mqttClient.connected && currentRoomTopic) {
+            mqttClient.publish(
+              currentRoomTopic,
+              JSON.stringify({ type: 'PLAYER_LEAVE', senderCid: myClientId })
+            );
+          }
+          mqttClient.end(true);
+        } catch (e) {}
+        mqttClient = null;
+      }
+      if (localRoomChannel) {
+        try { localRoomChannel.close(); } catch (e) {}
+        localRoomChannel = null;
+      }
+      currentRoomTopic = '';
+      hasSyncedInitialState = false;
       appState.remotePlayers = {};
     }
 
+    // 같은 기기 탭 간 즉시 연동 보조
     function setupLocalBroadcastChannel(code) {
       if (typeof window.BroadcastChannel === 'undefined') return;
       try {
@@ -3978,167 +4014,276 @@
         localRoomChannel.onmessage = ev => {
           const msg = ev.data;
           if (!msg || msg.senderCid === myClientId) return;
-          if (msg.type === 'LOCAL_HELLO') {
-            appState.remotePlayers[msg.senderCid] = msg.profile;
-            updateLivePeerBadge();
-            renderAllVisuals();
-            localRoomChannel.postMessage({
-              type: 'LOCAL_WELCOME',
-              senderCid: myClientId,
-              profile: { name: appState.myName, style: appState.myStyle },
-              state: exportSyncPayload()
-            });
-          } else if (msg.type === 'LOCAL_WELCOME') {
-            appState.remotePlayers[msg.senderCid] = msg.profile;
-            updateLivePeerBadge();
-            applySyncPayload(msg.state);
-          } else {
-            handlePeerPayload(null, msg);
-          }
+          handleIncomingRoomMessage(msg);
         };
-        localRoomChannel.postMessage({
-          type: 'LOCAL_HELLO',
-          senderCid: myClientId,
-          profile: { name: appState.myName, style: appState.myStyle }
-        });
       } catch (e) {}
+    }
+
+    // 방에 가장 오래 있었던(가장 먼저 입장한) 유저인지 판별 -> 새로 들어온 친구에게 테이블 상태 전달
+    function amIOldestPlayerInRoom() {
+      const entries = Object.entries(appState.remotePlayers);
+      for (const [cid, prof] of entries) {
+        if (cid === myClientId) continue;
+        if ((prof.joinedAt || Infinity) < myJoinedAt) return false;
+      }
+      return true;
     }
 
     async function connectPeerRoom(code) {
       destroyPeerSession();
+      hasSyncedInitialState = false;
+
       appState.remotePlayers = {
-        [myClientId]: { name: appState.myName, style: appState.myStyle }
+        [myClientId]: {
+          name: appState.myName,
+          style: appState.myStyle,
+          joinedAt: myJoinedAt,
+          lastSeen: Date.now()
+        }
       };
       updateLivePeerBadge();
       setupLocalBroadcastChannel(code);
 
-      if (isRestrictedPreviewSandbox()) {
-        document.getElementById('syncModeIndicator').textContent =
-          `🟢 프리뷰 합석 모드 (${code}) · GitHub 배포 시 PC·모바일 원격 연동`;
+      document.getElementById('syncModeIndicator').textContent = `🔄 [${code}] PC·모바일 통합 서버 연결 중...`;
+
+      const loaded = await ensureMqttJsLoaded();
+      if (!loaded || typeof window.mqtt === 'undefined') {
+        document.getElementById('syncModeIndicator').textContent = `⚠️ 네트워크 스크립트 로드 실패 (새로고침 해주세요)`;
         return;
       }
 
-      document.getElementById('syncModeIndicator').textContent = `🔄 [${code}] 방 연결 중...`;
-      const loaded = await ensurePeerJsLoaded();
-      if (!loaded || typeof window.Peer === 'undefined') {
-        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
-        return;
-      }
+      connectToBrokerWithFallback(code, 0);
+    }
 
-      const hostPeerId = sanitizePeerRoomId(code);
+    function connectToBrokerWithFallback(code, brokerIndex) {
+      currentBrokerIdx = brokerIndex % WSS_BROKERS.length;
+      const brokerUrl = WSS_BROKERS[currentBrokerIdx];
+      currentRoomTopic = sanitizeRoomTopic(code);
+
       try {
-        const candidateHost = new window.Peer(hostPeerId, { debug: 0 });
+        const client = window.mqtt.connect(brokerUrl, {
+          clientId: `pocha_${myClientId}_${Math.random().toString(16).slice(2, 6)}`,
+          clean: true,
+          connectTimeout: 7000,
+          reconnectPeriod: 2500,
+          keepalive: 25,
+          // 갑작스럽게 브라우저 종료 시 퇴장 알림 자동 전송 (LWT)
+          will: {
+            topic: currentRoomTopic,
+            payload: JSON.stringify({ type: 'PLAYER_LEAVE', senderCid: myClientId }),
+            qos: 0,
+            retain: false
+          }
+        });
 
-        candidateHost.on('open', () => {
-          peerInstance = candidateHost;
-          isPeerHost = true;
-          updateLivePeerBadge();
-          document.getElementById('syncModeIndicator').textContent = `🟢 실시간 방장 (${code}) · 친구 합석 대기중`;
+        mqttClient = client;
+        let connectedOnce = false;
 
-          candidateHost.on('connection', conn => {
-            conn.on('data', msg => handlePeerPayload(conn, msg));
-            conn.on('close', () => {
-              if (conn._cid) {
-                guestConns.delete(conn._cid);
-                delete appState.remotePlayers[conn._cid];
-                broadcastFromHost({ type: 'ROOM_SNAPSHOT', state: exportSyncPayload(), players: appState.remotePlayers });
-                updateLivePeerBadge();
-                renderAllVisuals();
+        const failTimer = setTimeout(() => {
+          if (!connectedOnce && mqttClient === client) {
+            try { client.end(true); } catch (e) {}
+            connectToBrokerWithFallback(code, brokerIndex + 1);
+          }
+        }, 7500);
+
+        client.on('connect', () => {
+          connectedOnce = true;
+          clearTimeout(failTimer);
+
+          client.subscribe(currentRoomTopic, { qos: 0 }, err => {
+            if (err) return;
+            document.getElementById('syncModeIndicator').textContent =
+              `🟢 실시간 합석 연결됨 (${code} · 와이파이/데이터 호환)`;
+
+            // 입장 알림 & 현재 방 상태 요청
+            publishRaw({
+              type: 'HELLO_JOIN',
+              profile: {
+                name: appState.myName,
+                style: appState.myStyle,
+                joinedAt: myJoinedAt
               }
             });
           });
         });
 
-        candidateHost.on('error', err => {
-          if (err && err.type === 'unavailable-id') {
-            try { candidateHost.destroy(); } catch (e) {}
-            joinExistingHost(hostPeerId, code);
-          } else {
-            document.getElementById('syncModeIndicator').textContent = `🟢 합석 대기중 (${code})`;
+        client.on('message', (topic, payloadBuf) => {
+          if (topic !== currentRoomTopic) return;
+          try {
+            const msg = JSON.parse(payloadBuf.toString());
+            if (!msg || msg.senderCid === myClientId) return;
+            handleIncomingRoomMessage(msg);
+          } catch (e) {}
+        });
+
+        client.on('reconnect', () => {
+          document.getElementById('syncModeIndicator').textContent = `🔄 [${code}] 재연결 중...`;
+        });
+
+        client.on('error', () => {
+          if (!connectedOnce && mqttClient === client) {
+            clearTimeout(failTimer);
+            try { client.end(true); } catch (e) {}
+            connectToBrokerWithFallback(code, brokerIndex + 1);
           }
         });
+
+        // 모바일 화면 잠금 해제 / 카톡 전환 후 복귀 시 즉시 생존 신호 발송
+        if (!window._pochaVisibilityBound) {
+          window._pochaVisibilityBound = true;
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && mqttClient && appState.mode === 'room') {
+              if (!mqttClient.connected) {
+                try { mqttClient.reconnect(); } catch (e) {}
+              } else {
+                publishRaw({
+                  type: 'HEARTBEAT',
+                  profile: {
+                    name: appState.myName,
+                    style: appState.myStyle,
+                    joinedAt: myJoinedAt
+                  }
+                });
+              }
+            }
+          });
+        }
+
+        // 7초마다 하트비트 전송으로 PC·모바일 실시간 자리 유지
+        if (presenceTimer) clearInterval(presenceTimer);
+        presenceTimer = setInterval(() => {
+          pruneStalePlayers();
+          if (mqttClient && mqttClient.connected) {
+            publishRaw({
+              type: 'HEARTBEAT',
+              profile: {
+                name: appState.myName,
+                style: appState.myStyle,
+                joinedAt: myJoinedAt
+              }
+            });
+          }
+        }, 7000);
       } catch (e) {
-        document.getElementById('syncModeIndicator').textContent = `🟢 로컬 합석 모드 (${code})`;
+        connectToBrokerWithFallback(code, brokerIndex + 1);
       }
     }
 
-    function joinExistingHost(hostPeerId, code) {
-      try {
-        const guestPeer = new window.Peer({ debug: 0 });
-        peerInstance = guestPeer;
-        isPeerHost = false;
-
-        guestPeer.on('open', () => {
-          const conn = guestPeer.connect(hostPeerId, { reliable: true });
-          hostConn = conn;
-          conn.on('open', () => {
-            document.getElementById('syncModeIndicator').textContent = `🟢 실시간 합석 완료 (${code})`;
-            conn.send({
-              type: 'HELLO_JOIN',
-              clientId: myClientId,
-              profile: { name: appState.myName, style: appState.myStyle }
-            });
-            showToastMsg(`🎉 [${code}] 친구 테이블에 실시간으로 합석했습니다!`);
-          });
-          conn.on('data', msg => handlePeerPayload(conn, msg));
-        });
-
-        guestPeer.on('error', () => {
-          document.getElementById('syncModeIndicator').textContent = `🟢 합석 모드 (${code})`;
-        });
-      } catch (e) {}
-    }
-
-    function broadcastFromHost(payload, excludeCid = null) {
-      guestConns.forEach((conn, cid) => {
-        if (cid !== excludeCid && conn.open) {
-          try { conn.send(payload); } catch (e) {}
-        }
-      });
+    function publishRaw(payload) {
+      const packet = {
+        ...payload,
+        senderCid: myClientId,
+        ts: Date.now()
+      };
+      if (localRoomChannel) {
+        try { localRoomChannel.postMessage(packet); } catch (e) {}
+      }
+      if (mqttClient && mqttClient.connected && currentRoomTopic) {
+        try {
+          mqttClient.publish(currentRoomTopic, JSON.stringify(packet), { qos: 0 });
+        } catch (e) {}
+      }
     }
 
     function sendMultiplayerEvent(payload) {
-      if (localRoomChannel) {
-        try { localRoomChannel.postMessage({ ...payload, senderCid: myClientId }); } catch (e) {}
-      }
-      if (isPeerHost) {
-        broadcastFromHost(payload, myClientId);
-      } else if (hostConn && hostConn.open) {
-        try { hostConn.send(payload); } catch (e) {}
-      }
+      publishRaw(payload);
     }
 
-    function handlePeerPayload(conn, msg) {
-      if (!msg || !msg.type) return;
+    // 중복 메시지 방지용 캐시 (BroadcastChannel + MQTT 동시 수신 시 1번만 처리)
+    const processedMsgKeys = new Set();
+    function isDuplicatePacket(msg) {
+      if (!msg.ts || !msg.senderCid) return false;
+      const key = `${msg.senderCid}_${msg.type}_${msg.ts}`;
+      if (processedMsgKeys.has(key)) return true;
+      processedMsgKeys.add(key);
+      if (processedMsgKeys.size > 200) {
+        const first = processedMsgKeys.values().next().value;
+        processedMsgKeys.delete(first);
+      }
+      return false;
+    }
 
-      if (msg.type === 'HELLO_JOIN' && isPeerHost && conn) {
-        conn._cid = msg.clientId;
-        guestConns.set(msg.clientId, conn);
-        appState.remotePlayers[msg.clientId] = msg.profile;
+    function handleIncomingRoomMessage(msg) {
+      if (!msg || !msg.type || isDuplicatePacket(msg)) return;
+
+      // 송신자 생존 시간 갱신
+      if (msg.senderCid && appState.remotePlayers[msg.senderCid]) {
+        appState.remotePlayers[msg.senderCid].lastSeen = Date.now();
+      }
+
+      if (msg.type === 'HELLO_JOIN') {
+        const isNewFriend = !appState.remotePlayers[msg.senderCid];
+        appState.remotePlayers[msg.senderCid] = {
+          ...msg.profile,
+          lastSeen: Date.now()
+        };
         updateLivePeerBadge();
         renderAllVisuals();
 
-        broadcastFromHost({
-          type: 'ROOM_SNAPSHOT',
-          state: exportSyncPayload(),
-          players: appState.remotePlayers
+        // 내 프로필과 현재 테이블 상태를 새로 들어온 친구에게 응답
+        publishRaw({
+          type: 'WELCOME_SYNC',
+          targetCid: msg.senderCid,
+          profile: {
+            name: appState.myName,
+            style: appState.myStyle,
+            joinedAt: myJoinedAt
+          },
+          includeState: amIOldestPlayerInRoom(),
+          state: amIOldestPlayerInRoom() ? exportSyncPayload() : null
         });
-        const joinNotice = `🌊 [${msg.profile.name}]님이 우리 원형 테이블에 실시간 합석했습니다! 다같이 짠 해주세요!`;
-        appendLocalChat('시스템', joinNotice, 'system');
-        broadcastFromHost({ type: 'CHAT_MSG', sender: '시스템', text: joinNotice, kind: 'system' });
-        showToastMsg(`🙌 ${msg.profile.name}님이 테이블에 앉았습니다!`);
+
+        if (isNewFriend) {
+          const joinNotice = `🌊 [${msg.profile.name}]님이 우리 원형 테이블에 실시간 합석했습니다! 다같이 짠 해주세요!`;
+          appendLocalChat('시스템', joinNotice, 'system');
+          showToastMsg(`🙌 ${msg.profile.name}님이 테이블에 앉았습니다!`);
+        }
         return;
       }
 
-      if (isPeerHost && conn && msg.type !== 'ROOM_SNAPSHOT') {
-        broadcastFromHost(msg, conn._cid || null);
+      if (msg.type === 'WELCOME_SYNC') {
+        const wasUnknown = !appState.remotePlayers[msg.senderCid];
+        appState.remotePlayers[msg.senderCid] = {
+          ...msg.profile,
+          lastSeen: Date.now()
+        };
+        updateLivePeerBadge();
+
+        if (!hasSyncedInitialState && msg.includeState && msg.state) {
+          hasSyncedInitialState = true;
+          applySyncPayload(msg.state);
+          showToastMsg(`🎉 [${appState.roomCode}] 친구 테이블과 실시간 동기화 완료!`);
+        } else if (wasUnknown) {
+          renderAllVisuals();
+        }
+        return;
       }
 
-      if (msg.type === 'ROOM_SNAPSHOT') {
-        appState.remotePlayers = msg.players || appState.remotePlayers;
-        updateLivePeerBadge();
-        applySyncPayload(msg.state);
-      } else if (msg.type === 'SYNC_STATE') {
+      if (msg.type === 'HEARTBEAT') {
+        const wasUnknown = !appState.remotePlayers[msg.senderCid];
+        appState.remotePlayers[msg.senderCid] = {
+          ...msg.profile,
+          lastSeen: Date.now()
+        };
+        if (wasUnknown) {
+          updateLivePeerBadge();
+          renderAllVisuals();
+        }
+        return;
+      }
+
+      if (msg.type === 'PLAYER_LEAVE') {
+        const leaver = appState.remotePlayers[msg.senderCid];
+        if (leaver) {
+          delete appState.remotePlayers[msg.senderCid];
+          updateLivePeerBadge();
+          renderAllVisuals();
+          appendLocalChat('시스템', `👋 [${leaver.name}]님이 잠시 자리를 비웠습니다.`, 'system');
+        }
+        return;
+      }
+
+      if (msg.type === 'SYNC_STATE') {
         applySyncPayload(msg.state);
       } else if (msg.type === 'CHEERS') {
         applySyncPayload(msg.state);
@@ -4169,7 +4314,7 @@
         appendLocalChat(msg.sender, msg.text, 'other');
         setTimeout(() => openFinalCheckoutReceipt(msg.sender), 450);
       }
-    }
+    } 
 
     // ==================== 17. INITIALIZATION ====================
     (function initApp() {
