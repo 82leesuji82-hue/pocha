@@ -5,67 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>광안리 밤바다 포차 · 리얼 합석 다이닝</title>
   <style>
-    /* PC 레이아웃 유지, 모바일(768px 이하)에서만 한눈에 들어오게 조정 */
-@media (max-width: 768px) {
-  .game-wrapper,
-  .container,
-  .pocha-container {
-    padding: 8px 10px 14px;
-    gap: 8px;
-    overflow-x: hidden;
-  }
-
-  /* 상단 헤더 및 상태바 간격 축소 */
-  .header-bar,
-  .status-row {
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-
-  .header-bar button,
-  .action-btn,
-  .sub-btn {
-    font-size: 12px;
-    padding: 8px 8px;
-    white-space: nowrap;
-  }
-
-  /* 원형 테이블 및 캐릭터 크기 축소로 잘림 방지 */
-  .table-stage,
-  .round-table-wrap {
-    transform: scale(0.82);
-    transform-origin: top center;
-    margin-bottom: -36px; /* scale 축소로 생긴 빈 세로 여백 회수 */
-  }
-
-  .character-avatar,
-  .seat-character img {
-    max-width: 68px;
-    max-height: 68px;
-  }
-
-  /* 6개 메인 액션 버튼 컴팩트화 */
-  .menu-grid,
-  .action-grid {
-    gap: 6px;
-  }
-
-  .menu-grid button,
-  .action-grid button {
-    padding: 10px 6px;
-    font-size: 13px;
-    border-radius: 10px;
-  }
-
-  /* 채팅창 높이 제한으로 입력창이 화면 아래로 밀리지 않게 유지 */
-  .chat-log,
-  .dialogue-box {
-    max-height: 120px;
-    overflow-y: auto;
-    font-size: 12px;
-    padding: 8px;
-  }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       margin: 0; padding: 0;
