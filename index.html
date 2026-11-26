@@ -6153,5 +6153,357 @@ document.addEventListener('pointerdown', () => {
       appendLocalChat('시스템', '✅ [V5.4 정상 로드 완료] 하단 [🚻 화장실 다녀오기] · [🗼 3차 파리 가자!] 버튼과 채팅 명령어("화장실 다녀올게", "3차 가자", "3차 파리")가 모두 연결되었습니다!', 'system');
     })();
   </script>
+  <!-- ==================== 21. MOBILE ONE-SCREEN COMPACT UI PATCH (PC 버전은 100% 그대로 유지 · 모바일만 한눈에 보기 최적화) ==================== -->
+  <script>
+    (function installMobileOneScreenPatch() {
+      if (window.__POCHA_MOBILE_PATCH__) return;
+      window.__POCHA_MOBILE_PATCH__ = true;
+
+      const mStyle = document.createElement('style');
+      mStyle.textContent = `
+        /* PC에서는 모바일 확장 버튼을 숨김 */
+        .mobile-only-chat-expand { display: none !important; }
+
+        /* ==================== 오직 모바일/태블릿 세로 화면(1023px 이하)에서만 작동 ==================== */
+        @media (max-width: 1023px) {
+          html, body {
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important; /* 전체 위아래 스크롤 제거 -> 한 화면 고정! */
+          }
+
+          #drunkCameraStage {
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            gap: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+          }
+
+          .pocha-main-card {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+
+          /* 1. 상단 밤하늘 헤더 슬림화 + 버튼 한 줄 가로 스크롤 */
+          .pocha-sky-header {
+            height: 92px !important;
+            flex-shrink: 0 !important;
+          }
+          .sky-top-bar {
+            padding: 5px 8px !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 4px !important;
+          }
+          .sky-brand-group {
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+          }
+          .pocha-title {
+            font-size: 13px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+          }
+          /* 번잡했던 상단 버튼들을 손가락으로 미는 깔끔한 1줄 슬라이드로 정렬 */
+          .sky-btn-group {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            gap: 5px !important;
+            padding-bottom: 2px !important;
+            scrollbar-width: none !important;
+            -webkit-overflow-scrolling: touch;
+          }
+          .sky-btn-group::-webkit-scrollbar { display: none !important; }
+          .sky-btn-group > span {
+            display: inline-flex !important;
+            flex-wrap: nowrap !important;
+            gap: 5px !important;
+            flex-shrink: 0 !important;
+          }
+          .top-pill {
+            padding: 3px 8px !important;
+            font-size: 10px !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+          }
+          .sky-gauge-bar {
+            padding: 3px 10px !important;
+            gap: 6px !important;
+          }
+          #drunkMoodLabel, #bottleTotalBadge { font-size: 10px !important; }
+          .gauge-track { height: 7px !important; }
+
+          /* 2. 중앙 포차 아레나 (캐릭터 + 원형 테이블이 한눈에 쏙 들어오게 압축) */
+          #pochaArena {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            padding: 4px 6px 6px !important;
+            justify-content: space-evenly !important;
+          }
+          .pocha-bulb-row { display: none !important; }
+
+          /* 모바일에서 화면을 너무 많이 차지하던 옆테이블 아바타는 숨기고 깔끔한 미니 버튼화 */
+          .neighbor-tables-layer {
+            margin-bottom: 2px !important;
+            gap: 6px !important;
+          }
+          .neighbor-patrons-row { display: none !important; }
+          .neighbor-table-pod {
+            flex-direction: row !important;
+            justify-content: center !important;
+            gap: 5px !important;
+            min-width: 0 !important;
+            flex: 1 !important;
+            padding: 4px 8px !important;
+            border-radius: 10px !important;
+          }
+          .mini-silver-table {
+            width: auto !important;
+            height: auto !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #e2e8f0 !important;
+            font-size: 10px !important;
+          }
+          .paris-mode .mini-silver-table {
+            background: transparent !important;
+            color: #fde68a !important;
+          }
+          .neighbor-join-tag {
+            margin-top: 0 !important;
+            padding: 2px 6px !important;
+            font-size: 9px !important;
+          }
+
+          /* 맞은편 캐릭터 3명 슬림 배치 */
+          .seats-top-grid {
+            margin-bottom: -14px !important;
+            gap: 2px !important;
+          }
+          .seat-side-drop { transform: translateY(12px) !important; }
+          .seat-center-lift { transform: translateY(-2px) !important; }
+          .portrait-slot {
+            width: 66px !important;
+            height: 76px !important;
+          }
+          .seat-badge-default, .seat-badge-hunt, .seat-badge-live, .seat-badge-empty {
+            font-size: 9.5px !important;
+            padding: 1.5px 7px !important;
+          }
+          .affection-pill {
+            font-size: 8.5px !important;
+            padding: 1px 5px !important;
+          }
+          .seat-kick-btn {
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 9.5px !important;
+            top: 0 !important;
+            right: 0 !important;
+          }
+          .speech-bubble-box {
+            top: -26px !important;
+            font-size: 10px !important;
+            padding: 3px 8px !important;
+            max-width: 170px !important;
+            -webkit-line-clamp: 1 !important;
+          }
+
+          /* 중앙 원형 테이블 & 안주 크기 모바일 맞춤 최적화 */
+          .silver-round-table {
+            width: min(76vw, 276px) !important;
+            height: min(46vw, 178px) !important;
+            border-width: 4.5px !important;
+            margin: 2px 0 !important;
+          }
+          .silver-round-table > div:nth-child(2) { display: none !important; } /* 수저 텍스트 태그 숨김 */
+          .table-dish-grid {
+            width: 94% !important;
+            height: 90% !important;
+            padding-top: 4px !important;
+            gap: 2px !important;
+          }
+          .dish-art-lg { width: 58px !important; height: 42px !important; }
+          .dish-art-md { width: 52px !important; height: 40px !important; }
+          .dish-art-sm { width: 46px !important; height: 36px !important; }
+          .dish-pill-tag {
+            font-size: 8.5px !important;
+            padding: 1px 5px !important;
+            margin-top: -2px !important;
+          }
+
+          /* 하단 내 캐릭터 & 화장실 문 컴팩트 정렬 */
+          .bottom-my-row {
+            margin-top: -10px !important;
+            gap: 10px !important;
+          }
+          #myPortraitContainer {
+            width: 58px !important;
+            height: 66px !important;
+          }
+          .my-name-pill {
+            font-size: 9.5px !important;
+            padding: 2px 8px !important;
+          }
+          .change-style-btn {
+            padding: 5px 8px !important;
+            font-size: 9.5px !important;
+            border-radius: 10px !important;
+          }
+          .soju-crate-box {
+            padding: 3px 7px !important;
+            min-width: 62px !important;
+            border-radius: 10px !important;
+          }
+          #emptyBottleCountPill { font-size: 9.5px !important; margin-bottom: 0 !important; }
+          #emptyBottleVisualRack { min-height: 16px !important; }
+          #emptyBottleVisualRack svg { width: 10px !important; height: 20px !important; }
+
+          /* 모바일에서는 하단 액션바에 화장실 버튼이 있으므로 중복 네온문은 작게 축소 */
+          #pochaRestroomDoor {
+            padding: 4px 6px !important;
+            bottom: 6px !important;
+            left: 6px !important;
+            border-radius: 10px !important;
+          }
+          #pochaRestroomDoor > div { display: none !important; }
+
+          /* 화장실 내부 오버레이도 모바일 한 화면에 쏙 맞게 조정 */
+          #restroomInteriorOverlay { padding: 10px !important; gap: 8px !important; }
+          .restroom-stage-card { padding: 10px !important; gap: 8px !important; }
+          .wc-stall-box { width: 105px !important; height: 132px !important; }
+          .wc-mirror-box { width: 118px !important; height: 118px !important; }
+          #restroomMirrorAvatar { width: 96px !important; height: 110px !important; }
+          .wc-sink-bowl { width: 132px !important; height: 18px !important; }
+          .restroom-act-btn { padding: 7px 5px !important; font-size: 10.5px !important; }
+
+          /* 3. 액션 버튼 8개 -> 4열 2줄 초깔끔 그리드 */
+          .pocha-action-bar {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 4px !important;
+            padding: 6px 8px !important;
+            flex-shrink: 0 !important;
+          }
+          .pocha-act-btn {
+            padding: 7px 3px !important;
+            font-size: 10.5px !important;
+            border-radius: 10px !important;
+            letter-spacing: -0.03em !important;
+          }
+
+          /* 4. 하단 고정 한눈에 보기 채팅창 (접기/넓게보기 토글 지원!) */
+          .pocha-chat-section.chat-sidebar-docked {
+            width: 100% !important;
+            height: 29dvh !important;
+            min-height: 168px !important;
+            max-height: 225px !important;
+            border-radius: 18px 18px 0 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+            gap: 5px !important;
+            flex-shrink: 0 !important;
+            transition: height 0.25s ease, max-height 0.25s ease !important;
+            z-index: 40 !important;
+          }
+          /* 모바일에서 [넓게보기] 눌렀을 때 대화창이 시원하게 커지는 모드 */
+          .pocha-chat-section.chat-sidebar-docked.mobile-chat-expanded {
+            height: 58dvh !important;
+            max-height: 62dvh !important;
+          }
+
+          .pocha-chat-section.chat-sidebar-docked .chat-meta-bar > div:last-child {
+            display: none !important; /* 모바일에서 긴 설명줄 숨겨서 채팅 공간 확보 */
+          }
+          .pocha-chat-section.chat-sidebar-docked .chat-meta-bar > div:first-child {
+            padding-bottom: 4px !important;
+          }
+          #chatRoomHeaderTitle { font-size: 12.5px !important; }
+          #syncModeIndicator { display: none !important; }
+
+          .mobile-only-chat-expand {
+            display: inline-flex !important;
+            background: rgba(51, 65, 85, 0.9) !important;
+            border-color: #94a3b8 !important;
+            color: #f8fafc !important;
+            font-size: 10px !important;
+            padding: 3px 7px !important;
+          }
+
+          .pocha-chat-section.chat-sidebar-docked #chatFeed {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            padding: 7px 8px !important;
+            gap: 5px !important;
+          }
+          .chat-row-me, .chat-row-other {
+            font-size: 12px !important;
+            padding: 5px 9px !important;
+            line-height: 1.4 !important;
+          }
+          .chat-row-system, .chat-row-chef, .chat-row-action {
+            font-size: 10.5px !important;
+            padding: 3px 8px !important;
+          }
+          #chatForm { gap: 6px !important; }
+          #chatInput {
+            padding: 7px 11px !important;
+            font-size: 16px !important; /* iOS 사파리 자동 줌인(확대) 방지용 16px 필수! */
+            border-radius: 10px !important;
+          }
+          .chat-send-btn {
+            padding: 7px 13px !important;
+            font-size: 12px !important;
+            border-radius: 10px !important;
+          }
+        }
+      `;
+      document.head.appendChild(mStyle);
+
+      // 모바일 채팅창 상단에 [🔼 넓게보기 / 🔽 기본크기] 전환 버튼 추가
+      const chatHeaderBtnWrap = document.querySelector('.pocha-chat-section .chat-meta-bar > div:first-child > div:last-child');
+      const chatSection = document.querySelector('.pocha-chat-section');
+      if (chatHeaderBtnWrap && chatSection) {
+        const expandBtn = document.createElement('button');
+        expandBtn.type = 'button';
+        expandBtn.className = 'top-pill mobile-only-chat-expand';
+        expandBtn.textContent = '🔼 넓게';
+        expandBtn.onclick = () => {
+          const isExpanded = chatSection.classList.toggle('mobile-chat-expanded');
+          expandBtn.textContent = isExpanded ? '🔽 작게' : '🔼 넓게';
+          const feed = document.getElementById('chatFeed');
+          if (feed) setTimeout(() => { feed.scrollTop = feed.scrollHeight; }, 260);
+        };
+        chatHeaderBtnWrap.insertBefore(expandBtn, chatHeaderBtnWrap.firstChild);
+      }
+
+      // 모바일 화면 리사이즈/키보드 올라올 때 하늘 캔버스 비율 즉시 맞춤
+      window.addEventListener('resize', () => {
+        if (typeof resizeSkyCanvas === 'function') resizeSkyCanvas();
+        const feed = document.getElementById('chatFeed');
+        if (feed) feed.scrollTop = feed.scrollHeight;
+      });
+      setTimeout(() => {
+        if (typeof resizeSkyCanvas === 'function') resizeSkyCanvas();
+      }, 150);
+    })();
+  </script>
 </body>
 </html>
