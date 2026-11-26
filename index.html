@@ -4163,4 +4163,647 @@
 }, { passive: true });
   </script>
 </body>
+  <!-- ==================== 20. UPGRADE PACK V5 AUTO-PATCH (연예인 비주얼 + 합석 ON/OFF + AI대화 ON/OFF + 얼큰김치수제비) ==================== -->
+  <script>
+    (function installPochaUpgradePackV5() {
+      // 1. V5 전용 스타일 주입 (토글 버튼, 김치수제비 보글보글 애니메이션 등)
+      const v5Style = document.createElement('style');
+      v5Style.textContent = `
+        .top-pill-toggle-on {
+          background: linear-gradient(90deg, #059669, #10b981) !important;
+          border-color: #6ee7b7 !important;
+          color: #ffffff !important;
+          box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+        }
+        .top-pill-toggle-off {
+          background: rgba(30, 41, 59, 0.92) !important;
+          border-color: #64748b !important;
+          color: #94a3b8 !important;
+        }
+        .top-pill-ai-on {
+          background: linear-gradient(90deg, #0284c7, #6366f1) !important;
+          border-color: #93c5fd !important;
+          color: #ffffff !important;
+          box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+        }
+        .neighbor-disabled {
+          opacity: 0.45 !important;
+          filter: grayscale(0.6);
+        }
+        @keyframes sujebiBubble {
+          0%, 100% { transform: scale(0.82); opacity: 0.5; }
+          50% { transform: scale(1.25); opacity: 0.95; }
+        }
+        .sujebi-bubble { animation: sujebiBubble 1.3s ease-in-out infinite; transform-origin: center; }
+        .ai-typing-indicator {
+          font-size: 11px; color: #fde68a; font-weight: 800;
+          padding: 4px 10px; border-radius: 8px;
+          background: rgba(30, 41, 59, 0.85); border: 1px dashed rgba(251, 191, 36, 0.5);
+          display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+        }
+      `;
+      document.head.appendChild(v5Style);
+
+      // 2. 상태값(appState) 확장: 합석 ON/OFF, AI 대화 ON/OFF, 얼큰 김치 수제비
+      appState.hapseokEnabled = true;
+      appState.aiChatEnabled = true;
+      appState.kimchiSujebiOrdered = true; // 기본 테이블에 바로 세팅 (원치 않으면 false로 변경 가능)
+      appState.kimchiSujebiLeft = 6;
+      appState.billQty.kimchiSujebi = 1;
+      appState.chatHistoryLog = [];
+
+      MENU_CATALOG.kimchiSujebi = { name: '얼큰 묵은지 김치수제비', unitPrice: 15000 };
+
+      // 3. 상단 헤더에 [합석 ON/OFF], [AI대화 ON/OFF] 스위치 버튼 자동 주입
+      const skyBtnGroup = document.querySelector('.sky-btn-group');
+      if (skyBtnGroup) {
+        const toggleWrap = document.createElement('span');
+        toggleWrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:6px;';
+        toggleWrap.innerHTML = `
+          <button id="hapseokMasterBtn" onclick="toggleHapseokMaster()" class="top-pill top-pill-toggle-on" title="합석 및 헌팅 허용 켜기/끄기">
+            🪑 합석 ON
+          </button>
+          <button id="aiChatMasterBtn" onclick="toggleAiChatMaster()" class="top-pill top-pill-ai-on" title="AI 자동 티키타카 대화 켜기/끄기">
+            🤖 AI대화 ON
+          </button>
+        `;
+        skyBtnGroup.insertBefore(toggleWrap, skyBtnGroup.firstChild);
+      }
+
+      // 4. 원형 테이블에 [얼큰 김치 수제비] 슬롯 주입 + 메뉴판 최상단에 주문 버튼 주입
+      const dishGrid = document.querySelector('.table-dish-grid');
+      if (dishGrid && !document.getElementById('dishSlot-kimchiSujebi')) {
+        const sujebiSlot = document.createElement('div');
+        sujebiSlot.id = 'dishSlot-kimchiSujebi';
+        sujebiSlot.className = 'dish-slot';
+        sujebiSlot.title = '클릭해서 보글보글 얼큰 김치 수제비 한 입 먹기!';
+        sujebiSlot.setAttribute('onclick', 'eatKimchiSujebi()');
+        sujebiSlot.innerHTML = `
+          <div id="kimchiSujebiSvgHolder" class="dish-art-lg"></div>
+          <div class="dish-pill-tag" style="background:rgba(127,29,29,0.95);border-color:#fb923c;">
+            <span>🍲 김치수제비</span>
+            <span id="kimchiSujebiCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+          </div>
+        `;
+        dishGrid.insertBefore(sujebiSlot, dishGrid.firstChild);
+      }
+
+      const menuScrollBox = document.querySelector('#menuModal .pocha-modal-box > div:last-child');
+      if (menuScrollBox) {
+        const sujebiMenuBtn = document.createElement('button');
+        sujebiMenuBtn.className = 'menu-item-btn';
+        sujebiMenuBtn.style.borderColor = 'rgba(251, 146, 60, 0.85)';
+        sujebiMenuBtn.style.background = 'linear-gradient(90deg, rgba(127,29,29,0.55), rgba(30,41,59,0.95))';
+        sujebiMenuBtn.setAttribute('onclick', "orderMenuItem('kimchiSujebi')");
+        sujebiMenuBtn.innerHTML = `
+          <div>
+            <div style="font-weight:900;font-size:14px;color:#fed7aa;">
+              🍲🔥 얼큰 묵은지 김치수제비
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">NEW 시그니처</span>
+            </div>
+            <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">잘 익은 묵은지 + 손으로 직접 떼어 넣은 쫀득 수제비 전골 (6국자)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">15,000원</span>
+        `;
+        menuScrollBox.insertBefore(sujebiMenuBtn, menuScrollBox.firstChild);
+      }
+
+      // ==================== [기능 1] 연예인·아이돌급 고퀄리티 얼굴 SVG 교체 ====================
+      CHARACTER_STYLES.forEach(c => {
+        if (c.id === 'jisu') c.tag = '걸그룹 센터상 · 여신 S컬 웨이브';
+        if (c.id === 'seoyeon') c.tag = '청순 여배우상 · 시스루 허쉬컷';
+        if (c.id === 'hayoon') c.tag = '과즙미 아이돌상 · 로우번 모헤어';
+        if (c.id === 'dohyun') c.tag = '냉미남 배우상 · 차콜 코트 애즈펌';
+        if (c.id === 'junwoo') c.tag = '첫사랑 남주상 · 시스루 댄디니트';
+        if (c.id === 'minjae') c.tag = '모델 메인비주얼 · 시크 리프컷';
+      });
+
+      const CELEBRITY_FACE_PRESETS = {
+        jisu:    { skinA: '#fff4ef', skinB: '#f7d2c4', eye: '#4a2c2a', lip: '#f43f5e', hairA: '#1c161d', hairB: '#4a3b52', mole: [73.5, 59.5] },
+        seoyeon: { skinA: '#fff6f2', skinB: '#f5d5c8', eye: '#5c3a28', lip: '#ec4899', hairA: '#2e1d16', hairB: '#6d4c41', mole: [46.5, 57.5] },
+        hayoon:  { skinA: '#fff2eb', skinB: '#f6cebe', eye: '#3b231a', lip: '#fb7185', hairA: '#181518', hairB: '#3f3a45', mole: [72.0, 62.0] },
+        dohyun:  { skinA: '#fdf0e6', skinB: '#ecc3ad', eye: '#232329', lip: '#d97278', hairA: '#12131a', hairB: '#384152', mole: [45.0, 56.0] },
+        junwoo:  { skinA: '#fff3ea', skinB: '#efd.bb', eye: '#3e2723', lip: '#de787c', hairA: '#2b1e19', hairB: '#5d4037', mole: null },
+        minjae:  { skinA: '#fcefe6', skinB: '#eabfa8', eye: '#1e293b', lip: '#c96870', hairA: '#0f172a', hairB: '#475569', mole: [74.0, 56.5] }
+      };
+
+      window.renderRealisticPortraitSVG = function (styleId, drunkPct, seatKey, forceSantaHat = false) {
+        const st = CHARACTER_STYLES.find(s => s.id === styleId) || CHARACTER_STYLES[0];
+        const cel = CELEBRITY_FACE_PRESETS[st.id] || CELEBRITY_FACE_PRESETS.jisu;
+        const uid = `${st.id}_${seatKey}`;
+        const isFemale = st.gender === 'f';
+        const showSanta = forceSantaHat || appState.isChristmasMode;
+        const blushAlpha = Math.min(0.82, Math.max(0.18, (drunkPct / 100) * 0.82));
+        const sleepy = drunkPct >= 75 ? 1.1 : (drunkPct >= 45 ? 0.5 : 0);
+
+        // 헤어 뒷머리 레이어
+        let backHair = '';
+        if (st.id === 'jisu') {
+          backHair = `
+            <path d="M26,44 C15,72 17,108 26,135 L94,135 C103,108 105,72 94,44 C88,18 74,10 60,10 C46,10 32,18 26,44 Z" fill="url(#celHair_${uid})"/>
+            <path d="M23,78 Q32,96 25,124 M97,78 Q88,96 95,124" fill="none" stroke="${cel.hairB}" stroke-width="2.4" opacity="0.6"/>
+          `;
+        } else if (st.id === 'seoyeon') {
+          backHair = `
+            <path d="M29,44 C21,72 23,104 29,128 L91,128 C97,104 99,72 91,44 C85,18 73,11 60,11 C47,11 35,18 29,44 Z" fill="url(#celHair_${uid})"/>
+          `;
+        } else if (st.id === 'hayoon') {
+          backHair = `
+            <circle cx="85" cy="64" r="13.5" fill="url(#celHair_${uid})"/>
+            <circle cx="35" cy="64" r="7" fill="url(#celHair_${uid})" opacity="0.6"/>
+          `;
+        } else if (st.id === 'minjae') {
+          backHair = `
+            <path d="M31,48 L25,84 L35,81 L32,94 L88,94 L85,81 L95,84 L89,48 Z" fill="url(#celHair_${uid})"/>
+          `;
+        } else {
+          backHair = `<path d="M33,44 C30,62 34,78 38,86 L82,86 C86,78 90,62 87,44 Z" fill="url(#celHair_${uid})"/>`;
+        }
+
+        // 의상 레이어
+        let outfit = '';
+        if (isFemale) {
+          outfit = st.id === 'jisu'
+            ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+               <path d="M40,95 Q60,106 80,95" fill="none" stroke="#fdba74" stroke-width="2.6"/>
+               <circle cx="60" cy="100" r="1.8" fill="#fde047"/>`
+            : st.id === 'seoyeon'
+            ? `<path d="M18,136 C21,101 37,91 60,91 C83,91 99,101 102,136 Z" fill="#1e293b" stroke="#64748b" stroke-width="1"/>
+               <path d="M46,91 L60,118 L74,91 Z" fill="#fff1f2"/>
+               <circle cx="60" cy="123" r="2.2" fill="#fbbf24"/>`
+            : `<path d="M18,136 C21,102 37,92 60,92 C83,92 99,102 102,136 Z" fill="#fda4af"/>
+               <path d="M45,92 L60,117 L75,92 Z" fill="#fff1f2"/>`;
+        } else {
+          outfit = st.id === 'dohyun'
+            ? `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#1f2937"/>
+               <path d="M45,88 L60,136 L75,88 Z" fill="#09090b"/>
+               <path d="M37,89 L49,128 M83,89 L71,128" stroke="#4b5563" stroke-width="2"/>`
+            : st.id === 'junwoo'
+            ? `<path d="M15,136 C18,98 35,89 60,89 C85,89 102,98 105,136 Z" fill="#1e3a8a"/>
+               <polygon points="47,89 60,109 73,89" fill="#f8fafc"/>`
+            : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#18181b"/>
+               <path d="M46,89 Q60,104 74,89" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="2.5 2"/>`;
+        }
+
+        // 날렵한 연예인 턱선 (여배우 V라인 / 남배우 조각 턱선)
+        const jawPath = isFemale
+          ? 'M37.5,43 C37,61 42.5,73 54.5,79.2 C58,81 62,81 65.5,79.2 C77.5,73 83,61 82.5,43 C82,24 72,18 60,18 C48,18 38,24 37.5,43 Z'
+          : 'M36.5,42 C36.5,60 41.5,73 53.5,80 C57.5,82 62.5,82 66.5,80 C78.5,73 83.5,60 83.5,42 C83,23 72.5,17 60,17 C47.5,17 37,23 36.5,42 Z';
+
+        // 트렌디 앞머리 (시스루뱅, 애즈펌, 가일컷, 리프컷)
+        let frontHair = '';
+        if (isFemale) {
+          frontHair = `
+            <path d="M32,47 C30,20 44,10 60,10 C76,10 90,20 88,47 C83,31 75,24 66,23 C67,33 64,41 61,45 C60,34 58,26 55,23 C53,33 49,41 45,44 C45,33 42,26 38,26 C35,33 34,41 32,47 Z" fill="url(#celHair_${uid})"/>
+            <path d="M33,42 C30,62 33,84 38,98 C31,84 28,62 31,44 Z" fill="url(#celHair_${uid})"/>
+            <path d="M87,42 C90,62 87,84 82,98 C89,84 92,62 89,44 Z" fill="url(#celHair_${uid})"/>
+          `;
+        } else if (st.id === 'dohyun') {
+          frontHair = `
+            <path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 C85,31 77,23 67,22 C72,32 69,44 62,48 C65,37 64,27 58,22 C52,28 49,38 53,48 C44,43 42,32 48,22 C39,25 34,34 31,46 Z" fill="url(#celHair_${uid})"/>
+          `;
+        } else {
+          frontHair = `
+            <path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 L81,31 L76,45 L69,28 L62,46 L56,28 L49,45 L43,30 Z" fill="url(#celHair_${uid})"/>
+          `;
+        }
+
+        const moleSVG = cel.mole
+          ? `<circle cx="${cel.mole[0]}" cy="${cel.mole[1]}" r="0.85" fill="#3b231a" opacity="0.85"/>`
+          : '';
+
+        const earringSVG = isFemale
+          ? `<circle cx="35.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="35.5" y1="60" x2="35.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="35.5" cy="69.5" r="2" fill="#fffbeb"/>
+             <circle cx="84.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="84.5" y1="60" x2="84.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="84.5" cy="69.5" r="2" fill="#fffbeb"/>`
+          : `<circle cx="35.2" cy="59" r="2.6" fill="none" stroke="#e2e8f0" stroke-width="1.3"/>`;
+
+        const santaHatSVG = showSanta ? `
+          <path d="M33,26 C35,10 56,3 76,12 C84,16 90,22 93,27 L33,26 Z" fill="#dc2626"/>
+          <rect x="31" y="23" width="56" height="7" rx="3.5" fill="#ffffff"/>
+          <circle cx="94" cy="26" r="5" fill="#ffffff"/>
+        ` : '';
+
+        return `
+          <svg id="portraitSvg-${seatKey}" viewBox="0 0 120 136" class="portrait-breathe" style="filter:drop-shadow(0 8px 16px rgba(0,0,0,0.65));">
+            <defs>
+              <linearGradient id="celSkin_${uid}" x1="0.3" y1="0" x2="0.7" y2="1">
+                <stop offset="0%" stop-color="${cel.skinA}"/>
+                <stop offset="100%" stop-color="${cel.skinB}"/>
+              </linearGradient>
+              <linearGradient id="celHair_${uid}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${cel.hairB}"/>
+                <stop offset="45%" stop-color="${cel.hairA}"/>
+                <stop offset="100%" stop-color="#09090b"/>
+              </linearGradient>
+            </defs>
+
+            ${backHair}
+
+            <!-- 목 & 쇄골 음영 -->
+            <rect x="52" y="72" width="16" height="22" rx="6" fill="url(#celSkin_${uid})"/>
+            <path d="M52,76 Q60,82 68,76" fill="none" stroke="rgba(160,95,75,0.28)" stroke-width="1.4"/>
+
+            ${outfit}
+
+            <!-- 귀 & 쥬얼리 -->
+            <ellipse cx="35.8" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/>
+            <ellipse cx="84.2" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/>
+
+            <!-- 연예인 V라인 얼굴 -->
+            <path d="${jawPath}" fill="url(#celSkin_${uid})"/>
+
+            <!-- 수채화 치크 & 취기 블러셔 -->
+            <ellipse cx="45.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
+            <ellipse cx="74.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
+
+            <!-- 세련된 일자/아치 눈썹 -->
+            <path d="M42,${isFemale ? 43.2 : 42.2} Q49,${isFemale ? 40.8 : 40.2} 55.2,${isFemale ? 42.8 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
+            <path d="M64.8,${isFemale ? 42.8 : 42.2} Q71,${isFemale ? 40.8 : 40.2} 78,${isFemale ? 43.2 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
+
+            <!-- 초롱초롱 아이돌 눈망울 + 쌍꺼풀 + 애교살 + 속눈썹 -->
+            <g class="blink-lid">
+              <path d="M43.5,47.2 Q49.5,44.6 55.2,47.4 M64.8,47.4 Q70.5,44.6 76.5,47.2" fill="none" stroke="#a6735c" stroke-width="0.85" opacity="0.75"/>
+
+              <ellipse cx="49.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
+              <circle cx="49.6" cy="50.4" r="3.35" fill="${cel.eye}"/>
+              <circle cx="49.6" cy="50.5" r="1.65" fill="#09090b"/>
+              <circle cx="48.2" cy="49.1" r="1.2" fill="#ffffff"/>
+              <circle cx="51.2" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
+
+              <ellipse cx="70.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
+              <circle cx="70.4" cy="50.4" r="3.35" fill="${cel.eye}"/>
+              <circle cx="70.4" cy="50.5" r="1.65" fill="#09090b"/>
+              <circle cx="69.0" cy="49.1" r="1.2" fill="#ffffff"/>
+              <circle cx="72.0" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
+
+              <path d="M43,${(50.2 + sleepy).toFixed(1)} Q49.5,${(45.8 + sleepy).toFixed(1)} 55.8,${(50.4 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
+              <path d="M64.2,${(50.4 + sleepy).toFixed(1)} Q70.5,${(45.8 + sleepy).toFixed(1)} 77,${(50.2 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
+              ${isFemale ? `<path d="M43,50 L40.8,48 M77,50 L79.2,48" stroke="#141417" stroke-width="1.2" stroke-linecap="round"/>` : ''}
+
+              <!-- 도톰 애교살 하이라이트 -->
+              <path d="M45,54.8 Q49.5,56.3 54,54.7 M66,54.7 Q70.5,56.3 75,54.8" fill="none" stroke="#ffffff" stroke-width="0.9" opacity="0.55" stroke-linecap="round"/>
+            </g>
+
+            <!-- 오똑한 콧대 & 코끝 하이라이트 -->
+            <path d="M59.7,48.5 L59.1,58.4 Q60,60.3 61.8,59.2" fill="none" stroke="#c08870" stroke-width="1.1" stroke-linecap="round"/>
+            <ellipse cx="60.2" cy="58.3" rx="1.1" ry="0.8" fill="#ffffff" opacity="0.65"/>
+
+            <!-- 글로시 그라데이션 입술 -->
+            <g class="mouth-group">
+              <path d="M54.2,66.2 Q57.3,64.2 60,65.2 Q62.7,64.2 65.8,66.2 Q62.8,70.2 60,70.2 Q57.2,70.2 54.2,66.2 Z" fill="${cel.lip}" opacity="0.92"/>
+              <path d="M54.5,66.4 Q60,67.4 65.5,66.4" fill="none" stroke="#881337" stroke-width="0.8" opacity="0.7"/>
+              <ellipse cx="61.2" cy="68.0" rx="2.4" ry="0.75" fill="#ffffff" opacity="0.55"/>
+            </g>
+
+            ${moleSVG}
+            ${earringSVG}
+            ${frontHair}
+            ${santaHatSVG}
+          </svg>
+        `;
+      };
+
+      // ==================== [기능 2] 합석 기능 ON / OFF 완벽 제어 ====================
+      window.toggleHapseokMaster = function () {
+        appState.hapseokEnabled = !appState.hapseokEnabled;
+        const btn = document.getElementById('hapseokMasterBtn');
+        const podL = document.getElementById('neighborPod-left');
+        const podR = document.getElementById('neighborPod-right');
+
+        if (appState.hapseokEnabled) {
+          btn.textContent = '🪑 합석 ON';
+          btn.className = 'top-pill top-pill-toggle-on';
+          if (podL) podL.classList.remove('neighbor-disabled');
+          if (podR) podR.classList.remove('neighbor-disabled');
+          showToastMsg('🪑 합석 기능 ON! 이제 옆테이블 원정 합석 및 주변 헌팅이 허용됩니다!');
+          appendLocalChat('시스템', '✨ 합석 기능이 켜졌습니다. (옆테이블 원정 & 주변 헌팅 가능)', 'system');
+        } else {
+          btn.textContent = '🔒 합석 OFF';
+          btn.className = 'top-pill top-pill-toggle-off';
+          if (podL) podL.classList.add('neighbor-disabled');
+          if (podR) podR.classList.add('neighbor-disabled');
+
+          // 진행 중인 헌팅 팝업 닫기 및 옆테이블 원정 중이면 즉시 복귀
+          appState.activeHuntingCandidate = null;
+          document.getElementById('huntingApproachCard').classList.add('hidden');
+          if (appState.visitingSide) {
+            appState.visitingSide = null;
+          }
+          appState._huntedSeatGuest = null;
+
+          showToastMsg('🔒 합석 기능 OFF! 외부 합석·헌팅이 모두 차단된 프라이빗 모드입니다.');
+          appendLocalChat('시스템', '🔒 합석 기능이 꺼졌습니다. (우리끼리만 마시는 프라이빗 모드)', 'system');
+        }
+        renderAllVisuals();
+      };
+
+      const _origVisitNeighbor = window.visitNeighborTable;
+      window.visitNeighborTable = function (side) {
+        if (!appState.hapseokEnabled) {
+          showToastMsg('🔒 현재 [합석 OFF] 상태입니다! 상단의 [🔒 합석 OFF] 버튼을 눌러 ON으로 켜주세요.');
+          return;
+        }
+        _origVisitNeighbor(side);
+      };
+
+      const _origTriggerHunt = window.triggerHuntApproachEvent;
+      window.triggerHuntApproachEvent = function () {
+        if (!appState.hapseokEnabled) {
+          // 자동 타이머로 호출된 경우 조용히 무시, 버튼 클릭 시 안내
+          if (window.event && window.event.type === 'click') {
+            showToastMsg('🔒 현재 [합석 OFF] 상태라 헌팅을 받지 않습니다! 상단에서 합석 ON으로 켜주세요.');
+          }
+          return;
+        }
+        _origTriggerHunt();
+      };
+
+      // ==================== [기능 3] 얼큰 김치 수제비 안주 렌더링 & 주문 & 먹기 ====================
+      const _origRenderDishes = renderAllDishesSVG;
+      renderAllDishesSVG = function () {
+        _origRenderDishes();
+        const sSlot = document.getElementById('dishSlot-kimchiSujebi');
+        const sHolder = document.getElementById('kimchiSujebiSvgHolder');
+        const sPill = document.getElementById('kimchiSujebiCountPill');
+        if (!sSlot || !sHolder || !sPill) return;
+
+        if (appState.kimchiSujebiOrdered) {
+          sSlot.classList.remove('hidden');
+          sHolder.innerHTML = `
+            <svg viewBox="0 0 156 114" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.7));">
+              <!-- 양수 전골 뚝배기 손잡이 & 몸체 -->
+              <path d="M10,56 C2,56 2,70 10,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+              <path d="M146,56 C154,56 154,70 146,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+              <ellipse cx="78" cy="63" rx="66" ry="41" fill="#18181b" stroke="#52525b" stroke-width="2.5"/>
+              <ellipse cx="78" cy="61" rx="58" ry="34" fill="#7f1d1d"/>
+
+              ${appState.kimchiSujebiLeft > 0 ? `
+                <!-- 칼칼한 묵은지 김치 국물 -->
+                <ellipse cx="78" cy="61" rx="56" ry="32" fill="url(#maraBrothGrad)"/>
+                <circle class="sujebi-bubble" cx="48" cy="52" r="2.8" fill="#fca5a5"/>
+                <circle class="sujebi-bubble" cx="106" cy="56" r="2.5" fill="#fed7aa"/>
+                <circle class="sujebi-bubble" cx="66" cy="76" r="3.0" fill="#fca5a5"/>
+
+                <!-- 잘 익은 묵은지 김치 조각들 -->
+                <path d="M36,58 Q50,50 60,60 Q48,68 36,63 Z" fill="#b91c1c" stroke="#f87171" stroke-width="0.8"/>
+                <path d="M84,44 Q98,46 102,56 Q90,59 82,51 Z" fill="#b91c1c" stroke="#fb923c" stroke-width="0.8"/>
+                <path d="M74,73 Q92,69 104,78 Q88,85 73,79 Z" fill="#991b1b" stroke="#f87171" stroke-width="0.8"/>
+
+                <!-- 손으로 떼어 넣은 쫀득한 하얀 수제비 반죽들 -->
+                <path d="M50,48 C57,43 69,45 71,52 C72,58 61,62 53,59 C47,56 46,51 50,48 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.1"/>
+                <path d="M82,57 C90,53 104,57 103,65 C102,72 90,74 82,69 C77,65 76,60 82,57 Z" fill="#ffedd5" stroke="#fdba74" stroke-width="1.1"/>
+                <path d="M44,67 C52,63 65,65 66,72 C67,78 56,81 47,77 C41,75 40,70 44,67 Z" fill="#ffffff" stroke="#fed7aa" stroke-width="1.1"/>
+                <path d="M65,59 C71,56 80,58 81,64 C81,69 72,72 65,69 C61,66 61,61 65,59 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+
+                <!-- 어슷썬 대파, 홍고추, 김가루 & 통깨 -->
+                <ellipse cx="68" cy="54" rx="6" ry="2.5" transform="rotate(-22 68 54)" fill="#22c55e" stroke="#15803d" stroke-width="0.8"/>
+                <ellipse cx="88" cy="66" rx="6" ry="2.5" transform="rotate(18 88 66)" fill="#4ade80" stroke="#15803d" stroke-width="0.8"/>
+                <circle cx="76" cy="50" r="3" fill="#dc2626" stroke="#fef08a" stroke-width="0.9"/>
+                <path d="M68,61 L77,59 L75,65 L66,66 Z" fill="#1c1917" opacity="0.85"/>
+                <circle cx="71" cy="62" r="0.8" fill="#fef3c7"/><circle cx="74" cy="63" r="0.8" fill="#fef3c7"/>
+
+                <!-- 모락모락 김 -->
+                <path d="M54,34 Q48,20 56,10" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8" class="steam-wisp"/>
+                <path d="M78,31 Q84,17 76,8" fill="none" stroke="#fed7aa" stroke-width="2.4" opacity="0.82" class="steam-wisp"/>
+                <path d="M102,35 Q107,21 100,11" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.72" class="steam-wisp"/>
+              ` : '<text x="78" y="65" text-anchor="middle" font-size="11" font-weight="900" fill="#fed7aa">얼큰 국물까지 완뚝!</text>'}
+            </svg>
+          `;
+          sPill.textContent = `${appState.kimchiSujebiLeft}/6`;
+        } else {
+          sSlot.classList.add('hidden');
+        }
+      };
+
+      const _origOrderMenuItem = window.orderMenuItem;
+      window.orderMenuItem = function (itemKey, fromRemote = false, actorName = null) {
+        if (itemKey === 'kimchiSujebi') {
+          closeMenuModal();
+          const who = actorName || appState.myName;
+          appState.kimchiSujebiOrdered = true;
+          appState.kimchiSujebiLeft = 6;
+          appState.billQty.kimchiSujebi = (appState.billQty.kimchiSujebi || 0) + 1;
+          triggerChefWalkIn('👨‍🍳 사장님: "잘 익은 묵은지에 쫀득한 손수제비 듬뿍 넣은 얼큰 김치 수제비 보글보글 나왔습니데이~!"', () => renderAllVisuals());
+          renderAllVisuals();
+          appendLocalChat(who, `🍲 [얼큰 묵은지 김치수제비] 주문 완료! (+15,000원)`, 'action');
+          if (appState.aiChatEnabled) {
+            requestSmartPochaAI(`${who}님이 방금 보글보글 끓는 '얼큰 김치 수제비'를 새로 주문했습니다!`);
+          }
+          if (!fromRemote) sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
+          return;
+        }
+        _origOrderMenuItem(itemKey, fromRemote, actorName);
+      };
+
+      window.eatKimchiSujebi = function (fromRemote = false) {
+        if (appState.kimchiSujebiLeft <= 0) {
+          openMenuModal();
+          showToastMsg('🍲 얼큰 김치 수제비를 다 비웠어요! 메뉴판에서 리필 주문해보세요!');
+          return;
+        }
+        appState.kimchiSujebiLeft -= 1;
+        appState.eatenPiecesTotal += 1;
+        appState.drunkPct = Math.max(0, appState.drunkPct - 5); // 얼큰한 국물 해장 효과!
+
+        animateFoodToMouth(
+          'dishSlot-kimchiSujebi',
+          '<path d="M28,24 C34,19 46,21 47,28 C48,34 37,37 30,33 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/><circle cx="39" cy="27" r="2.5" fill="#dc2626"/>',
+          'me',
+          true,
+          '후루룩~ 묵은지 김치수제비 칼칼쫀득!! 🍲🔥'
+        );
+        showSeatSpeechBubble('me', '크으~ 묵은지 국물에 쫀득한 수제비! 해장하면서 동시에 술 부르는 맛!! 🍲');
+        triggerRandomCompanionReaction([
+          '와 김치수제비 국물 진짜 칼칼하다!! 소주 안주로 완전 미쳤는데?! 😍',
+          '수제비 반죽이 진짜 쫀득쫀득해ㅋㅋ 내 앞접시에도 국물이랑 한 국자 더 덜어줘!'
+        ]);
+        renderAllVisuals();
+        if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'kimchiSujebi', actor: appState.myName, state: exportSyncPayload() });
+      };
+
+      // [안주 먹기] 랜덤 버튼에도 얼큰 김치 수제비 포함
+      const _origEatRandom = window.eatRandomAnju;
+      window.eatRandomAnju = function () {
+        if (appState.kimchiSujebiOrdered && appState.kimchiSujebiLeft > 0 && Math.random() < 0.4) {
+          window.eatKimchiSujebi();
+          return;
+        }
+        _origEatRandom();
+      };
+
+      // ==================== [기능 4] AI 대화 ON / OFF 스위치 + 실시간 LLM 티키타카 대화 엔진 ====================
+      window.toggleAiChatMaster = function () {
+        appState.aiChatEnabled = !appState.aiChatEnabled;
+        const btn = document.getElementById('aiChatMasterBtn');
+        if (appState.aiChatEnabled) {
+          btn.textContent = '🤖 AI대화 ON';
+          btn.className = 'top-pill top-pill-ai-on';
+          showToastMsg('🤖 AI 대화 ON! 테이블 멤버들이 내 말과 안주에 실시간 티키타카로 대답합니다.');
+          appendLocalChat('시스템', '💬 AI 실시간 대화 기능이 켜졌습니다.', 'system');
+        } else {
+          btn.textContent = '🔇 AI대화 OFF';
+          btn.className = 'top-pill top-pill-toggle-off';
+          const ind = document.getElementById('v5AiTypingRow');
+          if (ind) ind.remove();
+          showToastMsg('🔇 AI 대화 OFF! AI 자동 대답과 말풍선 리액션이 모두 중지됩니다.');
+          appendLocalChat('시스템', '🔇 AI 대화 기능이 꺼졌습니다. (유저끼리만 조용히 채팅 가능)', 'system');
+        }
+      };
+
+      // AI 대화 OFF 상태일 때는 안주/건배 시 자동 말풍선 리액션도 정지
+      const _origCompanionReaction = triggerRandomCompanionReaction;
+      triggerRandomCompanionReaction = function (lines) {
+        if (!appState.aiChatEnabled) return;
+        _origCompanionReaction(lines);
+      };
+
+      async function requestSmartPochaAI(userText) {
+        if (!appState.aiChatEnabled) return;
+
+        // 옆테이블 원정 중일 때
+        if (appState.visitingSide) {
+          const info = NEIGHBOR_TABLES_INFO[appState.visitingSide];
+          const host = info.patrons[Math.floor(Math.random() * info.patrons.length)];
+          setTimeout(() => {
+            if (!appState.aiChatEnabled) return;
+            const nReply = `${appState.myName}님 입담 진짜 좋으시네요ㅋㅋ 저희 테이블 안주랑 술 편하게 더 드세요! 🍻`;
+            showNeighborBubble(appState.visitingSide, nReply);
+            appendLocalChat(`${host.name}(옆테이블)`, nReply, 'other');
+          }, 550);
+          return;
+        }
+
+        const aiSeats = getSeatedCompanions()
+          .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
+          .filter(Boolean);
+        if (aiSeats.length === 0) return;
+
+        appState.chatHistoryLog.push(`${appState.myName}: ${userText}`);
+        if (appState.chatHistoryLog.length > 8) appState.chatHistoryLog.shift();
+
+        // 채팅창 하단에 입력중 표시
+        const feed = document.getElementById('chatFeed');
+        let typingEl = document.getElementById('v5AiTypingRow');
+        if (!typingEl && feed) {
+          typingEl = document.createElement('div');
+          typingEl.id = 'v5AiTypingRow';
+          typingEl.className = 'ai-typing-indicator';
+          typingEl.textContent = `✨ ${aiSeats.map(s => s.p.shortName).join('·')}님이 대답하는 중...`;
+          feed.appendChild(typingEl);
+          feed.scrollTop = feed.scrollHeight;
+        }
+
+        let finalReplies = null;
+
+        // Gemini API 연동 시도 (키가 설정되어 있을 경우 초고품질 LLM 응답, 없을 경우 자연스러운 로컬 엔진 즉시 폴백)
+        const GEMINI_API_KEY = ""; // 필요 시 본인 Gemini API 키 입력 가능 (비워두어도 스마트 티키타카 엔진 작동!)
+        if (GEMINI_API_KEY) {
+          try {
+            const seatDesc = aiSeats.map(s => `seat:${s.seat}, name:"${s.p.shortName}"`).join(' / ');
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  role: 'user',
+                  parts: [{
+                    text: `광안리 밤바다 포차 술자리입니다. 내 이름: ${appState.myName}, 취기: ${appState.drunkPct}%, 안주: 얼큰 김치 수제비, 대방어, 소맥.
+착석 AI 친구들: [${seatDesc}].
+최근 대화:\n${appState.chatHistoryLog.join('\n')}
+방금 내 발화: "${userText}"
+착석 AI 중 1~2명이 찐친/썸 남녀처럼 설레고 재치있게 한국어 반말/존댓말로 1문장씩 티키타카 답장하세요. JSON 배열 형식으로만 응답: [{"seat":숫자,"name":"이름","text":"대사"}]`
+                  }]
+                }],
+                generationConfig: { responseMimeType: 'application/json' }
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const parsed = JSON.parse(data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]');
+              if (Array.isArray(parsed) && parsed.length > 0) finalReplies = parsed.slice(0, 2);
+            }
+          } catch (e) {}
+        }
+
+        // 김치수제비 특화 대사 + 기존 티키타카 엔진 결합 폴백
+        if (!finalReplies) {
+          if (/(수제비|김치|묵은지)/.test(userText)) {
+            const pick = aiSeats[Math.floor(Math.random() * aiSeats.length)];
+            finalReplies = [{
+              seat: pick.seat,
+              name: pick.p.shortName,
+              text: `와 얼큰 김치 수제비 국물 빛깔 미쳤지ㅋㅋ 묵은지가 제대로 익어서 소맥이랑 먹으니까 극락이야! 🍲🔥`
+            }];
+          } else {
+            finalReplies = generateNaturalTikiTakaReplies(userText, aiSeats);
+          }
+        }
+
+        setTimeout(() => {
+          const tEl = document.getElementById('v5AiTypingRow');
+          if (tEl) tEl.remove();
+          if (!appState.aiChatEnabled) return;
+
+          finalReplies.forEach((r, idx) => {
+            setTimeout(() => {
+              if (!appState.aiChatEnabled) return;
+              showSeatSpeechBubble(r.seat, r.text);
+              appendLocalChat(r.name, r.text, 'other');
+              appState.chatHistoryLog.push(`${r.name}: ${r.text}`);
+            }, idx * 850);
+          });
+        }, 480);
+      }
+
+      // 채팅 전송 핸들러를 AI ON/OFF 완벽 호환 버전으로 교체
+      window.handleChatSubmit = function (e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        // 호감도 상승 반영
+        getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
+          const pref = typeof PARTNER_PREFS !== 'undefined' ? PARTNER_PREFS[p.shortName] : null;
+          const hit = pref && pref.favKeywords.some(k => text.includes(k));
+          if (typeof affectionMap !== 'undefined') {
+            affectionMap[p.shortName] = Math.min(100, (affectionMap[p.shortName] || 35) + (hit ? 14 : 6));
+          }
+        });
+
+        appendLocalChat(appState.myName, text, 'me');
+        showSeatSpeechBubble('me', text);
+
+        const normalized = text.replace(/\s+/g, '');
+        if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
+          sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
+          setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
+          return;
+        }
+
+        sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
+        renderAllVisuals();
+
+        // AI 대화가 켜져 있을 때만 AI 응답 호출!
+        if (appState.aiChatEnabled) {
+          requestSmartPochaAI(text);
+        }
+      };
+
+      // 멀티플레이 동기화 페이로드에 김치수제비 추가
+      const _origExportSync = exportSyncPayload;
+      exportSyncPayload = function () {
+        const base = _origExportSync();
+        base.kimchiSujebiOrdered = appState.kimchiSujebiOrdered;
+        base.kimchiSujebiLeft = appState.kimchiSujebiLeft;
+        return base;
+      };
+
+      // 초기 화면 즉시 갱신 (바뀐 연예인 얼굴 & 테이블 위 얼큰 김치 수제비 즉시 반영)
+      renderCharacterSelectorGrid();
+      renderAllVisuals();
+      appendLocalChat('시스템', '✨ [V5 업데이트 적용] 연예인급 비주얼 캐릭터 · 합석 ON/OFF · AI대화 ON/OFF · 얼큰 김치 수제비가 세팅되었습니다!', 'system');
+    })();
+  </script>
 </html>
