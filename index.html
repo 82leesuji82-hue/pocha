@@ -4154,18 +4154,21 @@
     };
 
     renderAllVisuals();
-
-    document.addEventListener('pointerdown', () => {
-  const ctx = getAudioCtx();
-  if (ctx && ctx.state === 'suspended') {
-    ctx.resume();
-  }
-}, { passive: true });
+document.addEventListener('pointerdown', () => {
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+    }, { passive: true });
   </script>
-  <!-- ==================== 20. UPGRADE PACK V5.2 AUTO-PATCH (사이드바 채팅창 이동 + 자동 리필 세팅 + 심층 AI 대화 + 연예인비주얼 + 합석/AI토글 + 김치수제비 + 강퇴) ==================== -->
+
+  <!-- ==================== 20. UPGRADE PACK V5.4 FINAL FIX (화장실 걸어가기 & 변기·거울 내부룸 + 3차 파리 에펠탑 와인살롱 + 큰 실행버튼 + 우측 깊은채팅 + 자동리필 + 강퇴 + 연예인얼굴) ==================== -->
   <script>
-    (function installPochaUpgradePackV5_2() {
-      // 1. V5.2 전용 스타일 주입 (우측 사이드바 채팅창 레이아웃 + 빌지 팝업 전환 + 심층 AI 모달)
+    (function installPochaUpgradePackV5_4() {
+      if (window.__POCHA_V54_INSTALLED__) return;
+      window.__POCHA_V54_INSTALLED__ = true;
+
+      // 1. V5.4 통합 CSS 주입
       const v5Style = document.createElement('style');
       v5Style.textContent = `
         .top-pill-toggle-on {
@@ -4190,13 +4193,20 @@
           background: rgba(124, 45, 18, 0.92) !important;
           border-color: #fb923c !important; color: #ffedd5 !important;
         }
-        .neighbor-disabled { opacity: 0.45 !important; filter: grayscale(0.6); }
+        .neighbor-disabled { opacity: 0.42 !important; filter: grayscale(0.65); }
+
+        /* 하단 메인 액션 바 8버튼 깔끔 배치 (화장실 / 3차 파리 큰 버튼 포함) */
+        @media (min-width: 640px) {
+          .pocha-action-bar { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+        }
+        .act-restroom { background: linear-gradient(90deg, #0d9488, #0284c7) !important; color: #ffffff !important; }
+        .act-paris { background: linear-gradient(90deg, #92400e, #d97706, #4f46e5) !important; color: #fffbeb !important; border: 1px solid #fde68a !important; }
 
         /* 좌석 우측 상단 캐릭터 강퇴 버튼 */
         .seat-kick-btn {
           position: absolute; top: 2px; right: 2px; z-index: 28;
           width: 24px; height: 24px; border-radius: 9999px;
-          background: rgba(15, 23, 42, 0.88); border: 1.5px solid rgba(244, 63, 94, 0.85);
+          background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(244, 63, 94, 0.88);
           color: #fda4af; font-size: 11px; font-weight: 900;
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.65);
@@ -4204,11 +4214,11 @@
         }
         .seat-kick-btn:hover { background: #e11d48; color: #ffffff; transform: scale(1.12); }
 
-        /* [핵심 요청 1] 실시간 포차 빌지 자리에 들어가는 우측 고정 채팅 사이드바 */
+        /* 실시간 포차 빌지 자리로 이동한 우측 채팅 사이드바 */
         .pocha-chat-section.chat-sidebar-docked {
           width: 100%;
           border-radius: 24px;
-          border: 1.5px solid rgba(251, 191, 36, 0.42);
+          border: 1.5px solid rgba(251, 191, 36, 0.45);
           background: linear-gradient(180deg, rgba(9, 14, 28, 0.98) 0%, rgba(4, 7, 17, 0.99) 100%);
           box-shadow: 0 24px 55px rgba(0, 0, 0, 0.82);
           padding: 14px;
@@ -4218,58 +4228,208 @@
           flex-shrink: 0;
         }
         .pocha-chat-section.chat-sidebar-docked #chatFeed {
-          flex: 1;
-          min-height: 240px;
-          max-height: 360px;
-          height: auto;
-          padding: 12px;
-          gap: 8px;
-          line-height: 1.48;
+          flex: 1; min-height: 250px; max-height: 360px; height: auto;
+          padding: 12px; gap: 8px; line-height: 1.5;
         }
         @media (min-width: 1024px) {
-          .pocha-chat-section.chat-sidebar-docked {
-            width: 356px;
-            max-height: 830px;
-          }
-          .pocha-chat-section.chat-sidebar-docked #chatFeed {
-            min-height: 540px;
-            max-height: 675px;
-          }
-          /* 데스크탑에서도 빌지 버튼이 항상 보이도록 표시 */
+          .pocha-chat-section.chat-sidebar-docked { width: 360px; max-height: 850px; }
+          .pocha-chat-section.chat-sidebar-docked #chatFeed { min-height: 550px; max-height: 690px; }
           .top-pill-bill-mobile { display: inline-flex !important; }
         }
 
-        /* 기존 빌지는 언제든 버튼으로 꺼내볼 수 있는 깔끔한 플로팅 팝업으로 전환 */
+        /* 빌지 플로팅 팝업 */
         #liveBillAside.bill-floating-drawer {
           display: none !important;
-          position: fixed;
-          top: 64px;
-          right: 20px;
-          width: 310px !important;
-          max-width: 92vw;
-          z-index: 65;
-          box-shadow: 0 28px 65px rgba(0, 0, 0, 0.9) !important;
+          position: fixed; top: 64px; right: 20px;
+          width: 312px !important; max-width: 92vw; z-index: 68;
+          box-shadow: 0 28px 65px rgba(0, 0, 0, 0.92) !important;
         }
-        #liveBillAside.bill-floating-drawer.bill-drawer-open {
-          display: flex !important;
-        }
+        #liveBillAside.bill-floating-drawer.bill-drawer-open { display: flex !important; }
 
-        /* 말풍선 줄바꿈 및 가독성 강화 (깊은 대화 대응) */
         .chat-row-me, .chat-row-other {
-          font-size: 12.8px !important;
-          line-height: 1.52 !important;
-          word-break: keep-all;
-          padding: 8px 11px !important;
-          border-radius: 12px !important;
+          font-size: 12.8px !important; line-height: 1.52 !important;
+          word-break: keep-all; padding: 8px 11px !important; border-radius: 12px !important;
         }
         .speech-bubble-box {
-          max-width: 270px !important;
-          white-space: normal !important;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          line-height: 1.32;
-          text-align: center;
+          max-width: 270px !important; white-space: normal !important;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+          line-height: 1.32; text-align: center;
+        }
+
+        /* 화장실 출입문 & 걸어가는 캐릭터 애니메이션 */
+        #pochaRestroomDoor {
+          position: absolute;
+          bottom: 14px;
+          left: 12px;
+          z-index: 25;
+          padding: 7px 11px;
+          border-radius: 14px;
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 12, 22, 0.98));
+          border: 2px solid #2dd4bf;
+          box-shadow: 0 0 18px rgba(45, 212, 191, 0.45), 0 8px 18px rgba(0,0,0,0.7);
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          cursor: pointer;
+          transition: transform 0.16s ease, box-shadow 0.2s ease;
+        }
+        #pochaRestroomDoor:hover {
+          transform: translateY(-3px) scale(1.04);
+          box-shadow: 0 0 26px rgba(45, 212, 191, 0.78);
+        }
+        .wc-neon-sign {
+          padding: 3px 7px; border-radius: 7px;
+          background: rgba(13, 148, 136, 0.35); border: 1px solid #5eead4;
+          color: #99f6e4; font-size: 11px; font-weight: 900;
+          text-shadow: 0 0 8px #2dd4bf;
+        }
+        @keyframes walkStepBob {
+          0%, 100% { transform: translate(-50%, -50%) translateY(0px) rotate(-4deg); }
+          50% { transform: translate(-50%, -50%) translateY(-11px) rotate(4deg); }
+        }
+        .walking-avatar-actor { animation: walkStepBob 0.25s ease-in-out infinite; }
+
+        /* 화장실 내부 전체 화면 (#pochaArena 위를 덮음) */
+        #restroomInteriorOverlay {
+          position: absolute;
+          inset: 0;
+          z-index: 48;
+          background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 68%, #050811 100%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          padding: 18px 14px;
+        }
+        .paris-mode #restroomInteriorOverlay {
+          background: radial-gradient(circle at 50% 20%, #31203f 0%, #171122 68%, #09060f 100%);
+        }
+        .restroom-stage-card {
+          width: 100%;
+          max-width: 600px;
+          border-radius: 24px;
+          padding: 18px;
+          background:
+            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+            linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+          background-size: 26px 26px, 26px 26px, 100% 100%;
+          border: 2px solid #2dd4bf;
+          box-shadow: 0 24px 55px rgba(0,0,0,0.88);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+        }
+        .paris-mode .restroom-stage-card { border-color: #fbbf24; }
+        .restroom-props-row {
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          gap: 20px;
+          flex-wrap: wrap;
+          width: 100%;
+        }
+        /* 화장실 변기 부스 칸 */
+        .wc-stall-box {
+          width: 138px;
+          height: 196px;
+          border-radius: 14px 14px 6px 6px;
+          background: linear-gradient(180deg, #334155, #1e293b);
+          border: 3px solid #64748b;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 12px 24px rgba(0,0,0,0.55);
+          cursor: pointer;
+          transition: transform 0.15s ease, border-color 0.2s ease;
+        }
+        .wc-stall-box:hover { transform: translateY(-2px); border-color: #5eead4; }
+        /* 거울 & 세면대 */
+        .wc-mirror-box {
+          position: relative;
+          width: 168px;
+          height: 168px;
+          border-radius: 9999px 9999px 18px 18px;
+          background: linear-gradient(145deg, rgba(186, 230, 253, 0.28), rgba(30, 41, 59, 0.9));
+          border: 4px solid #e2e8f0;
+          box-shadow: 0 0 26px rgba(125, 211, 252, 0.45), inset 0 0 20px rgba(255,255,255,0.22);
+          overflow: hidden;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+        }
+        .paris-mode .wc-mirror-box { border-color: #fbbf24; box-shadow: 0 0 30px rgba(251, 191, 36, 0.55); }
+        .wc-sink-bowl {
+          width: 188px;
+          height: 26px;
+          margin-top: -6px;
+          border-radius: 6px 6px 24px 24px;
+          background: linear-gradient(180deg, #ffffff, #cbd5e1);
+          border: 2px solid #94a3b8;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.55);
+        }
+        .restroom-btn-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          width: 100%;
+        }
+        @media (min-width: 640px) { .restroom-btn-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        .restroom-act-btn {
+          padding: 10px 8px; border-radius: 13px; font-size: 12px; font-weight: 900; color: #fff;
+          box-shadow: 0 6px 14px rgba(0,0,0,0.45); transition: transform 0.14s ease;
+        }
+        .restroom-act-btn:active { transform: scale(0.95); }
+
+        /* ==================== 3차 프랑스 파리 럭셔리 루프탑 테마 ==================== */
+        body.paris-body {
+          background: radial-gradient(circle at 50% 12%, #341f47 0%, #171128 56%, #07050e 100%) !important;
+        }
+        .paris-mode .pocha-main-card {
+          border: 2px solid rgba(251, 191, 36, 0.88) !important;
+          box-shadow: 0 26px 65px rgba(0, 0, 0, 0.9), 0 0 45px rgba(251, 191, 36, 0.28) !important;
+        }
+        .paris-mode #pochaArena {
+          background:
+            radial-gradient(circle at 50% 42%, rgba(251, 191, 36, 0.2) 0%, rgba(30, 20, 46, 0.96) 62%, #0c0817 100%) !important;
+        }
+        .paris-mode .pocha-bulb {
+          background: #fef3c7 !important;
+          box-shadow: 0 0 16px 4px rgba(251, 191, 36, 0.92) !important;
+        }
+        /* 화이트 카라라 대리석 & 24K 골드 테이블 */
+        .paris-mode .silver-round-table {
+          background:
+            radial-gradient(circle at 34% 28%, #ffffff 0%, #fbf9f5 40%, #efeae0 75%, #d8cfc0 100%) !important;
+          border: 7px solid #d97706 !important;
+          box-shadow:
+            inset 0 4px 18px rgba(255, 255, 255, 0.98),
+            inset 0 -10px 24px rgba(180, 145, 95, 0.3),
+            0 26px 55px rgba(0, 0, 0, 0.85),
+            0 0 0 2.5px #fef08a,
+            0 0 40px rgba(251, 191, 36, 0.36) !important;
+        }
+        .paris-mode .silver-round-table::after { border: 1.5px solid rgba(217, 119, 6, 0.55) !important; }
+        .paris-mode .mini-silver-table {
+          background: linear-gradient(90deg, #fef3c7, #ffffff, #fde68a) !important;
+          border-color: #d97706 !important; color: #451a03 !important;
+        }
+        .paris-mode .dish-pill-tag {
+          background: rgba(24, 20, 32, 0.94) !important;
+          border-color: rgba(251, 191, 36, 0.82) !important; color: #fef3c7 !important;
+        }
+
+        /* 3차 파리 전환 시 비행 연출 배너 */
+        #parisFlightOverlay {
+          position: fixed; inset: 0; z-index: 90;
+          background: radial-gradient(circle at 50% 45%, rgba(49, 27, 75, 0.97), rgba(9, 6, 20, 0.99));
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          gap: 12px; color: #fef3c7; text-align: center;
+          transition: opacity 0.45s ease;
         }
 
         @keyframes sujebiBubble {
@@ -4286,43 +4446,65 @@
       `;
       document.head.appendChild(v5Style);
 
-      // ==================== [요청 1] 실시간 포차 빌지 위치로 채팅창 이동 ====================
+      // 2. 상태값 초기화 및 확장
+      const AI_KEY_STORAGE = 'gwangalli_pocha_gemini_api_key_v5';
+      appState.hapseokEnabled = true;
+      appState.aiChatEnabled = true;
+      appState.inRestroom = false;
+      appState.walkingToRestroom = false;
+      appState.isParisMode = false;
+
+      appState.kimchiSujebiOrdered = true;
+      appState.kimchiSujebiLeft = 6;
+      appState.billQty.kimchiSujebi = 1;
+
+      appState.croissantOrdered = false; appState.croissantLeft = 0;
+      appState.cheesePlatterOrdered = false; appState.cheesePlatterLeft = 0;
+      appState.redWineOrdered = false; appState.redWineLeft = 0;
+      appState.champagneOrdered = false; appState.champagneLeft = 0;
+
+      appState.kickedSeats = { 0: false, 1: false, 2: false };
+      appState.kickedClientIds = new Set();
+      appState.geminiApiKey = localStorage.getItem(AI_KEY_STORAGE) || '';
+      appState.deepMemory = { history: [], lastTopic: null, turnCount: 0, userMood: 'normal', usedResponses: new Set() };
+
+      MENU_CATALOG.kimchiSujebi = { name: '얼큰 묵은지 김치수제비', unitPrice: 15000 };
+      MENU_CATALOG.croissant = { name: '이즈니 버터 수제 크루아상', unitPrice: 19000 };
+      MENU_CATALOG.cheesePlatter = { name: '프렌치 아티장 치즈 & 무화과 플래터', unitPrice: 38000 };
+      MENU_CATALOG.redWine = { name: '샤또 마고 보르도 그랑크뤼 레드와인', unitPrice: 68000 };
+      MENU_CATALOG.champagne = { name: '돔 페리뇽 빈티지 골드 샴페인', unitPrice: 85000 };
+
+      // 3. 우측 사이드바 채팅창 이동 & 빌지 팝업화
       const cameraStage = document.getElementById('drunkCameraStage');
       const chatSection = document.querySelector('.pocha-chat-section');
       const billAside = document.getElementById('liveBillAside');
 
       if (cameraStage && chatSection) {
-        // 기존 하단에 있던 채팅창을 우측 사이드바 자리(#drunkCameraStage의 직계 자식)로 이동!
         cameraStage.appendChild(chatSection);
         chatSection.classList.add('chat-sidebar-docked');
 
-        // 채팅창 상단에 헤더 + 빌지 열기 + AI 두뇌 설정 버튼 구성
         const metaBar = chatSection.querySelector('.chat-meta-bar');
         if (metaBar) {
           metaBar.innerHTML = `
             <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;border-bottom:1px solid #1e293b;padding-bottom:8px;">
               <div>
-                <div style="font-size:14px;font-weight:900;color:#fef3c7;">💬 포차 깊은 대화방</div>
+                <div id="chatRoomHeaderTitle" style="font-size:14px;font-weight:900;color:#fef3c7;">💬 포차 깊은 대화방</div>
                 <span id="syncModeIndicator" style="font-size:10.5px;font-weight:700;color:#6ee7b7;">🌊 실시간 공감·티키타카 ON</span>
               </div>
               <div style="display:flex;gap:5px;">
-                <button type="button" onclick="openAiBrainModal()" class="top-pill top-pill-brain" style="font-size:10.5px;padding:4px 8px;" title="실제 Gemini AI 연결로 나처럼 100% 자유로운 대화 켜기">
-                  🧠 AI두뇌
-                </button>
-                <button type="button" onclick="toggleMobileBill()" class="top-pill" style="background:#fcd34d;color:#0f172a;border-color:#f59e0b;font-size:10.5px;padding:4px 8px;">
-                  🧾 빌지보기
-                </button>
+                <button type="button" onclick="openAiBrainModal()" class="top-pill top-pill-brain" style="font-size:10.5px;padding:4px 8px;">🧠 AI두뇌</button>
+                <button type="button" onclick="toggleMobileBill()" class="top-pill" style="background:#fcd34d;color:#0f172a;border-color:#f59e0b;font-size:10.5px;padding:4px 8px;">🧾 빌지보기</button>
               </div>
             </div>
-            <div style="font-size:11px;color:#94a3b8;width:100%;margin-top:2px;">
-              💡 고민·일상·철학·농담 뭐든 깊게 말 걸어보세요! 다 먹은 안주는 누르면 <strong style="color:#fcd34d;">자동 리필</strong>됩니다.
+            <div style="font-size:11px;color:#94a3b8;width:100%;margin-top:2px;line-height:1.45;">
+              💡 채팅에 <strong style="color:#5eead4;">"화장실 다녀올게"</strong> 또는 <strong style="color:#fde68a;">"3차 가자" / "3차 파리"</strong>를 입력하거나 아래 버튼을 눌러보세요!
             </div>
           `;
         }
         const chatInput = document.getElementById('chatInput');
         if (chatInput) {
-          chatInput.maxLength = 300; // 긴 속마음 대화도 입력 가능하도록 확장
-          chatInput.placeholder = '속마음, 고민, 농담 뭐든 편하게 말 걸어보세요...';
+          chatInput.maxLength = 300;
+          chatInput.placeholder = '깊은 대화 / "화장실 다녀올게" / "3차 가자" 입력...';
         }
       }
 
@@ -4336,47 +4518,136 @@
         closeRow.onclick = () => billAside.classList.remove('bill-drawer-open');
         billAside.appendChild(closeRow);
       }
-
       window.toggleMobileBill = function () {
         if (billAside) billAside.classList.toggle('bill-drawer-open');
       };
 
-      // 2. 상태값(appState) 확장
-      const AI_KEY_STORAGE = 'gwangalli_pocha_gemini_api_key_v5';
-      appState.hapseokEnabled = true;
-      appState.aiChatEnabled = true;
-      appState.kimchiSujebiOrdered = true;
-      appState.kimchiSujebiLeft = 6;
-      appState.billQty.kimchiSujebi = 1;
-      appState.kickedSeats = { 0: false, 1: false, 2: false };
-      appState.kickedClientIds = new Set();
-      appState.geminiApiKey = localStorage.getItem(AI_KEY_STORAGE) || '';
-      appState.deepMemory = {
-        history: [],        // { role: 'user'|'ai', speaker: string, text: string }
-        lastTopic: null,    // 직전 대화 주제 기억
-        turnCount: 0,
-        userMood: 'normal', // tired, sad, happy, curious, romantic, normal
-        usedResponses: new Set()
-      };
-
-      MENU_CATALOG.kimchiSujebi = { name: '얼큰 묵은지 김치수제비', unitPrice: 15000 };
-
-      // 3. 상단 헤더에 [합석 ON/OFF], [AI대화 ON/OFF], [빈자리 복구] 버튼 주입
+      // 4. 상단 토글 버튼 + 테이블 바로 아래 [화장실 가기], [3차 파리 가기] 큼직한 직통 버튼 추가!
       const skyBtnGroup = document.querySelector('.sky-btn-group');
       if (skyBtnGroup) {
         const toggleWrap = document.createElement('span');
         toggleWrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:6px;';
         toggleWrap.innerHTML = `
-          <button id="hapseokMasterBtn" onclick="toggleHapseokMaster()" class="top-pill top-pill-toggle-on">🪑 합석 ON</button>
-          <button id="aiChatMasterBtn" onclick="toggleAiChatMaster()" class="top-pill top-pill-ai-on">🤖 AI대화 ON</button>
-          <button id="restoreKickedBtn" onclick="restoreAllKickedSeats()" class="hidden top-pill top-pill-restore">🔄 빈자리 복구</button>
+          <button id="hapseokMasterBtn" type="button" onclick="toggleHapseokMaster()" class="top-pill top-pill-toggle-on">🪑 합석 ON</button>
+          <button id="aiChatMasterBtn" type="button" onclick="toggleAiChatMaster()" class="top-pill top-pill-ai-on">🤖 AI대화 ON</button>
+          <button id="restoreKickedBtn" type="button" onclick="restoreAllKickedSeats()" class="hidden top-pill top-pill-restore">🔄 빈자리 복구</button>
         `;
         skyBtnGroup.insertBefore(toggleWrap, skyBtnGroup.firstChild);
       }
 
-      // 4. AI 두뇌(Gemini API 키 설정) 모달 주입 — 키를 넣으면 실제 Gemini 2.5 Flash와 100% 직결!
-      const aiBrainModalWrap = document.createElement('div');
-      aiBrainModalWrap.innerHTML = `
+      const actionBar = document.querySelector('.pocha-action-bar');
+      if (actionBar) {
+        actionBar.insertAdjacentHTML('beforeend', `
+          <button id="mainActionRestroomBtn" type="button" onclick="goToPochaRestroom()" class="pocha-act-btn act-restroom">
+            🚻 화장실 다녀오기
+          </button>
+          <button id="mainActionParisBtn" type="button" onclick="toggleParisOrPochaRound()" class="pocha-act-btn act-paris">
+            🗼 3차 파리 가자!
+          </button>
+        `);
+      }
+
+      // 5. 전용 파리 에펠탑 스카이 캔버스 생성 (기존 캔버스와 충돌 제로!)
+      const skyHeader = document.querySelector('.pocha-sky-header');
+      let parisCanvas = null;
+      let parisCtx = null;
+      if (skyHeader) {
+        parisCanvas = document.createElement('canvas');
+        parisCanvas.id = 'parisEiffelCanvas';
+        parisCanvas.className = 'hidden';
+        parisCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;';
+        skyHeader.insertBefore(parisCanvas, skyHeader.firstChild.nextSibling);
+        parisCtx = parisCanvas.getContext('2d');
+      }
+
+      // 6. 포차 아레나 내부에 [화장실 문] & [변기 부스 + 거울 세면대가 있는 화장실 내부 화면] 주입
+      const pochaArena = document.getElementById('pochaArena');
+      if (pochaArena) {
+        const doorEl = document.createElement('div');
+        doorEl.id = 'pochaRestroomDoor';
+        doorEl.onclick = () => window.goToPochaRestroom();
+        doorEl.innerHTML = `
+          <span class="wc-neon-sign" id="wcDoorBadge">🚻 WC</span>
+          <div style="text-align:left;line-height:1.18;">
+            <div id="wcDoorTitle" style="font-size:11px;font-weight:900;color:#f1f5f9;">술집 화장실 문</div>
+            <div style="font-size:9.5px;color:#5eead4;font-weight:700;">클릭 시 걸어감</div>
+          </div>
+        `;
+        pochaArena.appendChild(doorEl);
+
+        const wcOverlay = document.createElement('div');
+        wcOverlay.id = 'restroomInteriorOverlay';
+        wcOverlay.className = 'hidden';
+        wcOverlay.innerHTML = `
+          <div style="width:100%;max-width:600px;display:flex;align-items:center;justify-content:space-between;">
+            <span id="restroomLocationBadge" style="padding:5px 13px;border-radius:9999px;background:rgba(20,184,166,0.25);border:1.5px solid #5eead4;color:#99f6e4;font-size:12px;font-weight:900;">
+              🚻 광안리 포차 내부 화장실
+            </span>
+            <span id="restroomDrunkReadout" style="font-size:12.5px;font-weight:900;color:#fde68a;">현재 취기 0%</span>
+          </div>
+
+          <div class="restroom-stage-card">
+            <div id="restroomMirrorQuote" style="padding:6px 14px;border-radius:9999px;background:rgba(15,23,42,0.92);border:1px solid #fbbf24;color:#fef3c7;font-size:12px;font-weight:800;text-align:center;">
+              🪞 화장실 도착! 변기 칸에서 볼일을 보거나 세면대에서 찬물 세수를 해보세요!
+            </div>
+
+            <div class="restroom-props-row">
+              <!-- 좌측: 실제 화장실 변기 부스 칸 -->
+              <div class="wc-stall-box" onclick="useRestroomRelief()" title="클릭해서 화장실 칸 들어가 볼일보기">
+                <div id="wcOccupancySign" style="padding:2px 8px;border-radius:999px;background:#10b981;color:#022c22;font-size:10px;font-weight:900;margin-bottom:8px;">
+                  빈칸 · 사용가능
+                </div>
+                <div style="font-size:42px;line-height:1;">🚽</div>
+                <div style="font-size:11.5px;font-weight:900;color:#e2e8f0;margin-top:8px;">화장실 부스</div>
+                <div style="font-size:10px;color:#94a3b8;">클릭해 볼일보기</div>
+                <div style="position:absolute;right:10px;top:52%;width:8px;height:18px;border-radius:3px;background:#cbd5e1;"></div>
+              </div>
+
+              <!-- 우측: 조명 거울 속 내 캐릭터 & 세면대 -->
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="wc-mirror-box">
+                  <div id="restroomMirrorAvatar" style="width:136px;height:154px;transform:scaleX(-1);"></div>
+                  <div id="restroomWaterSplash" class="hidden" style="position:absolute;inset:0;background:radial-gradient(circle, rgba(125,211,252,0.55) 0%, transparent 72%);display:flex;align-items:center;justify-content:center;font-size:28px;">
+                    💦✨
+                  </div>
+                </div>
+                <div class="wc-sink-bowl"></div>
+                <div style="font-size:10.5px;color:#bae6fd;font-weight:800;margin-top:4px;">🪞 대형 조명거울 & 세면대</div>
+              </div>
+            </div>
+
+            <div class="restroom-btn-grid">
+              <button type="button" onclick="useRestroomRelief()" class="restroom-act-btn" style="background:linear-gradient(90deg,#0d9488,#0284c7);">
+                🚽 시원하게 볼일보기 (-15%)
+              </button>
+              <button type="button" onclick="washFaceInRestroom()" class="restroom-act-btn" style="background:linear-gradient(90deg,#2563eb,#4f46e5);">
+                💦 찬물 세수·손씻기 (-18%)
+              </button>
+              <button type="button" onclick="fixStyleInMirror()" class="restroom-act-btn" style="background:linear-gradient(90deg,#db2777,#9333ea);">
+                💄 거울보며 단장 (+호감도)
+              </button>
+              <button type="button" onclick="returnFromRestroomToTable()" class="restroom-act-btn" style="background:linear-gradient(90deg,#f59e0b,#eab308);color:#0f172a;">
+                🚶 테이블로 걸어서 복귀
+              </button>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:#cbd5e1;text-align:center;">
+            💡 채팅창에 <strong style="color:#fde68a;">"다녀왔어"</strong>라고 쳐도 문 열고 자리로 걸어 돌아갑니다!
+          </div>
+        `;
+        pochaArena.appendChild(wcOverlay);
+      }
+
+      // 7. 3차 프랑스 파리 전환 비행 연출 오버레이 & AI 두뇌 모달 주입
+      const extraModals = document.createElement('div');
+      extraModals.innerHTML = `
+        <div id="parisFlightOverlay" class="hidden">
+          <div style="font-size:48px;">✈️🗼🥂</div>
+          <div style="font-size:22px;font-weight:900;color:#fde68a;">3차 · 프랑스 파리 에펠탑 루프탑으로 이동 중!</div>
+          <div style="font-size:13.5px;color:#e2e8f0;">화이트 대리석 골드 테이블 위에 수제 크루아상·프렌치 치즈 플래터·보르도 그랑크뤼 와인을 세팅합니다...</div>
+        </div>
+
         <div id="aiBrainModal" class="hidden pocha-modal-backdrop">
           <div class="pocha-modal-box" style="max-width:455px;">
             <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;padding-bottom:10px;margin-bottom:12px;">
@@ -4386,27 +4657,19 @@
               </div>
               <button type="button" onclick="closeAiBrainModal()" style="padding:6px 12px;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;">닫기 ✕</button>
             </div>
-
             <div style="font-size:12px;color:#cbd5e1;line-height:1.55;margin-bottom:12px;background:rgba(15,23,42,0.85);padding:12px;border-radius:14px;border:1px solid #334155;">
               <div>✅ <strong>기본 내장 심층 엔진 (무료·즉시 작동)</strong>: 감정 공감·맥락 기억·꼬리질문이 탑재되어 키 없이도 깊은 대화가 가능합니다.</div>
-              <div style="margin-top:6px;color:#fde68a;">🚀 <strong>실제 Gemini AI 직결 모드 (선택)</strong>: 무료 Google AI Studio 키를 입력하면 지금 저와 대화하는 것처럼 <strong>무제한 자유 주제·인생 상담·끝장 토론</strong>이 작동합니다! (브라우저에만 안전 저장)</div>
+              <div style="margin-top:6px;color:#fde68a;">🚀 <strong>실제 Gemini AI 직결 모드 (선택)</strong>: 무료 Google AI Studio 키를 입력하면 무제한 자유 주제·인생 상담·파리 3차 감성 대화가 작동합니다!</div>
             </div>
-
-            <label style="display:block;font-size:11.5px;font-weight:800;color:#bae6fd;margin-bottom:6px;">🔑 Gemini API Key (선택사항)</label>
             <input id="geminiKeyInput" type="password" placeholder="AIzaSy... (비워두면 내장 심층 대화 엔진 사용)" class="pocha-text-input" style="font-family:monospace;margin-bottom:12px;" />
-
             <div style="display:flex;gap:8px;">
-              <button type="button" onclick="saveAiBrainKey()" style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(90deg,#7c3aed,#ec4899);color:#fff;font-weight:900;font-size:13px;">
-                💾 저장하고 깊은 대화 시작하기
-              </button>
-              <button type="button" onclick="clearAiBrainKey()" style="padding:12px 14px;border-radius:14px;background:#1e293b;color:#cbd5e1;font-size:12px;font-weight:800;">
-                초기화
-              </button>
+              <button type="button" onclick="saveAiBrainKey()" style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(90deg,#7c3aed,#ec4899);color:#fff;font-weight:900;font-size:13px;">💾 저장하기</button>
+              <button type="button" onclick="clearAiBrainKey()" style="padding:12px 14px;border-radius:14px;background:#1e293b;color:#cbd5e1;font-size:12px;font-weight:800;">초기화</button>
             </div>
           </div>
         </div>
       `;
-      document.body.appendChild(aiBrainModalWrap);
+      document.body.appendChild(extraModals);
 
       window.openAiBrainModal = function () {
         document.getElementById('geminiKeyInput').value = appState.geminiApiKey || '';
@@ -4418,8 +4681,7 @@
         appState.geminiApiKey = val;
         if (val) {
           localStorage.setItem(AI_KEY_STORAGE, val);
-          showToastMsg('🧠 Gemini AI 두뇌 연결 완료! 이제 어떤 깊은 주제든 실시간으로 완벽히 대화합니다!');
-          appendLocalChat('시스템', '🧠 [초지능 Gemini 모드 활성화] 이제 철학, 인생 고민, 농담까지 진짜 사람처럼 깊게 대화합니다!', 'system');
+          showToastMsg('🧠 Gemini AI 두뇌 연결 완료! 이제 어떤 깊은 주제든 실시간 대화합니다!');
         } else {
           localStorage.removeItem(AI_KEY_STORAGE);
           showToastMsg('✅ 내장 심층 공감 대화 모드로 설정되었습니다!');
@@ -4430,159 +4692,743 @@
         document.getElementById('geminiKeyInput').value = '';
         appState.geminiApiKey = '';
         localStorage.removeItem(AI_KEY_STORAGE);
-        showToastMsg('🔄 API 키가 초기화되어 내장 심층 엔진으로 동작합니다.');
+        showToastMsg('🔄 API 키가 초기화되었습니다.');
       };
 
-      // 5. 원형 테이블에 [얼큰 김치 수제비] 추가
+      // 8. 테이블 음식 슬롯 주입 (김치수제비 + 파리 3차 크루아상·치즈·와인·샴페인)
       const dishGrid = document.querySelector('.table-dish-grid');
       if (dishGrid && !document.getElementById('dishSlot-kimchiSujebi')) {
-        const sujebiSlot = document.createElement('div');
-        sujebiSlot.id = 'dishSlot-kimchiSujebi';
-        sujebiSlot.className = 'dish-slot';
-        sujebiSlot.title = '클릭해서 얼큰 김치 수제비 먹기 (다 먹으면 클릭 시 자동 새 냄비 세팅!)';
-        sujebiSlot.setAttribute('onclick', 'eatKimchiSujebi()');
-        sujebiSlot.innerHTML = `
-          <div id="kimchiSujebiSvgHolder" class="dish-art-lg"></div>
-          <div class="dish-pill-tag" style="background:rgba(127,29,29,0.95);border-color:#fb923c;">
-            <span>🍲 김치수제비</span>
-            <span id="kimchiSujebiCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+        dishGrid.insertAdjacentHTML('afterbegin', `
+          <div id="dishSlot-kimchiSujebi" onclick="eatKimchiSujebi()" class="dish-slot" title="클릭해서 얼큰 김치 수제비 먹기 (다 먹으면 클릭 시 자동 세팅!)">
+            <div id="kimchiSujebiSvgHolder" class="dish-art-lg"></div>
+            <div class="dish-pill-tag" style="background:rgba(127,29,29,0.95);border-color:#fb923c;">
+              <span>🍲 김치수제비</span><span id="kimchiSujebiCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+            </div>
           </div>
-        `;
-        dishGrid.insertBefore(sujebiSlot, dishGrid.firstChild);
+
+          <div id="dishSlot-croissant" onclick="eatCroissant()" class="hidden dish-slot" title="클릭해서 프랑스 버터 크루아상 먹기">
+            <div id="croissantSvgHolder" class="dish-art-lg"></div>
+            <div class="dish-pill-tag">
+              <span>🥐 수제 크루아상</span><span id="croissantCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+            </div>
+          </div>
+
+          <div id="dishSlot-cheesePlatter" onclick="eatCheesePlatter()" class="hidden dish-slot" title="클릭해서 브리·까망베르·에멘탈 치즈 플래터 먹기">
+            <div id="cheesePlatterSvgHolder" class="dish-art-lg"></div>
+            <div class="dish-pill-tag">
+              <span>🧀 프렌치 치즈플래터</span><span id="cheesePlatterCountPill" style="color:#fcd34d;font-family:monospace;">8/8</span>
+            </div>
+          </div>
+
+          <div id="dishSlot-redWine" onclick="drinkRedWine()" class="hidden dish-slot" title="클릭해서 보르도 그랑크뤼 레드와인 건배!">
+            <div id="redWineSvgHolder" class="dish-art-md"></div>
+            <div class="dish-pill-tag">
+              <span>🍷 보르도 그랑크뤼</span><span id="redWineCountPill" style="color:#fcd34d;font-family:monospace;">6/6잔</span>
+            </div>
+          </div>
+
+          <div id="dishSlot-champagne" onclick="drinkChampagne()" class="hidden dish-slot" title="클릭해서 돔 페리뇽 골드 샴페인 축배!">
+            <div id="champagneSvgHolder" class="dish-art-md"></div>
+            <div class="dish-pill-tag">
+              <span>🥂 빈티지 샴페인</span><span id="champagneCountPill" style="color:#fcd34d;font-family:monospace;">6/6잔</span>
+            </div>
+          </div>
+        `);
       }
 
       const menuScrollBox = document.querySelector('#menuModal .pocha-modal-box > div:last-child');
       if (menuScrollBox) {
-        const sujebiMenuBtn = document.createElement('button');
-        sujebiMenuBtn.className = 'menu-item-btn';
-        sujebiMenuBtn.style.borderColor = 'rgba(251, 146, 60, 0.85)';
-        sujebiMenuBtn.style.background = 'linear-gradient(90deg, rgba(127,29,29,0.55), rgba(30,41,59,0.95))';
-        sujebiMenuBtn.setAttribute('onclick', "orderMenuItem('kimchiSujebi')");
-        sujebiMenuBtn.innerHTML = `
-          <div>
-            <div style="font-weight:900;font-size:14px;color:#fed7aa;">
-              🍲🔥 얼큰 묵은지 김치수제비
-              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">NEW 시그니처</span>
+        menuScrollBox.insertAdjacentHTML('afterbegin', `
+          <button type="button" onclick="orderMenuItem('kimchiSujebi')" class="menu-item-btn" style="border-color:rgba(251,146,60,0.85);background:linear-gradient(90deg,rgba(127,29,29,0.55),rgba(30,41,59,0.95));">
+            <div>
+              <div style="font-weight:900;font-size:14px;color:#fed7aa;">🍲🔥 얼큰 묵은지 김치수제비 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">시그니처</span></div>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">잘 익은 묵은지 + 쫀득 손수제비 전골 (6국자)</div>
             </div>
-            <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">잘 익은 묵은지 + 손으로 직접 떼어 넣은 쫀득 수제비 전골 (6국자)</div>
-          </div>
-          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">15,000원</span>
-        `;
-        menuScrollBox.insertBefore(sujebiMenuBtn, menuScrollBox.firstChild);
+            <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">15,000원</span>
+          </button>
+
+          <button type="button" onclick="orderMenuItem('cheesePlatter')" class="menu-item-btn" style="border-color:rgba(251,191,36,0.75);background:linear-gradient(90deg,rgba(69,26,3,0.6),rgba(30,27,75,0.9));">
+            <div>
+              <div style="font-weight:900;font-size:14px;color:#fef08a;">🧀🍇 프렌치 아티장 치즈 & 무화과 플래터 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ca8a04;color:#0f172a;margin-left:4px;">파리3차</span></div>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">브리·까망베르·에멘탈·블루치즈 + 무화과·포도·트러플꿀 (8피스)</div>
+            </div>
+            <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">38,000원</span>
+          </button>
+
+          <button type="button" onclick="orderMenuItem('croissant')" class="menu-item-btn" style="border-color:rgba(251,191,36,0.6);">
+            <div>
+              <div style="font-weight:900;font-size:14px;color:#fde68a;">🥐🧈 프랑스 이즈니 버터 수제 크루아상 <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ca8a04;color:#0f172a;margin-left:4px;">파리3차</span></div>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">결이 살아있는 정통 파리 크루아상 & 무화과잼 (6개)</div>
+            </div>
+            <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">19,000원</span>
+          </button>
+
+          <button type="button" onclick="orderMenuItem('redWine')" class="menu-item-btn" style="border-color:rgba(244,63,94,0.65);">
+            <div>
+              <div style="font-weight:900;font-size:14px;color:#fda4af;">🍷✨ 샤또 마고 보르도 그랑크뤼 레드와인</div>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">깊고 우아한 루비빛 아로마 · 크리스탈 와인잔 (6잔)</div>
+            </div>
+            <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">68,000원</span>
+          </button>
+
+          <button type="button" onclick="orderMenuItem('champagne')" class="menu-item-btn" style="border-color:rgba(253,224,71,0.7);">
+            <div>
+              <div style="font-weight:900;font-size:14px;color:#fef9c3;">🥂🌟 돔 페리뇽 빈티지 골드 샴페인</div>
+              <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">섬세한 골드 스파클링 플루트 잔 (6잔)</div>
+            </div>
+            <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">85,000원</span>
+          </button>
+        `);
       }
 
-      // ==================== [요청 2] 음식 다 먹었을 때 클릭하면 즉시 자동 리필 세팅 ====================
+      // 영수증 모달에도 [3차 프랑스 파리로 이동] 버튼 추가
+      const nextRoundBtn = document.getElementById('nextRoundBtn');
+      if (nextRoundBtn && nextRoundBtn.parentElement && !document.getElementById('parisReceiptGoBtn')) {
+        const parisBtn = document.createElement('button');
+        parisBtn.id = 'parisReceiptGoBtn';
+        parisBtn.type = 'button';
+        parisBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;border-radius:16px;background:linear-gradient(90deg,#92400e,#ca8a04,#4f46e5);color:#ffffff;font-weight:900;font-size:14px;';
+        parisBtn.textContent = '🥂🗼 3차는 프랑스 파리 에펠탑 루프탑으로 이동! (크루아상·치즈·와인)';
+        parisBtn.onclick = () => {
+          document.getElementById('finalReceiptModal').classList.add('hidden');
+          window.transitionToParisThirdRound();
+        };
+        nextRoundBtn.parentElement.appendChild(parisBtn);
+      }
+
+      // ==================== [핵심 기능 A] 화장실 걸어가기 & 내부 화면 작동 ====================
+      function playFootstepSfx() {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        [0, 0.22, 0.44, 0.66, 0.88].forEach(t => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime + t);
+          osc.frequency.exponentialRampToValueAtTime(65, ctx.currentTime + t + 0.08);
+          gain.gain.setValueAtTime(0.14, ctx.currentTime + t);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.09);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.1);
+        });
+      }
+
+      function playWaterFlushOrSplashSfx() {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const bufSize = Math.floor(ctx.sampleRate * 0.75);
+        const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.4));
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 1.5;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.005, now + 0.72);
+        src.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+        src.start(now);
+      }
+
+      window.goToPochaRestroom = function () {
+        if (appState.inRestroom) {
+          showToastMsg('🚻 이미 화장실 안에 들어와 있습니다!');
+          return;
+        }
+        if (appState.walkingToRestroom) return;
+        appState.walkingToRestroom = true;
+
+        // 모바일/작은 화면에서도 걷는 장면이 바로 보이도록 테이블 중앙으로 부드럽게 스크롤!
+        const arena = document.getElementById('pochaArena');
+        if (arena) {
+          try { arena.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        }
+
+        const layer = document.getElementById('interactionAnimLayer');
+        const mySeatEl = document.getElementById('myPortraitContainer');
+        const doorEl = document.getElementById('pochaRestroomDoor');
+
+        if (!layer || !mySeatEl || !doorEl) {
+          appState.walkingToRestroom = false;
+          openRestroomInterior();
+          return;
+        }
+
+        showSeatSpeechBubble('me', '잠깐 화장실 좀 다녀올게~! 🚻🚶');
+        triggerRandomCompanionReaction(
+          appState.isParisMode
+            ? ['오케이 천천히 다녀와~ 파리 루프탑 파우더룸 저쪽 왼쪽 문이야! 🥂', '다녀올 동안 와인 따라놓고 기다릴게 ㅎㅎ']
+            : ['오케이 조심히 다녀와~! 화장실 문 열쇠랑 휴지 잘 챙기고 ㅋㅋ', '얼른 다녀와! 안주 안 먹고 기다릴게 ㅎㅎ']
+        );
+
+        const start = getArenaRelativeCenter(mySeatEl);
+        const end = getArenaRelativeCenter(doorEl);
+
+        mySeatEl.style.opacity = '0.15';
+        document.getElementById('mySeatStatusPrefix').textContent = '🚻 화장실 이동중 · ';
+        playFootstepSfx();
+
+        const walker = document.createElement('div');
+        walker.className = 'walking-avatar-actor';
+        walker.style.cssText = `
+          position:absolute; left:${start.x}px; top:${start.y}px;
+          width:90px; height:106px; z-index:45; pointer-events:none;
+          transition: left 1.15s cubic-bezier(0.25, 0.9, 0.35, 1), top 1.15s cubic-bezier(0.25, 0.9, 0.35, 1);
+        `;
+        walker.innerHTML = `
+          <div style="position:absolute;top:-24px;left:50%;transform:translateX(-50%);padding:3px 9px;border-radius:999px;background:#14b8a6;color:#042f2e;font-size:10.5px;font-weight:900;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,0.5);">
+            화장실 가는 중 🚶💨
+          </div>
+          ${renderRealisticPortraitSVG(appState.myStyle, appState.drunkPct, 'walker_go')}
+        `;
+        layer.appendChild(walker);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            walker.style.left = `${end.x + 20}px`;
+            walker.style.top = `${end.y - 10}px`;
+          });
+        });
+
+        setTimeout(() => {
+          walker.remove();
+          appState.walkingToRestroom = false;
+          openRestroomInterior();
+        }, 1200);
+      };
+
+      function openRestroomInterior() {
+        appState.inRestroom = true;
+        const overlay = document.getElementById('restroomInteriorOverlay');
+        if (!overlay) return;
+        document.getElementById('restroomLocationBadge').textContent = appState.isParisMode
+          ? '✨ 파리 루프탑 살롱 · 럭셔리 파우더룸 (Toilettes)'
+          : '🚻 광안리 포차 깔끔 내부 화장실';
+        document.getElementById('restroomMirrorQuote').textContent = appState.isParisMode
+          ? '🪞 파리 대리석 파우더룸 도착! 거울 조명 덕분에 얼굴이 화보 같네요!'
+          : '🪞 술집 화장실 도착! 변기 부스를 쓰거나 찬물 세수로 술을 깨보세요!';
+        updateRestroomInteriorUI();
+        overlay.classList.remove('hidden');
+      }
+
+      function updateRestroomInteriorUI() {
+        const mirrorAv = document.getElementById('restroomMirrorAvatar');
+        const drunkReadout = document.getElementById('restroomDrunkReadout');
+        if (mirrorAv) mirrorAv.innerHTML = renderRealisticPortraitSVG(appState.myStyle, appState.drunkPct, 'wc_mirror');
+        if (drunkReadout) drunkReadout.textContent = `현재 취기 ${appState.drunkPct}%`;
+      }
+
+      window.useRestroomRelief = function () {
+        const sign = document.getElementById('wcOccupancySign');
+        if (sign) {
+          sign.textContent = '사용중 · 물내리는중 🌊';
+          sign.style.background = '#f43f5e';
+          sign.style.color = '#ffffff';
+          setTimeout(() => {
+            sign.textContent = '빈칸 · 사용가능';
+            sign.style.background = '#10b981';
+            sign.style.color = '#022c22';
+          }, 1100);
+        }
+        playWaterFlushOrSplashSfx();
+        appState.drunkPct = Math.max(0, appState.drunkPct - 15);
+        document.getElementById('restroomMirrorQuote').textContent = '🚽 쏴아아~ 시원하게 볼일 완료!! 몸이 날아갈 듯 가벼워졌어요! (취기 -15%)';
+        updateRestroomInteriorUI();
+        renderAllVisuals();
+        showToastMsg('🚽 시원하게 볼일을 마쳐 취기가 15% 감소했습니다!');
+      };
+
+      window.washFaceInRestroom = function () {
+        playWaterFlushOrSplashSfx();
+        appState.drunkPct = Math.max(0, appState.drunkPct - 18);
+        const splash = document.getElementById('restroomWaterSplash');
+        if (splash) {
+          splash.classList.remove('hidden');
+          setTimeout(() => splash.classList.add('hidden'), 750);
+        }
+        document.getElementById('restroomMirrorQuote').textContent = '💦 어푸어푸!! 찬물로 세수하고 손 씻으니까 술기운이 확 깬다! (취기 -18%)';
+        updateRestroomInteriorUI();
+        renderAllVisuals();
+        showToastMsg('💦 찬물 세수로 취기가 18% 내려갔습니다!');
+      };
+
+      window.fixStyleInMirror = function () {
+        playSojuClinkSfx();
+        if (typeof boostCompanionAffection === 'function') boostCompanionAffection(12);
+        document.getElementById('restroomMirrorQuote').textContent = '💄✨ 거울 보며 헤어·립 완벽 수정! 테이블 복귀하면 다들 반하겠는데?! (전원 호감도 +12)';
+        updateRestroomInteriorUI();
+        renderAllVisuals();
+        showToastMsg('✨ 거울 단장 완료! 테이블 멤버 호감도가 +12 올랐습니다!');
+      };
+
+      window.returnFromRestroomToTable = function () {
+        if (!appState.inRestroom) return;
+        appState.inRestroom = false;
+        const overlay = document.getElementById('restroomInteriorOverlay');
+        if (overlay) overlay.classList.add('hidden');
+
+        const layer = document.getElementById('interactionAnimLayer');
+        const mySeatEl = document.getElementById('myPortraitContainer');
+        const doorEl = document.getElementById('pochaRestroomDoor');
+
+        if (layer && mySeatEl && doorEl) {
+          const start = getArenaRelativeCenter(doorEl);
+          const end = getArenaRelativeCenter(mySeatEl);
+          playFootstepSfx();
+
+          const walker = document.createElement('div');
+          walker.className = 'walking-avatar-actor';
+          walker.style.cssText = `
+            position:absolute; left:${start.x + 20}px; top:${start.y - 10}px;
+            width:90px; height:106px; z-index:45; pointer-events:none;
+            transition: left 1.05s cubic-bezier(0.25, 0.9, 0.35, 1), top 1.05s cubic-bezier(0.25, 0.9, 0.35, 1);
+          `;
+          walker.innerHTML = `
+            <div style="position:absolute;top:-24px;left:50%;transform:translateX(-50%);padding:3px 9px;border-radius:999px;background:#fbbf24;color:#0f172a;font-size:10.5px;font-weight:900;white-space:nowrap;">
+              자리로 복귀중 🚶✨
+            </div>
+            ${renderRealisticPortraitSVG(appState.myStyle, appState.drunkPct, 'walker_back')}
+          `;
+          layer.appendChild(walker);
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              walker.style.left = `${end.x}px`;
+              walker.style.top = `${end.y}px`;
+            });
+          });
+
+          setTimeout(() => {
+            walker.remove();
+            mySeatEl.style.opacity = '1';
+            document.getElementById('mySeatStatusPrefix').textContent = '나 · ';
+            showSeatSpeechBubble('me', '화장실 시원하게 다녀왔어~! 다시 한 잔 할까? 😊');
+            appendLocalChat('시스템', `🙌 [${appState.myName}]님이 화장실에서 돌아와 자리에 앉았습니다!`, 'system');
+            triggerRandomCompanionReaction(
+              appState.isParisMode
+                ? ['오 돌아왔네! 마침 샴페인 기포가 제일 예쁠 때야 치얼스하자 🥂', '파우더룸 다녀오더니 비주얼이 더 빛나는데? ㅎㅎ']
+                : ['오 왔어?! 얼른 앉아 안주 식기 전에 짠하자! 🍻', '화장실 다녀오더니 정신 말짱해졌네ㅋㅋ 다시 달리자!']
+            );
+            renderAllVisuals();
+          }, 1080);
+        } else {
+          renderAllVisuals();
+        }
+      };
+
+      // ==================== [핵심 기능 B] 3차 프랑스 파리 에펠탑 루프탑 전환 ====================
+      const eiffelSparkles = Array.from({ length: 42 }, () => ({
+        rx: (Math.random() - 0.5),
+        ry: Math.random(),
+        phase: Math.random() * Math.PI * 2
+      }));
+      let parisTick = 0;
+
+      function renderParisCanvasLoop() {
+        requestAnimationFrame(renderParisCanvasLoop);
+        if (!appState.isParisMode || !parisCanvas || !parisCtx) return;
+
+        const rect = parisCanvas.parentElement.getBoundingClientRect();
+        const w = Math.max(320, Math.floor(rect.width));
+        const h = Math.max(150, Math.floor(rect.height));
+        if (parisCanvas.width !== w || parisCanvas.height !== h) {
+          parisCanvas.width = w;
+          parisCanvas.height = h;
+        }
+
+        parisTick += 0.04;
+        const horizonY = h * 0.68;
+
+        // 1. 파리 로맨틱 미드나잇 퍼플·네이비 그라데이션 밤하늘
+        const skyGrad = parisCtx.createLinearGradient(0, 0, 0, horizonY);
+        skyGrad.addColorStop(0, '#080514');
+        skyGrad.addColorStop(0.5, '#1e1438');
+        skyGrad.addColorStop(1, '#43234c');
+        parisCtx.fillStyle = skyGrad;
+        parisCtx.fillRect(0, 0, w, horizonY);
+
+        // 별빛 & 초승달
+        stars.forEach(s => {
+          const a = 0.35 + 0.55 * Math.sin(parisTick + s.twinkle);
+          parisCtx.fillStyle = `rgba(254, 243, 199, ${a.toFixed(2)})`;
+          parisCtx.beginPath(); parisCtx.arc(s.x * w, s.y * h * 0.85, s.r, 0, Math.PI * 2); parisCtx.fill();
+        });
+        parisCtx.fillStyle = '#fef08a';
+        parisCtx.beginPath(); parisCtx.arc(w * 0.80, h * 0.28, 12, 0, Math.PI * 2); parisCtx.fill();
+        parisCtx.fillStyle = '#191130';
+        parisCtx.beginPath(); parisCtx.arc(w * 0.80 + 5, h * 0.28 - 2, 11, 0, Math.PI * 2); parisCtx.fill();
+
+        // 파리 시내 지붕 & 개선문(Arc de Triomphe) 실루엣
+        parisCtx.fillStyle = '#120c22';
+        for (let x = 0; x < w; x += 38) {
+          const bh = 10 + ((x * 19) % 15);
+          parisCtx.fillRect(x, horizonY - bh, 36, bh);
+        }
+        // 좌측 멀리 개선문 실루엣
+        const arcX = w * 0.22;
+        parisCtx.fillStyle = '#1f1635';
+        parisCtx.fillRect(arcX - 18, horizonY - 26, 36, 26);
+        parisCtx.fillStyle = '#3b2146';
+        parisCtx.beginPath();
+        parisCtx.arc(arcX, horizonY, 7, Math.PI, 0);
+        parisCtx.fill();
+
+        // 센강(Seine River) 수면 & 황금빛 반영
+        const riverGrad = parisCtx.createLinearGradient(0, horizonY, 0, h);
+        riverGrad.addColorStop(0, '#1c1330');
+        riverGrad.addColorStop(1, '#07040e');
+        parisCtx.fillStyle = riverGrad;
+        parisCtx.fillRect(0, horizonY, w, h - horizonY);
+
+        const cx = w * 0.5;
+        const topY = h * 0.11;
+        const baseY = horizonY;
+
+        for (let i = 0; i < 8; i++) {
+          const ry = horizonY + 4 + i * 5;
+          const sway = Math.sin(parisTick * 1.5 + i) * 9;
+          parisCtx.strokeStyle = 'rgba(251, 191, 36, 0.42)';
+          parisCtx.lineWidth = 2;
+          parisCtx.beginPath();
+          parisCtx.moveTo(cx - 26 + sway, ry);
+          parisCtx.lineTo(cx + 26 + sway, ry);
+          parisCtx.stroke();
+        }
+
+        // 에펠탑 회전 서치라이트 광선
+        const beamSwing = Math.sin(parisTick * 0.55) * 0.4;
+        const beamGrad = parisCtx.createLinearGradient(cx, topY + 6, cx + 200, topY - 20);
+        beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.6)');
+        beamGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+        parisCtx.fillStyle = beamGrad;
+        parisCtx.beginPath();
+        parisCtx.moveTo(cx, topY + 6);
+        parisCtx.lineTo(cx + 240, topY - 25 + beamSwing * 50);
+        parisCtx.lineTo(cx + 240, topY + 18 + beamSwing * 50);
+        parisCtx.closePath();
+        parisCtx.fill();
+
+        // 황금 에펠탑(Tour Eiffel) 본체
+        parisCtx.fillStyle = 'rgba(217, 119, 6, 0.35)';
+        parisCtx.strokeStyle = '#fbbf24';
+        parisCtx.lineWidth = 2.2;
+        parisCtx.beginPath();
+        parisCtx.moveTo(cx, topY - 6);
+        parisCtx.lineTo(cx, topY + 6);
+        parisCtx.stroke();
+
+        parisCtx.beginPath();
+        parisCtx.moveTo(cx - 3, topY + 6);
+        parisCtx.quadraticCurveTo(cx - 8, (topY + baseY) * 0.55, cx - 35, baseY);
+        parisCtx.lineTo(cx - 19, baseY);
+        parisCtx.quadraticCurveTo(cx - 12, baseY - 18, cx, baseY - 18);
+        parisCtx.quadraticCurveTo(cx + 12, baseY - 18, cx + 19, baseY);
+        parisCtx.lineTo(cx + 35, baseY);
+        parisCtx.quadraticCurveTo(cx + 8, (topY + baseY) * 0.55, cx + 3, topY + 6);
+        parisCtx.closePath();
+        parisCtx.fill();
+        parisCtx.stroke();
+
+        const d1 = baseY - (baseY - topY) * 0.32;
+        const d2 = baseY - (baseY - topY) * 0.62;
+        parisCtx.lineWidth = 2.8;
+        parisCtx.strokeStyle = '#fef08a';
+        parisCtx.beginPath();
+        parisCtx.moveTo(cx - 22, d1); parisCtx.lineTo(cx + 22, d1);
+        parisCtx.moveTo(cx - 12, d2); parisCtx.lineTo(cx + 12, d2);
+        parisCtx.stroke();
+
+        // 에펠탑 화이트·골드 트윙클 스파클링 조명!
+        eiffelSparkles.forEach(sp => {
+          const py = topY + 7 + sp.ry * (baseY - topY - 10);
+          const spread = 2.5 + Math.pow(sp.ry, 1.55) * 28;
+          const px = cx + sp.rx * spread * 2;
+          const blink = Math.sin(parisTick * 4.8 + sp.phase);
+          if (blink > 0.32) {
+            parisCtx.fillStyle = blink > 0.78 ? '#ffffff' : '#fde047';
+            parisCtx.beginPath();
+            parisCtx.arc(px, py, 1.5, 0, Math.PI * 2);
+            parisCtx.fill();
+          }
+        });
+
+        // 폭죽 파티클도 파리 하늘 위에 함께 표시
+        fireworkParticles.forEach(p => {
+          if (p.alpha > 0) {
+            parisCtx.globalAlpha = p.alpha;
+            parisCtx.fillStyle = p.color;
+            parisCtx.beginPath(); parisCtx.arc(p.x, p.y, 2.2, 0, Math.PI * 2); parisCtx.fill();
+            parisCtx.globalAlpha = 1;
+          }
+        });
+      }
+      renderParisCanvasLoop();
+
+      window.toggleParisOrPochaRound = function () {
+        if (appState.isParisMode) {
+          window.returnToGwangalliFirstRound();
+        } else {
+          window.transitionToParisThirdRound();
+        }
+      };
+
+      window.transitionToParisThirdRound = function (fromRemote = false) {
+        if (appState.inRestroom) {
+          appState.inRestroom = false;
+          const ov = document.getElementById('restroomInteriorOverlay');
+          if (ov) ov.classList.add('hidden');
+          const mySeatEl = document.getElementById('myPortraitContainer');
+          if (mySeatEl) mySeatEl.style.opacity = '1';
+        }
+
+        // 파리 이동 전 비행 전환 연출 표시 (0.9초)
+        const flightEl = document.getElementById('parisFlightOverlay');
+        if (flightEl) {
+          flightEl.classList.remove('hidden');
+          flightEl.style.opacity = '1';
+          setTimeout(() => {
+            flightEl.style.opacity = '0';
+            setTimeout(() => flightEl.classList.add('hidden'), 450);
+          }, 950);
+        }
+
+        const arena = document.getElementById('pochaArena');
+        if (arena) {
+          try { arena.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        }
+
+        appState.roundNumber = 3;
+        appState.isChristmasMode = false;
+        appState.isParisMode = true;
+        appState.visitingSide = null;
+
+        document.body.classList.remove('xmas-body');
+        document.documentElement.classList.remove('xmas-mode');
+        document.body.classList.add('paris-body');
+        document.documentElement.classList.add('paris-mode');
+        if (parisCanvas) parisCanvas.classList.remove('hidden');
+        const xTree = document.getElementById('xmasTreeCorner');
+        if (xTree) xTree.classList.add('hidden');
+
+        document.getElementById('pochaMainTitle').textContent = '🗼 파리 에펠탑 루프탑 살롱 (3차)';
+        document.getElementById('liveBillHeading').textContent = '🥂 3차 파리 살롱 계산서';
+        const chatTitle = document.getElementById('chatRoomHeaderTitle');
+        if (chatTitle) chatTitle.textContent = '🥂 파리 에펠탑 심야 살롱';
+        const wcTitle = document.getElementById('wcDoorTitle');
+        if (wcTitle) wcTitle.textContent = '파우더룸 문';
+        const wcBadge = document.getElementById('wcDoorBadge');
+        if (wcBadge) wcBadge.textContent = '✨ WC';
+
+        const parisBtn = document.getElementById('mainActionParisBtn');
+        if (parisBtn) parisBtn.textContent = '🌉 1차 광안리로 복귀';
+
+        // 테이블 상단 소품 태그도 파리 캔들라이트로 변경
+        const centerTag = document.querySelector('#silverRoundTable > div:nth-child(2) > div');
+        if (centerTag) centerTag.textContent = '🕯️ 크리스탈 캔들 · 실버 커틀러리 · 소믈리에 디캔터';
+
+        const miniTables = document.querySelectorAll('.mini-silver-table');
+        if (miniTables[0]) miniTables[0].textContent = '테라스 A · 샴페인+치즈';
+        if (miniTables[1]) miniTables[1].textContent = '테라스 B · 보르도와인+크루아상';
+        NEIGHBOR_TABLES_INFO.left.signatureAnju = ['브리 치즈 & 무화과', '프랑스 버터 크루아상', '트러플 하몽'];
+        NEIGHBOR_TABLES_INFO.left.drinks = ['돔 페리뇽 샴페인', '보르도 그랑크뤼 레드와인'];
+        NEIGHBOR_TABLES_INFO.right.signatureAnju = ['까망베르 치즈 크래커', '이즈니 크루아상', '무화과 프로슈토'];
+        NEIGHBOR_TABLES_INFO.right.drinks = ['빈티지 로제 샴페인', '피노누아 레드와인'];
+
+        const cheersBtn = document.querySelector('.act-cheers');
+        const somaekBtn = document.querySelector('.act-somaek');
+        const chefBtn = document.querySelector('.act-chef');
+        if (cheersBtn) { cheersBtn.textContent = '🍷 와인 스월링·짠!'; cheersBtn.onclick = () => window.drinkRedWine(); }
+        if (somaekBtn) { somaekBtn.textContent = '🥂 샴페인 축배!'; somaekBtn.onclick = () => window.drinkChampagne(); }
+        if (chefBtn) { chefBtn.textContent = '🧑‍🍳 소믈리에 서비스'; }
+
+        // 기존 한식 접시 숨기고 파리 크루아상·치즈·와인·샴페인 세팅
+        appState.kimchiSujebiOrdered = false; appState.maratangOrdered = false;
+        appState.gyeranmariOrdered = false; appState.dakggochiOrdered = false;
+        appState.yuringiOrdered = false; appState.tteokOrdered = false;
+        appState.futoOrdered = false; appState.pinesherbetOrdered = false;
+        ['bangeo', 'kimbap', 'soju', 'beer', 'ramen'].forEach(k => {
+          const el = document.getElementById(`dishSlot-${k}`);
+          if (el) el.classList.add('hidden');
+        });
+
+        appState.croissantOrdered = true; appState.croissantLeft = 6;
+        appState.cheesePlatterOrdered = true; appState.cheesePlatterLeft = 8;
+        appState.redWineOrdered = true; appState.redWineLeft = 6;
+        appState.champagneOrdered = true; appState.champagneLeft = 6;
+        appState.waterLeft = 5;
+
+        appState.billQty = { croissant: 1, cheesePlatter: 1, redWine: 1, champagne: 1 };
+
+        renderAllVisuals();
+        launchManualFireworkBarrage(true);
+        playSojuClinkSfx();
+
+        setTimeout(() => {
+          triggerChefWalkIn(
+            '🧑‍🍳 파리 수석 소믈리에: "Bonsoir~! 에펠탑이 빛나는 파리 루프탑 3차에 오신 걸 환영합니다! 크루아상과 프렌치 치즈 플래터, 그랑크뤼 와인을 세팅했습니다!"',
+            () => showToastMsg('🗼✨ 3차 프랑스 파리 도착! 크루아상·고급 치즈·와인·샴페인 세팅 완료!')
+          );
+        }, 550);
+
+        appendLocalChat('시스템', '✈️🗼 [3차 이동 완료 — 프랑스 파리 에펠탑 루프탑 살롱] 화이트 대리석 골드 테이블에 이즈니 버터 크루아상, 프렌치 치즈 플래터, 보르도 레드와인과 돔 페리뇽 샴페인이 준비되었습니다!', 'system');
+        triggerRandomCompanionReaction([
+          '와 대박... 방금까지 포장마차였는데 눈앞에 에펠탑이 반짝이고 있어!! 크루아상이랑 치즈 비주얼 진짜 고급스럽다 🥂✨',
+          '파리 밤공기에 보르도 와인 한 잔이라니 오늘 밤 진짜 로맨틱함 끝판왕이네 🍷🗼'
+        ]);
+
+        if (!fromRemote) sendMultiplayerEvent({ type: 'GO_PARIS_3RD', actor: appState.myName });
+      };
+
+      // 1차 광안리 포차로 다시 돌아가는 기능도 지원!
+      window.returnToGwangalliFirstRound = function () {
+        appState.isParisMode = false;
+        appState.roundNumber = 1;
+        document.body.classList.remove('paris-body');
+        document.documentElement.classList.remove('paris-mode');
+        if (parisCanvas) parisCanvas.classList.add('hidden');
+
+        document.getElementById('pochaMainTitle').textContent = '🌉 광안리 밤바다 포차';
+        document.getElementById('liveBillHeading').textContent = '🧾 실시간 포차 빌지';
+        const chatTitle = document.getElementById('chatRoomHeaderTitle');
+        if (chatTitle) chatTitle.textContent = '💬 포차 깊은 대화방';
+        const wcTitle = document.getElementById('wcDoorTitle');
+        if (wcTitle) wcTitle.textContent = '술집 화장실 문';
+        const parisBtn = document.getElementById('mainActionParisBtn');
+        if (parisBtn) parisBtn.textContent = '🗼 3차 파리 가자!';
+
+        appState.croissantOrdered = false; appState.cheesePlatterOrdered = false;
+        appState.redWineOrdered = false; appState.champagneOrdered = false;
+        ['bangeo', 'kimbap', 'soju', 'beer', 'ramen'].forEach(k => {
+          const el = document.getElementById(`dishSlot-${k}`);
+          if (el) el.classList.remove('hidden');
+        });
+        appState.bangeoLeft = 10; appState.kimbapLeft = 8; appState.sojuShotsLeft = 7;
+        appState.beerGlassesLeft = 6; appState.ramenLeft = 5;
+        appState.kimchiSujebiOrdered = true; appState.kimchiSujebiLeft = 6;
+        appState.billQty = { bangeo: 1, kimbap: 1, soju: 1, beer: 1, kimchiSujebi: 1, serviceRamen: 1 };
+
+        const cheersBtn = document.querySelector('.act-cheers');
+        const somaekBtn = document.querySelector('.act-somaek');
+        const chefBtn = document.querySelector('.act-chef');
+        if (cheersBtn) { cheersBtn.textContent = '🍶 소주 짠!'; cheersBtn.onclick = () => window.cheersAll(); }
+        if (somaekBtn) { somaekBtn.textContent = '🌪️ 직접 소맥타기'; somaekBtn.onclick = () => window.openDiySomaekModal(); }
+        if (chefBtn) { chefBtn.textContent = '👨‍🍳 사장님 서비스'; }
+
+        renderAllVisuals();
+        showToastMsg('🌉 정겨운 광안리 밤바다 포장마차 테이블로 돌아왔습니다!');
+      };
+
+      // ==================== 음식 다 먹었을 때 클릭 시 자동 리필 + 파리 메뉴 동작 ====================
       function autoRefillDishAndEat(itemKey, leftProp, maxCount, eatCallback) {
         appState[leftProp] = maxCount;
         if (MENU_CATALOG[itemKey]) {
           appState.billQty[itemKey] = (appState.billQty[itemKey] || 0) + 1;
           const meta = MENU_CATALOG[itemKey];
           const priceTxt = meta.isService ? '서비스 무료' : `+${meta.unitPrice.toLocaleString()}원`;
-          showToastMsg(`🍽️ 다 비운 [${meta.name}] 접시를 클릭해 새 요리가 자동 세팅되었습니다! (${priceTxt})`);
-          appendLocalChat('방어집 사장님', `"어이쿠 빈 접시 보자마자 [${meta.name}] 따끈하게 새로 리필해 드렸습니데이~!" (${priceTxt})`, 'chef');
+          showToastMsg(`🍽️ 다 비운 [${meta.name}] 클릭 ➔ 즉시 새 요리 자동 세팅! (${priceTxt})`);
+          appendLocalChat(appState.isParisMode ? '파리 소믈리에' : '방어집 사장님',
+            `"[${meta.name}] 새 접시로 푸짐하게 자동 리필해 드렸습니다!" (${priceTxt})`, 'chef');
         }
         renderAllVisuals();
         sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
-        // 리필과 동시에 바로 맛있게 한 입 먹는 모션까지 매끄럽게 실행
         setTimeout(() => eatCallback(), 120);
       }
 
-      const _baseEatBangeo = window.eatBangeo;
-      window.eatBangeo = function (fromRemote = false) {
-        if (!fromRemote && appState.bangeoLeft <= 0) {
-          autoRefillDishAndEat('bangeo', 'bangeoLeft', 10, () => _baseEatBangeo(false));
+      window.eatCroissant = function (fromRemote = false) {
+        if (!fromRemote && appState.croissantLeft <= 0) {
+          appState.croissantOrdered = true;
+          autoRefillDishAndEat('croissant', 'croissantLeft', 6, () => window.eatCroissant(false));
           return;
         }
-        _baseEatBangeo(fromRemote);
+        appState.croissantLeft = Math.max(0, appState.croissantLeft - 1);
+        appState.eatenPiecesTotal += 1;
+        animateFoodToMouth('dishSlot-croissant', '<path d="M22,30 Q38,14 54,30 Q44,36 38,31 Q32,36 22,30 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.4"/>', 'me', false, '바삭~ 프랑스 버터 크루아상!! 🥐✨');
+        showSeatSpeechBubble('me', '겉바속촉 버터 결이 미쳤다... 무화과잼이랑 먹으니까 살살 녹아 🥐');
+        triggerRandomCompanionReaction(['크루아상 고소한 버터 향기가 와인이랑 너무 잘 어울린다 😍', '파리 루프탑에서 먹는 크루아상이라 맛도 두 배네 ✨']);
+        renderAllVisuals();
       };
 
-      const _baseEatKimbap = window.eatKimbap;
-      window.eatKimbap = function (fromRemote = false) {
-        if (!fromRemote && appState.kimbapLeft <= 0) {
-          autoRefillDishAndEat('kimbap', 'kimbapLeft', 8, () => _baseEatKimbap(false));
+      window.eatCheesePlatter = function (fromRemote = false) {
+        if (!fromRemote && appState.cheesePlatterLeft <= 0) {
+          appState.cheesePlatterOrdered = true;
+          autoRefillDishAndEat('cheesePlatter', 'cheesePlatterLeft', 8, () => window.eatCheesePlatter(false));
           return;
         }
-        _baseEatKimbap(fromRemote);
+        appState.cheesePlatterLeft = Math.max(0, appState.cheesePlatterLeft - 1);
+        appState.eatenPiecesTotal += 1;
+        animateFoodToMouth('dishSlot-cheesePlatter', '<polygon points="26,32 48,22 48,35" fill="#fde047" stroke="#ca8a04" stroke-width="1.3"/>', 'me', false, '브리·까망베르 치즈 & 무화과!! 🧀🍇');
+        showSeatSpeechBubble('me', '꾸덕한 브리 치즈에 트러플 꿀 살짝 찍어 먹으니까 입안이 황홀해 🧀✨');
+        triggerRandomCompanionReaction(['치즈 플래터 퀄리티 대박이다... 샴페인 안주로 최고야 🥂', '무화과랑 까망베르 조합 진짜 고급지다!']);
+        renderAllVisuals();
       };
 
-      const _baseEatRamen = window.eatServiceRamen;
-      window.eatServiceRamen = function (fromRemote = false) {
-        if (!fromRemote && appState.ramenLeft <= 0) {
-          autoRefillDishAndEat('serviceRamen', 'ramenLeft', 5, () => _baseEatRamen(false));
+      window.drinkRedWine = function (fromRemote = false) {
+        if (!fromRemote && appState.redWineLeft <= 0) {
+          appState.redWineOrdered = true;
+          autoRefillDishAndEat('redWine', 'redWineLeft', 6, () => window.drinkRedWine(false));
           return;
         }
-        _baseEatRamen(fromRemote);
+        appState.redWineOrdered = true;
+        appState.redWineLeft = Math.max(0, appState.redWineLeft - 1);
+        if (appState.redWineLeft === 0) appState.emptyBottles += 1;
+        appState.drunkPct = Math.min(100, appState.drunkPct + 11);
+        checkDrunkFestival();
+        playSojuClinkSfx();
+        showSeatSpeechBubble('me', '와인잔 스월링해서 우아하게... Santé(건배)~! 🍷✨');
+        triggerRandomCompanionReaction(['Santé~! 보르도 그랑크뤼 향이 밤공기에 퍼지니까 너무 설렌다 🍷', '치즈 한 조각에 레드와인 한 모금... 완벽한 밤이야 💖']);
+        appendLocalChat(appState.myName, '🍷 보르도 그랑크뤼 레드와인 잔을 부딪히며 우아하게 "Santé!" ✨', 'action');
+        renderAllVisuals();
       };
 
-      const _baseEatMaratang = window.eatMaratang;
-      window.eatMaratang = function (fromRemote = false) {
-        if (!fromRemote && appState.maratangLeft <= 0) {
-          appState.maratangOrdered = true;
-          autoRefillDishAndEat('maratang', 'maratangLeft', 6, () => _baseEatMaratang(false));
+      window.drinkChampagne = function (fromRemote = false) {
+        if (!fromRemote && appState.champagneLeft <= 0) {
+          appState.champagneOrdered = true;
+          autoRefillDishAndEat('champagne', 'champagneLeft', 6, () => window.drinkChampagne(false));
           return;
         }
-        _baseEatMaratang(fromRemote);
+        appState.champagneOrdered = true;
+        appState.champagneLeft = Math.max(0, appState.champagneLeft - 1);
+        if (appState.champagneLeft === 0) appState.emptyBottles += 1;
+        appState.drunkPct = Math.min(100, appState.drunkPct + 12);
+        checkDrunkFestival();
+        playSomaekFizzSfx();
+        launchManualFireworkBarrage(true);
+        showSeatSpeechBubble('me', '에펠탑 불빛 아래서 골드 샴페인 축배!! 치얼스~!! 🥂🗼');
+        triggerRandomCompanionReaction(['황금빛 기포 올라오는 거 너무 예쁘다!! 오늘 밤을 위하여 🥂✨', '크루아상에 시원한 샴페인 마시니까 청량감 최고야!']);
+        appendLocalChat(appState.myName, '🥂 돔 페리뇽 골드 샴페인 잔을 높이 들고 에펠탑을 향해 축배!! 🗼✨', 'action');
+        renderAllVisuals();
       };
 
-      const _baseEatGyeran = window.eatGyeranmari;
-      window.eatGyeranmari = function (fromRemote = false) {
-        if (!fromRemote && appState.gyeranmariLeft <= 0) {
-          appState.gyeranmariOrdered = true;
-          autoRefillDishAndEat('gyeranmari', 'gyeranmariLeft', 8, () => _baseEatGyeran(false));
-          return;
-        }
-        _baseEatGyeran(fromRemote);
+      const wrapRefill = (fnName, key, prop, max) => {
+        const orig = window[fnName];
+        if (!orig) return;
+        window[fnName] = function (fromRemote = false) {
+          if (!fromRemote && appState[prop] <= 0) {
+            if (prop === 'maratangLeft') appState.maratangOrdered = true;
+            if (prop === 'gyeranmariLeft') appState.gyeranmariOrdered = true;
+            if (prop === 'dakggochiLeft') appState.dakggochiOrdered = true;
+            if (prop === 'yuringiLeft') appState.yuringiOrdered = true;
+            if (prop === 'tteokLeft') appState.tteokOrdered = true;
+            if (prop === 'futoLeft') appState.futoOrdered = true;
+            if (prop === 'pinesherbetLeft') appState.pinesherbetOrdered = true;
+            autoRefillDishAndEat(key, prop, max, () => orig(false));
+            return;
+          }
+          orig(fromRemote);
+        };
       };
-
-      const _baseEatDak = window.eatDakggochi;
-      window.eatDakggochi = function (fromRemote = false) {
-        if (!fromRemote && appState.dakggochiLeft <= 0) {
-          appState.dakggochiOrdered = true;
-          autoRefillDishAndEat('dakggochi', 'dakggochiLeft', 6, () => _baseEatDak(false));
-          return;
-        }
-        _baseEatDak(fromRemote);
-      };
-
-      const _baseEatYuringi = window.eatYuringi;
-      window.eatYuringi = function (fromRemote = false) {
-        if (!fromRemote && appState.yuringiLeft <= 0) {
-          appState.yuringiOrdered = true;
-          autoRefillDishAndEat('yuringi', 'yuringiLeft', 8, () => _baseEatYuringi(false));
-          return;
-        }
-        _baseEatYuringi(fromRemote);
-      };
-
-      const _baseEatTteok = window.eatTteokbokki;
-      window.eatTteokbokki = function (fromRemote = false) {
-        if (!fromRemote && appState.tteokLeft <= 0) {
-          appState.tteokOrdered = true;
-          autoRefillDishAndEat('tteokbokki', 'tteokLeft', 8, () => _baseEatTteok(false));
-          return;
-        }
-        _baseEatTteok(fromRemote);
-      };
-
-      const _baseEatFuto = window.eatFutomaki;
-      window.eatFutomaki = function (fromRemote = false) {
-        if (!fromRemote && appState.futoLeft <= 0) {
-          appState.futoOrdered = true;
-          autoRefillDishAndEat('futomaki', 'futoLeft', 6, () => _baseEatFuto(false));
-          return;
-        }
-        _baseEatFuto(fromRemote);
-      };
-
-      const _baseEatSherbet = window.eatPinesherbet;
-      window.eatPinesherbet = function (fromRemote = false) {
-        if (!fromRemote && appState.pinesherbetLeft <= 0) {
-          appState.pinesherbetOrdered = true;
-          autoRefillDishAndEat('pinesherbet', 'pinesherbetLeft', 6, () => _baseEatSherbet(false));
-          return;
-        }
-        _baseEatSherbet(fromRemote);
-      };
+      wrapRefill('eatBangeo', 'bangeo', 'bangeoLeft', 10);
+      wrapRefill('eatKimbap', 'kimbap', 'kimbapLeft', 8);
+      wrapRefill('eatServiceRamen', 'serviceRamen', 'ramenLeft', 5);
+      wrapRefill('eatMaratang', 'maratang', 'maratangLeft', 6);
+      wrapRefill('eatGyeranmari', 'gyeranmari', 'gyeranmariLeft', 8);
+      wrapRefill('eatDakggochi', 'dakggochi', 'dakggochiLeft', 6);
+      wrapRefill('eatYuringi', 'yuringi', 'yuringiLeft', 8);
+      wrapRefill('eatTteokbokki', 'tteokbokki', 'tteokLeft', 8);
+      wrapRefill('eatFutomaki', 'futomaki', 'futoLeft', 6);
+      wrapRefill('eatPinesherbet', 'pinesherbet', 'pinesherbetLeft', 6);
 
       window.eatKimchiSujebi = function (fromRemote = false) {
         if (!fromRemote && appState.kimchiSujebiLeft <= 0) {
@@ -4593,35 +5439,29 @@
         appState.kimchiSujebiLeft = Math.max(0, appState.kimchiSujebiLeft - 1);
         appState.eatenPiecesTotal += 1;
         appState.drunkPct = Math.max(0, appState.drunkPct - 5);
-
-        animateFoodToMouth(
-          'dishSlot-kimchiSujebi',
-          '<path d="M28,24 C34,19 46,21 47,28 C48,34 37,37 30,33 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/><circle cx="39" cy="27" r="2.5" fill="#dc2626"/>',
-          'me',
-          true,
-          '후루룩~ 묵은지 김치수제비 칼칼쫀득!! 🍲🔥'
-        );
-        showSeatSpeechBubble('me', '크으~ 묵은지 국물에 쫀득한 수제비! 해장되면서 술이 술술 들어간다 🍲');
-        triggerRandomCompanionReaction([
-          '와 김치수제비 국물 진짜 깊고 칼칼하다!! 소주 안주로 완전 예술인데?! 😍',
-          '수제비 반죽이 쫀득해서 계속 손이 가네ㅋㅋ 국물 식으면 데워달라고 하자!'
-        ]);
+        animateFoodToMouth('dishSlot-kimchiSujebi', '<path d="M28,24 C34,19 46,21 47,28 C48,34 37,37 30,33 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>', 'me', true, '후루룩~ 얼큰 김치수제비!! 🍲🔥');
+        showSeatSpeechBubble('me', '크으~ 묵은지 국물에 쫀득한 손수제비! 속이 확 풀린다 🍲');
+        triggerRandomCompanionReaction(['김치수제비 국물 진짜 칼칼하고 깊다!! 😍', '수제비 반죽이 쫀득해서 계속 들어가네ㅋㅋ']);
         renderAllVisuals();
-        if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'kimchiSujebi', actor: appState.myName, state: exportSyncPayload() });
       };
 
       const _origOrderMenuItem = window.orderMenuItem;
       window.orderMenuItem = function (itemKey, fromRemote = false, actorName = null) {
-        if (itemKey === 'kimchiSujebi') {
+        const customMap = {
+          kimchiSujebi: ['kimchiSujebiOrdered', 'kimchiSujebiLeft', 6, '👨‍🍳 사장님: "얼큰 묵은지 김치수제비 보글보글 나왔습니데이~!"'],
+          croissant: ['croissantOrdered', 'croissantLeft', 6, '🧑‍🍳 파리 블랑제: "이즈니 버터 수제 크루아상 세팅해 드렸습니다!"'],
+          cheesePlatter: ['cheesePlatterOrdered', 'cheesePlatterLeft', 8, '🧑‍🍳 소믈리에: "프렌치 치즈 & 무화과 플래터 준비해 드렸습니다!"'],
+          redWine: ['redWineOrdered', 'redWineLeft', 6, '🧑‍🍳 소믈리에: "보르도 그랑크뤼 레드와인 서브해 드렸습니다!"'],
+          champagne: ['champagneOrdered', 'champagneLeft', 6, '🧑‍🍳 소믈리에: "돔 페리뇽 골드 샴페인 칠링 세팅했습니다!"']
+        };
+        if (customMap[itemKey]) {
           closeMenuModal();
-          const who = actorName || appState.myName;
-          appState.kimchiSujebiOrdered = true;
-          appState.kimchiSujebiLeft = 6;
-          appState.billQty.kimchiSujebi = (appState.billQty.kimchiSujebi || 0) + 1;
-          triggerChefWalkIn('👨‍🍳 사장님: "잘 익은 묵은지에 쫀득한 손수제비 듬뿍 넣은 얼큰 김치 수제비 보글보글 나왔습니데이~!"', () => renderAllVisuals());
+          const [ordProp, leftProp, maxCnt, line] = customMap[itemKey];
+          appState[ordProp] = true; appState[leftProp] = maxCnt;
+          appState.billQty[itemKey] = (appState.billQty[itemKey] || 0) + 1;
+          triggerChefWalkIn(line, () => renderAllVisuals());
           renderAllVisuals();
-          appendLocalChat(who, `🍲 [얼큰 묵은지 김치수제비] 주문 완료! (+15,000원)`, 'action');
-          if (!fromRemote) sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
+          appendLocalChat(actorName || appState.myName, `🍽️ [${MENU_CATALOG[itemKey].name}] 주문 완료!`, 'action');
           return;
         }
         _origOrderMenuItem(itemKey, fromRemote, actorName);
@@ -4629,6 +5469,11 @@
 
       const _origEatRandom = window.eatRandomAnju;
       window.eatRandomAnju = function () {
+        if (appState.isParisMode) {
+          const pMenu = [window.eatCroissant, window.eatCheesePlatter];
+          pMenu[Math.floor(Math.random() * pMenu.length)]();
+          return;
+        }
         if (appState.kimchiSujebiOrdered && appState.kimchiSujebiLeft > 0 && Math.random() < 0.35) {
           window.eatKimchiSujebi();
           return;
@@ -4636,7 +5481,20 @@
         _origEatRandom();
       };
 
-      // ==================== 연예인 비주얼 얼굴 SVG & 얼큰 김치 수제비 렌더링 ====================
+      const _origSummonChef = window.summonChefService;
+      window.summonChefService = function (fromRemote = false) {
+        if (appState.isParisMode) {
+          triggerChefWalkIn('🧑‍🍳 수석 소믈리에: "파리 루프탑 VIP 서비스로 따뜻한 크루아상과 트러플 브리 치즈를 리필해 드렸습니다!"', () => {
+            appState.croissantOrdered = true; appState.croissantLeft = 6;
+            appState.cheesePlatterOrdered = true; appState.cheesePlatterLeft = 8;
+            renderAllVisuals();
+          });
+          return;
+        }
+        _origSummonChef(fromRemote);
+      };
+
+      // ==================== 연예인 비주얼 얼굴 & 파리 고급 안주 SVG ====================
       CHARACTER_STYLES.forEach(c => {
         if (c.id === 'jisu') c.tag = '걸그룹 센터상 · 여신 S컬 웨이브';
         if (c.id === 'seoyeon') c.tag = '청순 여배우상 · 시스루 허쉬컷';
@@ -4660,11 +5518,11 @@
         const cel = CELEBRITY_FACE_PRESETS[st.id] || CELEBRITY_FACE_PRESETS.jisu;
         const uid = `${st.id}_${seatKey}`;
         const isFemale = st.gender === 'f';
-        const showSanta = forceSantaHat || appState.isChristmasMode;
+        const showSanta = (forceSantaHat || appState.isChristmasMode) && !appState.isParisMode;
         const blushAlpha = Math.min(0.82, Math.max(0.18, (drunkPct / 100) * 0.82));
         const sleepy = drunkPct >= 75 ? 1.1 : (drunkPct >= 45 ? 0.5 : 0);
 
-        let backHair = st.id === 'jisu'
+        const backHair = st.id === 'jisu'
           ? `<path d="M26,44 C15,72 17,108 26,135 L94,135 C103,108 105,72 94,44 C88,18 74,10 60,10 C46,10 32,18 26,44 Z" fill="url(#celHair_${uid})"/>`
           : st.id === 'seoyeon'
           ? `<path d="M29,44 C21,72 23,104 29,128 L91,128 C97,104 99,72 91,44 C85,18 73,11 60,11 C47,11 35,18 29,44 Z" fill="url(#celHair_${uid})"/>`
@@ -4674,17 +5532,25 @@
           ? `<path d="M31,48 L25,84 L35,81 L32,94 L88,94 L85,81 L95,84 L89,48 Z" fill="url(#celHair_${uid})"/>`
           : `<path d="M33,44 C30,62 34,78 38,86 L82,86 C86,78 90,62 87,44 Z" fill="url(#celHair_${uid})"/>`;
 
-        let outfit = isFemale
-          ? (st.id === 'jisu'
-              ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/><path d="M40,95 Q60,106 80,95" fill="none" stroke="#fdba74" stroke-width="2.6"/><circle cx="60" cy="100" r="1.8" fill="#fde047"/>`
-              : st.id === 'seoyeon'
-              ? `<path d="M18,136 C21,101 37,91 60,91 C83,91 99,101 102,136 Z" fill="#1e293b" stroke="#64748b" stroke-width="1"/><path d="M46,91 L60,118 L74,91 Z" fill="#fff1f2"/><circle cx="60" cy="123" r="2.2" fill="#fbbf24"/>`
-              : `<path d="M18,136 C21,102 37,92 60,92 C83,92 99,102 102,136 Z" fill="#fda4af"/><path d="M45,92 L60,117 L75,92 Z" fill="#fff1f2"/>`)
-          : (st.id === 'dohyun'
-              ? `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#1f2937"/><path d="M45,88 L60,136 L75,88 Z" fill="#09090b"/>`
-              : st.id === 'junwoo'
-              ? `<path d="M15,136 C18,98 35,89 60,89 C85,89 102,98 105,136 Z" fill="#1e3a8a"/><polygon points="47,89 60,109 73,89" fill="#f8fafc"/>`
-              : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#18181b"/><path d="M46,89 Q60,104 74,89" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="2.5 2"/>`);
+        const outfit = appState.isParisMode
+          ? (isFemale
+              ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#18181b" stroke="#fbbf24" stroke-width="1.1"/>
+                 <path d="M43,93 L60,114 L77,93 Z" fill="url(#celSkin_${uid})"/>
+                 <path d="M50,90 Q60,97 70,90" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-dasharray="1 2.5" stroke-linecap="round"/>`
+              : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#0f172a" stroke="#fbbf24" stroke-width="0.9"/>
+                 <polygon points="48,88 60,124 72,88" fill="#ffffff"/>
+                 <polygon points="55,93 65,93 62,98 58,98" fill="#991b1b"/>`)
+          : (isFemale
+              ? (st.id === 'jisu'
+                  ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/><path d="M40,95 Q60,106 80,95" fill="none" stroke="#fdba74" stroke-width="2.6"/>`
+                  : st.id === 'seoyeon'
+                  ? `<path d="M18,136 C21,101 37,91 60,91 C83,91 99,101 102,136 Z" fill="#1e293b" stroke="#64748b" stroke-width="1"/><path d="M46,91 L60,118 L74,91 Z" fill="#fff1f2"/>`
+                  : `<path d="M18,136 C21,102 37,92 60,92 C83,92 99,102 102,136 Z" fill="#fda4af"/><path d="M45,92 L60,117 L75,92 Z" fill="#fff1f2"/>`)
+              : (st.id === 'dohyun'
+                  ? `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#1f2937"/><path d="M45,88 L60,136 L75,88 Z" fill="#09090b"/>`
+                  : st.id === 'junwoo'
+                  ? `<path d="M15,136 C18,98 35,89 60,89 C85,89 102,98 105,136 Z" fill="#1e3a8a"/><polygon points="47,89 60,109 73,89" fill="#f8fafc"/>`
+                  : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#18181b"/><path d="M46,89 Q60,104 74,89" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="2.5 2"/>`));
 
         const jawPath = isFemale
           ? 'M37.5,43 C37,61 42.5,73 54.5,79.2 C58,81 62,81 65.5,79.2 C77.5,73 83,61 82.5,43 C82,24 72,18 60,18 C48,18 38,24 37.5,43 Z'
@@ -4752,42 +5618,139 @@
       const _origRenderDishes = renderAllDishesSVG;
       renderAllDishesSVG = function () {
         _origRenderDishes();
-        const sSlot = document.getElementById('dishSlot-kimchiSujebi');
-        const sHolder = document.getElementById('kimchiSujebiSvgHolder');
-        const sPill = document.getElementById('kimchiSujebiCountPill');
-        if (!sSlot || !sHolder || !sPill) return;
 
-        if (appState.kimchiSujebiOrdered) {
-          sSlot.classList.remove('hidden');
-          sHolder.innerHTML = `
-            <svg viewBox="0 0 156 114" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.7));">
-              <path d="M10,56 C2,56 2,70 10,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
-              <path d="M146,56 C154,56 154,70 146,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
-              <ellipse cx="78" cy="63" rx="66" ry="41" fill="#18181b" stroke="#52525b" stroke-width="2.5"/>
-              <ellipse cx="78" cy="61" rx="58" ry="34" fill="#7f1d1d"/>
-              ${appState.kimchiSujebiLeft > 0 ? `
-                <ellipse cx="78" cy="61" rx="56" ry="32" fill="url(#maraBrothGrad)"/>
-                <circle class="sujebi-bubble" cx="48" cy="52" r="2.8" fill="#fca5a5"/>
-                <circle class="sujebi-bubble" cx="106" cy="56" r="2.5" fill="#fed7aa"/>
-                <circle class="sujebi-bubble" cx="66" cy="76" r="3.0" fill="#fca5a5"/>
-                <path d="M36,58 Q50,50 60,60 Q48,68 36,63 Z" fill="#b91c1c" stroke="#f87171" stroke-width="0.8"/>
-                <path d="M84,44 Q98,46 102,56 Q90,59 82,51 Z" fill="#b91c1c" stroke="#fb923c" stroke-width="0.8"/>
-                <path d="M74,73 Q92,69 104,78 Q88,85 73,79 Z" fill="#991b1b" stroke="#f87171" stroke-width="0.8"/>
-                <path d="M50,48 C57,43 69,45 71,52 C72,58 61,62 53,59 C47,56 46,51 50,48 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.1"/>
-                <path d="M82,57 C90,53 104,57 103,65 C102,72 90,74 82,69 C77,65 76,60 82,57 Z" fill="#ffedd5" stroke="#fdba74" stroke-width="1.1"/>
-                <path d="M44,67 C52,63 65,65 66,72 C67,78 56,81 47,77 C41,75 40,70 44,67 Z" fill="#ffffff" stroke="#fed7aa" stroke-width="1.1"/>
-                <path d="M65,59 C71,56 80,58 81,64 C81,69 72,72 65,69 C61,66 61,61 65,59 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-                <ellipse cx="68" cy="54" rx="6" ry="2.5" transform="rotate(-22 68 54)" fill="#22c55e" stroke="#15803d" stroke-width="0.8"/>
-                <ellipse cx="88" cy="66" rx="6" ry="2.5" transform="rotate(18 88 66)" fill="#4ade80" stroke="#15803d" stroke-width="0.8"/>
-                <circle cx="76" cy="50" r="3" fill="#dc2626" stroke="#fef08a" stroke-width="0.9"/>
-                <path d="M54,34 Q48,20 56,10" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8" class="steam-wisp"/>
-                <path d="M78,31 Q84,17 76,8" fill="none" stroke="#fed7aa" stroke-width="2.4" opacity="0.82" class="steam-wisp"/>
-              ` : '<text x="78" y="64" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fde047">클릭 시 새 냄비 자동리필!</text>'}
-            </svg>
-          `;
-          sPill.textContent = appState.kimchiSujebiLeft > 0 ? `${appState.kimchiSujebiLeft}/6` : '자동리필';
-        } else {
-          sSlot.classList.add('hidden');
+        const sSlot = document.getElementById('dishSlot-kimchiSujebi');
+        if (sSlot) {
+          if (appState.kimchiSujebiOrdered) {
+            sSlot.classList.remove('hidden');
+            document.getElementById('kimchiSujebiSvgHolder').innerHTML = `
+              <svg viewBox="0 0 156 114" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.7));">
+                <path d="M10,56 C2,56 2,70 10,70 M146,56 C154,56 154,70 146,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+                <ellipse cx="78" cy="63" rx="66" ry="41" fill="#18181b" stroke="#52525b" stroke-width="2.5"/>
+                <ellipse cx="78" cy="61" rx="58" ry="34" fill="#7f1d1d"/>
+                ${appState.kimchiSujebiLeft > 0 ? `
+                  <ellipse cx="78" cy="61" rx="56" ry="32" fill="url(#maraBrothGrad)"/>
+                  <circle class="sujebi-bubble" cx="48" cy="52" r="2.8" fill="#fca5a5"/><circle class="sujebi-bubble" cx="106" cy="56" r="2.5" fill="#fed7aa"/>
+                  <path d="M36,58 Q50,50 60,60 Q48,68 36,63 Z" fill="#b91c1c" stroke="#f87171" stroke-width="0.8"/>
+                  <path d="M84,44 Q98,46 102,56 Q90,59 82,51 Z" fill="#b91c1c" stroke="#fb923c" stroke-width="0.8"/>
+                  <path d="M50,48 C57,43 69,45 71,52 C72,58 61,62 53,59 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.1"/>
+                  <path d="M82,57 C90,53 104,57 103,65 C102,72 90,74 82,69 Z" fill="#ffedd5" stroke="#fdba74" stroke-width="1.1"/>
+                  <path d="M44,67 C52,63 65,65 66,72 C67,78 56,81 47,77 Z" fill="#ffffff" stroke="#fed7aa" stroke-width="1.1"/>
+                  <ellipse cx="68" cy="54" rx="6" ry="2.5" transform="rotate(-22 68 54)" fill="#22c55e"/>
+                  <circle cx="76" cy="50" r="3" fill="#dc2626" stroke="#fef08a" stroke-width="0.9"/>
+                  <path d="M54,34 Q48,20 56,10 M78,31 Q84,17 76,8" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8" class="steam-wisp"/>
+                ` : '<text x="78" y="64" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fde047">클릭 시 새 냄비 자동리필!</text>'}
+              </svg>
+            `;
+            document.getElementById('kimchiSujebiCountPill').textContent = appState.kimchiSujebiLeft > 0 ? `${appState.kimchiSujebiLeft}/6` : '자동리필';
+          } else {
+            sSlot.classList.add('hidden');
+          }
+        }
+
+        const cSlot = document.getElementById('dishSlot-croissant');
+        if (cSlot) {
+          if (appState.croissantOrdered) {
+            cSlot.classList.remove('hidden');
+            const cCoords = [{ x: 52, y: 48, r: -14 }, { x: 96, y: 48, r: 14 }, { x: 74, y: 69, r: 0 }, { x: 52, y: 66, r: -8 }, { x: 96, y: 66, r: 10 }, { x: 74, y: 46, r: 3 }];
+            let cItems = '';
+            for (let i = 0; i < appState.croissantLeft; i++) {
+              const p = cCoords[i];
+              cItems += `
+                <g transform="translate(${p.x},${p.y}) rotate(${p.r})">
+                  <path d="M-21,6 C-18,-10 -6,-14 0,-14 C6,-14 18,-10 21,6 C15,10 9,4 0,4 C-9,4 -15,10 -21,6 Z" fill="#d97706" stroke="#fef08a" stroke-width="1"/>
+                  <ellipse cx="0" cy="-5" rx="11" ry="6.5" fill="#f59e0b"/>
+                  <path d="M-9,-8 Q0,-12 9,-8 M-6,-2 Q0,-5 6,-2" fill="none" stroke="#fef3c7" stroke-width="1.1" opacity="0.85"/>
+                </g>
+              `;
+            }
+            document.getElementById('croissantSvgHolder').innerHTML = `
+              <svg viewBox="0 0 152 112" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.55));">
+                <ellipse cx="76" cy="58" rx="68" ry="42" fill="#ffffff" stroke="#fbbf24" stroke-width="2.6"/>
+                <ellipse cx="76" cy="58" rx="59" ry="35" fill="#fffbeb" stroke="#fde68a" stroke-width="1.2"/>
+                <circle cx="28" cy="56" r="9" fill="#fef9c3" stroke="#eab308" stroke-width="1"/><rect x="24" y="52" width="8" height="6" rx="1.5" fill="#fde047"/>
+                <circle cx="124" cy="56" r="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><circle cx="124" cy="56" r="6" fill="#9f1239"/>
+                ${cItems || '<text x="76" y="62" text-anchor="middle" font-size="10.5" font-weight="900" fill="#b45309">클릭 시 크루아상 리필!</text>'}
+              </svg>
+            `;
+            document.getElementById('croissantCountPill').textContent = appState.croissantLeft > 0 ? `${appState.croissantLeft}/6` : '자동리필';
+          } else {
+            cSlot.classList.add('hidden');
+          }
+        }
+
+        const chSlot = document.getElementById('dishSlot-cheesePlatter');
+        if (chSlot) {
+          if (appState.cheesePlatterOrdered) {
+            chSlot.classList.remove('hidden');
+            document.getElementById('cheesePlatterSvgHolder').innerHTML = `
+              <svg viewBox="0 0 156 112" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.62));">
+                <rect x="12" y="18" width="132" height="76" rx="16" fill="#292524" stroke="#d97706" stroke-width="2.2"/>
+                <rect x="18" y="24" width="120" height="64" rx="12" fill="#1c1917" stroke="rgba(251,191,36,0.3)" stroke-width="1"/>
+                ${appState.cheesePlatterLeft > 0 ? `
+                  <circle cx="48" cy="48" r="17" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5"/>
+                  <path d="M48,48 L65,48 A17,17 0 0,1 55,63 Z" fill="#fef08a"/>
+                  <polygon points="74,34 108,42 96,64 70,56" fill="#facc15" stroke="#ca8a04" stroke-width="1.2"/>
+                  <circle cx="84" cy="46" r="2.6" fill="#a16207"/><circle cx="95" cy="50" r="2.2" fill="#a16207"/><circle cx="88" cy="56" r="1.9" fill="#a16207"/>
+                  <rect x="40" y="68" width="16" height="12" rx="2" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.9"/>
+                  <circle cx="45" cy="73" r="1.2" fill="#3b82f6"/><circle cx="51" cy="76" r="1.2" fill="#1d4ed8"/>
+                  <circle cx="116" cy="46" r="9.5" fill="#4c1d95" stroke="#a855f7" stroke-width="1"/><circle cx="116" cy="46" r="6" fill="#e11d48"/>
+                  <circle cx="108" cy="68" r="4.5" fill="#7e22ce"/><circle cx="115" cy="66" r="4.5" fill="#6b21a8"/><circle cx="121" cy="70" r="4.5" fill="#7e22ce"/>
+                  <circle cx="76" cy="73" r="7.5" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/><circle cx="76" cy="73" r="5" fill="#d97706"/>
+                ` : '<text x="78" y="60" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fde68a">클릭 시 치즈 플래터 리필!</text>'}
+              </svg>
+            `;
+            document.getElementById('cheesePlatterCountPill').textContent = appState.cheesePlatterLeft > 0 ? `${appState.cheesePlatterLeft}/8` : '자동리필';
+          } else {
+            chSlot.classList.add('hidden');
+          }
+        }
+
+        const wSlot = document.getElementById('dishSlot-redWine');
+        if (wSlot) {
+          if (appState.redWineOrdered) {
+            wSlot.classList.remove('hidden');
+            document.getElementById('redWineSvgHolder').innerHTML = `
+              <svg viewBox="0 0 124 122" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.65));">
+                <rect x="33" y="8" width="12" height="14" rx="2" fill="#991b1b"/>
+                <path d="M34,22 L34,34 L23,46 L23,104 Q23,109 29,109 L49,109 Q55,109 55,104 L55,46 L44,34 L44,22 Z" fill="#1c0a13" stroke="#9f1239" stroke-width="1.1"/>
+                <rect x="25" y="58" width="28" height="28" rx="2" fill="#fffbeb" stroke="#d97706" stroke-width="1"/>
+                <text x="39" y="72" text-anchor="middle" font-size="6.2" font-weight="900" fill="#451a03">BORDEAUX</text>
+                <path d="M72,50 C72,72 104,72 104,50 L101,34 L75,34 Z" fill="rgba(255,255,255,0.22)" stroke="#f8fafc" stroke-width="1.4"/>
+                ${appState.redWineLeft > 0 ? `<path d="M73.5,50 C74,69 102,69 102.5,50 Z" fill="#9f1239"/>` : ''}
+                <line x1="88" y1="67" x2="88" y2="104" stroke="#e2e8f0" stroke-width="2"/>
+                <ellipse cx="88" cy="105" rx="13" ry="3.5" fill="rgba(255,255,255,0.45)" stroke="#e2e8f0" stroke-width="1.2"/>
+              </svg>
+            `;
+            document.getElementById('redWineCountPill').textContent = appState.redWineLeft > 0 ? `${appState.redWineLeft}/6잔` : '자동리필';
+          } else {
+            wSlot.classList.add('hidden');
+          }
+        }
+
+        const cpSlot = document.getElementById('dishSlot-champagne');
+        if (cpSlot) {
+          if (appState.champagneOrdered) {
+            cpSlot.classList.remove('hidden');
+            document.getElementById('champagneSvgHolder').innerHTML = `
+              <svg viewBox="0 0 126 122" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.65));">
+                <path d="M35,10 L43,10 L45,32 L56,50 L56,104 Q56,109 50,109 L28,109 Q22,109 22,104 L22,50 L33,32 Z" fill="#14261c" stroke="#fbbf24" stroke-width="1.2"/>
+                <path d="M35,10 L43,10 L45,32 L33,32 Z" fill="#eab308"/>
+                <polygon points="30,64 48,64 46,84 39,89 32,84" fill="#18181b" stroke="#fbbf24" stroke-width="1.2"/>
+                <text x="39" y="77" text-anchor="middle" font-size="6.5" font-weight="900" fill="#fde047">★</text>
+                <polygon points="79,32 99,32 95,72 83,72" fill="rgba(255,255,255,0.24)" stroke="#fef9c3" stroke-width="1.4"/>
+                ${appState.champagneLeft > 0 ? `
+                  <polygon points="80.5,42 97.5,42 94.5,70.5 83.5,70.5" fill="#fde047" opacity="0.88"/>
+                  <circle cx="87" cy="62" r="1.1" fill="#ffffff"/><circle cx="91" cy="54" r="1.2" fill="#ffffff"/>
+                ` : ''}
+                <line x1="89" y1="72" x2="89" y2="104" stroke="#fef08a" stroke-width="2"/>
+                <ellipse cx="89" cy="105" rx="12" ry="3.2" fill="rgba(254,240,138,0.45)" stroke="#fef08a" stroke-width="1.2"/>
+              </svg>
+            `;
+            document.getElementById('champagneCountPill').textContent = appState.champagneLeft > 0 ? `${appState.champagneLeft}/6잔` : '자동리필';
+          } else {
+            cpSlot.classList.add('hidden');
+          }
         }
       };
 
@@ -4796,7 +5759,6 @@
         const others = Object.entries(appState.remotePlayers)
           .filter(([cid]) => cid !== myClientId && !appState.kickedClientIds.has(cid))
           .map(([cid, prof]) => ({ cid, name: prof.name, shortName: prof.name, style: prof.style, isAI: false }));
-
         const seats = [null, null, null];
         for (let i = 0; i < 3; i++) {
           if (others[i]) seats[i] = others[i];
@@ -4821,8 +5783,7 @@
         playBiteChewSfx();
 
         if (target.isHuntedGuest) {
-          appState._huntedSeatGuest = null;
-          appState.kickedSeats[seatIdx] = true;
+          appState._huntedSeatGuest = null; appState.kickedSeats[seatIdx] = true;
         } else if (!target.isAI && target.cid) {
           appState.kickedClientIds.add(target.cid);
           delete appState.remotePlayers[target.cid];
@@ -4834,7 +5795,7 @@
 
         const bubble = document.getElementById(`seatBubble-${seatIdx + 1}`);
         if (bubble) bubble.classList.add('hidden');
-        showToastMsg(`🚪 [${targetName}]님을 테이블에서 강퇴(내보내기)했습니다!`);
+        showToastMsg(`🚪 [${targetName}]님을 테이블에서 강퇴했습니다!`);
         appendLocalChat('시스템', `🚪 [${targetName}]님이 강퇴되어 자리를 비웠습니다.`, 'system');
         updateRestoreButtonVisibility();
         renderAllVisuals();
@@ -4857,15 +5818,16 @@
         if (msg && msg.senderCid && appState.kickedClientIds.has(msg.senderCid)) return;
         if (msg && msg.type === 'KICK_PLAYER') {
           if (msg.targetCid === myClientId) {
-            destroyPeerSession();
-            appState.mode = 'ai';
+            destroyPeerSession(); appState.mode = 'ai';
             showToastMsg(`🚨 [${msg.kicker}]님에 의해 강퇴되어 개인 테이블로 전환되었습니다.`);
             renderAllVisuals();
           } else if (msg.targetCid && appState.remotePlayers[msg.targetCid]) {
-            delete appState.remotePlayers[msg.targetCid];
-            updateLivePeerBadge();
-            renderAllVisuals();
+            delete appState.remotePlayers[msg.targetCid]; updateLivePeerBadge(); renderAllVisuals();
           }
+          return;
+        }
+        if (msg && msg.type === 'GO_PARIS_3RD') {
+          window.transitionToParisThirdRound(true);
           return;
         }
         _origHandleRoomMsg(msg);
@@ -4874,6 +5836,15 @@
       const _prevRenderVisuals = renderAllVisuals;
       renderAllVisuals = function () {
         _prevRenderVisuals();
+        if (appState.inRestroom) {
+          const mySlot = document.getElementById('myPortraitContainer');
+          if (mySlot) mySlot.style.opacity = '0.15';
+          document.getElementById('mySeatStatusPrefix').textContent = '🚻 화장실 이용중 · ';
+        }
+        if (appState.isParisMode) {
+          document.getElementById('bottleTotalBadge').textContent = `🍷와인${appState.billQty.redWine || 0} · 🥂샴페인${appState.billQty.champagne || 0}`;
+        }
+
         const seats = getSeatedCompanions();
         seats.forEach((person, idx) => {
           const seatNum = idx + 1;
@@ -4903,22 +5874,18 @@
         const btn = document.getElementById('hapseokMasterBtn');
         const podL = document.getElementById('neighborPod-left');
         const podR = document.getElementById('neighborPod-right');
-
         if (appState.hapseokEnabled) {
-          btn.textContent = '🪑 합석 ON';
-          btn.className = 'top-pill top-pill-toggle-on';
+          btn.textContent = '🪑 합석 ON'; btn.className = 'top-pill top-pill-toggle-on';
           if (podL) podL.classList.remove('neighbor-disabled');
           if (podR) podR.classList.remove('neighbor-disabled');
-          showToastMsg('🪑 합석 기능 ON! 옆테이블 원정 및 주변 헌팅이 허용됩니다.');
+          showToastMsg('🪑 합석 기능 ON!');
         } else {
-          btn.textContent = '🔒 합석 OFF';
-          btn.className = 'top-pill top-pill-toggle-off';
+          btn.textContent = '🔒 합석 OFF'; btn.className = 'top-pill top-pill-toggle-off';
           if (podL) podL.classList.add('neighbor-disabled');
           if (podR) podR.classList.add('neighbor-disabled');
           appState.activeHuntingCandidate = null;
           document.getElementById('huntingApproachCard').classList.add('hidden');
-          appState.visitingSide = null;
-          appState._huntedSeatGuest = null;
+          appState.visitingSide = null; appState._huntedSeatGuest = null;
           showToastMsg('🔒 합석 기능 OFF! 프라이빗 모드로 전환되었습니다.');
         }
         renderAllVisuals();
@@ -4932,36 +5899,33 @@
         }
         _origVisitNeighbor(side);
       };
-
       const _origTriggerHunt = window.triggerHuntApproachEvent;
       window.triggerHuntApproachEvent = function () {
-        if (!appState.hapseokEnabled) return;
+        if (!appState.hapseokEnabled || appState.inRestroom) return;
         _origTriggerHunt();
       };
 
-      // ==================== [요청 3] 나처럼 대화가 잘 통하는 심층 AI 대화 엔진 ====================
+      // ==================== 심층 AI 대화 엔진 ====================
       const PERSONA_PROFILES = {
-        '서연': { role: '센스 있고 눈치 빠른 단짝 친구. 상대의 말 행간을 읽고 다정하게 짚어주며 대화를 자연스럽게 이끌어감' },
-        '도현': { role: '차분하고 깊이 있는 술메이트. 현실적인 조언과 묵직한 위로, 진솔한 인생 얘기를 잘 들어주는 스타일' },
-        '지수': { role: '따뜻하고 공감 능력이 뛰어난 분위기 메이커. 감정에 깊이 이입해주고 기분 전환을 도와주는 스타일' },
-        '준우': { role: '예의 바르고 호기심 많은 대화 상대. 상대의 생각과 취향을 진지하게 궁금해하며 질문을 잘 던짐' },
-        '하윤': { role: '솔직하고 밝은 에너지를 가진 감성파. 설레는 이야기나 일상 속 작은 행복을 잘 캐치함' },
-        '민재': { role: '쿨해 보이지만 속이 깊고 츤데레 같은 스타일. 핵심을 찌르는 통찰력 있는 한마디를 건넴' }
+        '서연': { role: '센스 있고 눈치 빠른 단짝 친구. 상대의 말 행간을 읽고 다정하게 대화를 이끌어감' },
+        '도현': { role: '차분하고 깊이 있는 술메이트. 현실적인 조언과 묵직한 위로를 잘 건네는 스타일' },
+        '지수': { role: '따뜻하고 공감 능력이 뛰어난 분위기 메이커' },
+        '준우': { role: '예의 바르고 호기심 많은 대화 상대' },
+        '하윤': { role: '솔직하고 밝은 에너지를 가진 감성파' },
+        '민재': { role: '쿨해 보이지만 속이 깊고 핵심을 짚는 스타일' }
       };
 
       window.toggleAiChatMaster = function () {
         appState.aiChatEnabled = !appState.aiChatEnabled;
         const btn = document.getElementById('aiChatMasterBtn');
         if (appState.aiChatEnabled) {
-          btn.textContent = '🤖 AI대화 ON';
-          btn.className = 'top-pill top-pill-ai-on';
-          showToastMsg('🤖 AI 대화 ON! 멤버들이 맥락을 기억하며 깊이 있게 대화합니다.');
+          btn.textContent = '🤖 AI대화 ON'; btn.className = 'top-pill top-pill-ai-on';
+          showToastMsg('🤖 AI 대화 ON!');
         } else {
-          btn.textContent = '🔇 AI대화 OFF';
-          btn.className = 'top-pill top-pill-toggle-off';
+          btn.textContent = '🔇 AI대화 OFF'; btn.className = 'top-pill top-pill-toggle-off';
           const ind = document.getElementById('v5AiTypingRow');
           if (ind) ind.remove();
-          showToastMsg('🔇 AI 대화 OFF! AI 자동 응답이 중지되었습니다.');
+          showToastMsg('🔇 AI 대화 OFF!');
         }
       };
 
@@ -4971,155 +5935,59 @@
         _origCompanionReaction(lines);
       };
 
-      // 중복 없는 대사 선택 헬퍼
       function pickFreshLine(candidates) {
         const unused = candidates.filter(c => !appState.deepMemory.usedResponses.has(c));
         const pool = unused.length > 0 ? unused : candidates;
         const chosen = pool[Math.floor(Math.random() * pool.length)];
         appState.deepMemory.usedResponses.add(chosen);
-        if (appState.deepMemory.usedResponses.size > 40) {
-          appState.deepMemory.usedResponses.clear();
-        }
+        if (appState.deepMemory.usedResponses.size > 40) appState.deepMemory.usedResponses.clear();
         return chosen;
       }
 
-      // API 키가 없을 때도 사용자의 말을 인용하고 감정·맥락·이전 주제를 이어가는 고도화 심층 응답 생성기
       function buildDeepContextualFallback(userText, aiSeats) {
         const msg = userText.trim();
-        const mem = appState.deepMemory;
-        mem.turnCount += 1;
-
-        // 특정 캐릭터 이름을 불렀는지 감지 (예: "도현아 너 생각은 어때?")
         let primary = aiSeats.find(s => msg.includes(s.p.shortName)) || aiSeats[Math.floor(Math.random() * aiSeats.length)];
         const others = aiSeats.filter(s => s.seat !== primary.seat);
         const secondary = others.length > 0 && (msg.length >= 14 || Math.random() < 0.55) ? others[Math.floor(Math.random() * others.length)] : null;
 
-        // 핵심 키워드 추출 (사용자 문장에서 의미 있는 어절 포착)
         const cleanWords = msg.replace(/[?!.,~ㅋㅎㅠㅜ]/g, ' ').split(/\s+/).filter(w => w.length >= 2);
         const keyPhrase = cleanWords.length > 0 ? cleanWords[Math.min(cleanWords.length - 1, Math.floor(cleanWords.length / 2))] : '';
+        let r1 = '', r2 = '';
 
-        let r1 = '';
-        let r2 = '';
-        let detectedTopic = mem.lastTopic || 'daily';
-
-        // 1. 깊은 고민 / 우울 / 지침 / 번아웃 / 인간관계 피로
-        if (/(힘들|지치|지쳐|우울|불안|막막|고민|번아웃|외로|공허|포기|눈물|속상|스트레스|괴로|답답|후회|자존감)/.test(msg)) {
-          detectedTopic = 'worry';
-          mem.userMood = 'comfort';
+        if (/(에펠탑|크루아상|크라상|치즈|와인|샴페인|프랑스|고급|분위기)/.test(msg) && appState.isParisMode) {
           r1 = pickFreshLine([
-            `그랬구나... 사실 어디 가서 쉽게 꺼내기 힘든 얘기였을 텐데 우리한테 말해줘서 고마워. 요즘 혼자 속으로 얼마나 많이 삼켰어?`,
-            `듣기만 해도 마음이 좀 먹먹하다. ${appState.myName} 네가 그동안 대충 한 게 아니라 너무 잘해보려고 애쓰다 보니까 더 지친 거잖아. 오늘은 좀 내려놔도 돼.`,
-            `사람이 어떻게 맨날 괜찮기만 하겠어. 지금 그렇게 답답하고 흔들리는 것도 네가 진심으로 고민하고 있다는 증거야. 구체적으로 어떤 부분이 제일 마음을 무겁게 해?`,
-            `야, 남들은 결과만 보고 쉽게 말해도 난 네가 얼마나 버텨왔는지 알지. 오늘 밤바다 보면서 마음에 쌓인 거 다 털어놔 봐. 내가 끝까지 들어줄게.`
+            `에펠탑 불빛이 반짝이는 파리 루프탑에서 보르도 와인에 브리 치즈랑 크루아상을 곁들이니까 진짜 꿈꾸는 기분이야... 오늘 3차 오자고 한 ${appState.myName} 센스 최고다 🥂✨`,
+            `포장마차 소맥도 정겹고 좋았지만, 이렇게 우아한 파리 야경 앞에서 마주 앉으니까 평소 못 하던 깊은 속마음까지 다 꺼내게 되네 ㅎㅎ`
           ]);
-          if (secondary) {
-            r2 = pickFreshLine([
-              `맞아, 해결책을 당장 안 찾아도 괜찮으니까 그냥 편하게 다 쏟아내. 우리 편은 무조건 ${appState.myName} 너니까.`,
-              `묵묵히 버틴 것만으로도 이미 충분히 잘하고 있어. 따뜻한 김치수제비 국물 한 숟가락 먼저 떠먹고 천천히 더 얘기해줘.`
-            ]);
-          }
-        }
-        // 2. 직장 / 진로 / 돈 / 미래 / 꿈 / 목표에 대한 진지한 이야기
-        else if (/(미래|진로|이직|퇴사|회사|일자리|돈|성공|꿈|목표|인생|살아가|나이|어른|방향|선택)/.test(msg)) {
-          detectedTopic = 'life_path';
+        } else if (/(힘들|지치|지쳐|우울|불안|막막|고민|번아웃|외로|공허|포기|눈물|속상|스트레스|괴로|답답|후회)/.test(msg)) {
           r1 = pickFreshLine([
-            `나도 요즘 밤마다 딱 그 생각 많이 해. 남들 속도에 맞추려다 보면 정작 내가 뭘 원하는지 자꾸 놓치게 되잖아. ${appState.myName} 넌 지금 제일 지키고 싶은 기준이 뭐야?`,
-            `어른이 된다는 게 정답을 아는 게 아니라, 모른 채로도 내 선택을 믿어주는 거라더라. 네가 요즘 고민하는 그 방향, 난 꽤 멋지다고 생각해.`,
-            `현실적인 문제랑 내가 진짜 하고 싶은 일 사이에서 균형 잡는 게 제일 어렵지. 만약 당장 눈치 볼 거 하나도 없다면 넌 제일 먼저 뭘 해보고 싶어?`,
-            `술자리에서 이런 깊은 인생 얘기 나눌 때가 제일 좋더라. 조급해하지 마, 지금 이렇게 치열하게 고민하는 시간 자체가 이미 앞으로 나아가고 있는 거니까.`
+            `그랬구나... 쉽게 꺼내기 힘든 얘기였을 텐데 우리한테 솔직하게 털어놔 줘서 고마워. 그동안 혼자 속으로 얼마나 많이 삼켰어?`,
+            `듣기만 해도 마음이 먹먹하다. ${appState.myName} 네가 대충 살아서가 아니라, 너무 잘해보려고 애쓰다 보니까 더 지친 거잖아. 오늘 밤만큼은 짐 좀 내려놔도 돼.`
           ]);
-          if (secondary) {
-            r2 = pickFreshLine([
-              `인정. 1년 뒤의 우리가 오늘 이 밤바다 포차 대화를 떠올리면 꽤 웃으면서 추억할걸? 네 선택을 믿어봐!`,
-              `난 ${appState.myName} 네가 결국 네 색깔대로 잘 해낼 사람이라는 거 확신해. 내가 옆에서 계속 응원할게.`
-            ]);
-          }
-        }
-        // 3. 사랑 / 연애 / 이별 / 썸 / 사람 마음
-        else if (/(연애|사랑|이별|전남친|전여친|짝사랑|썸|결혼|호감|설레|마음|연락|좋아하|그리워|미련)/.test(msg)) {
-          detectedTopic = 'romance';
+          if (secondary) r2 = `당장 정답 안 찾아도 괜찮으니까 편하게 다 말해줘. 우린 무조건 ${appState.myName} 네 편이니까.`;
+        } else if (/(미래|진로|이직|퇴사|회사|일자리|돈|성공|꿈|목표|인생|살아가|나이|어른|방향|선택)/.test(msg)) {
           r1 = pickFreshLine([
-            `사람 마음이라는 게 참 내 뜻대로 안 돼서 더 애틋하고 어려운 것 같아. 네 얘기 듣는데 왜 내 심장이 다 간질간질하냐... 그래서 지금 네 솔직한 마음은 몇 퍼센트쯤 기울었어?`,
-            `밤바다 앞에서 연애 얘기라니 분위기 제대로네ㅎㅎ 사실 머리로는 계산해도 마음은 이미 답을 알고 있을 때가 많잖아. 가장 먼저 떠오르는 장면이나 감정이 뭐야?`,
-            `누군가를 진심으로 좋아해 본 사람만이 할 수 있는 고민이네. 상처받을까 봐 아끼는 것보다, 후회 안 남게 네 감정에 솔직해져 보는 건 어때?`
+            `나도 요즘 밤마다 딱 그 생각 많이 해. 남들 속도에 맞추려다 보면 정작 내가 뭘 원하는지 놓치기 쉽잖아. ${appState.myName} 넌 지금 제일 지키고 싶은 게 뭐야?`,
+            `어른이 된다는 게 모든 답을 아는 게 아니라, 불안한 채로도 내 선택을 믿어주는 거라더라. 네가 고민하는 그 방향, 난 진심으로 응원해.`
           ]);
-          if (secondary) {
-            r2 = pickFreshLine([
-              `와 오늘 완전 심야 라디오 감성이다... 더 자세히 썰 풀어줘, 그 사람이 어떤 포인트에서 제일 생각나?`,
-              `어떤 결론이 나든 네 마음이 다치지 않는 게 제일 중요해. 그래도 난 네 사랑이 꼭 잘 풀렸으면 좋겠다!`
-            ]);
-          }
-        }
-        // 4. 나(AI)나 캐릭터들의 속마음·생각을 직접 물어볼 때 ("너는 어때?", "어떻게 생각해?", "왜?")
-        else if (/(너는|넌 어때|생각해|생각은|어때\?|어떻게 봐|의견|솔직히 말해|궁금해|왜 그렇게)/.test(msg)) {
+        } else {
           r1 = pickFreshLine([
-            `솔직한 내 생각을 말하자면, 난 방금 네가 말한 "${keyPhrase || '그 부분'}"에 진짜 공감해. 겉으로만 보는 거랑 직접 겪는 온도는 완전히 다르잖아. 넌 그걸 겪으면서 어떤 기분이 제일 컸어?`,
-            `음, 곰곰이 생각해봤는데 난 정답이 꼭 하나일 필요는 없다고 봐. 네 마음이 편해지는 쪽이 결국 맞는 길이 아닐까? 혹시 네 안에서는 이미 정해둔 답이 살짝 있지 않아?`,
-            `난 오늘 너랑 이렇게 마주 앉아서 속 깊은 얘기 나누는 이 순간 자체가 참 좋아. 가벼운 농담도 재밌지만, 너처럼 대화가 통하는 사람이랑 얘기할 때 진짜 위로받는 기분이 들거든.`
+            `"${keyPhrase || msg}" 얘기 듣다 보니까 새삼 느끼는 건데, 너랑은 어떤 주제를 꺼내도 대화가 깊고 자연스럽게 이어져서 참 좋아. 거기서 네가 제일 인상 깊었던 건 뭐야?`,
+            `오, 난 그 각도로는 미처 생각 못 해봤는데 네 말 듣고 보니까 진짜 공감된다! 원래 사람이나 상황을 그렇게 섬세하게 잘 읽는 편이야?`,
+            `너랑 대화하면 진짜 시간 가는 줄 모르겠어ㅎㅎ 말도 잘 통하고 결이 맞아서 술이 달게 느껴질 정도야. 좀 더 자세히 들려줘 봐!`
           ]);
-          if (secondary) {
-            r2 = pickFreshLine([
-              `나도 ${primary.p.shortName} 말이랑 비슷해! 무엇보다 네가 그 주제를 깊이 있게 바라보는 시선이 참 좋다.`,
-              `맞아, 나도 가끔 혼자 속으로만 생각하던 건데 네가 딱 짚어줘서 대화할 맛 난다 ㅎㅎ`
-            ]);
-          }
-        }
-        // 5. 안주 / 술 / 포차 분위기 이야기
-        else if (/(수제비|김치|마라탕|방어|소맥|소주|맥주|안주|국물|맛있|배고|한잔|짠)/.test(msg)) {
-          detectedTopic = 'pocha_food';
-          r1 = pickFreshLine([
-            `진짜 광안리 파도 소리 들으면서 뜨끈한 얼큰 김치수제비에 소맥 한 잔 걸치니까 세상 부러울 게 없다ㅋㅋ 오늘 안주 조합 솔직히 백 점 만점이지?`,
-            `좋은 술자리는 안주 맛 반, 같이 마시는 사람 반이라는데 오늘은 둘 다 완벽하네! 다 비운 접시는 그냥 한번 톡 누르면 사장님이 바로 리필해주신대 ㅎㅎ`,
-            `얼큰한 국물 들어가니까 속이 확 풀리면서 진솔한 얘기가 더 잘 나오는 것 같아. 자, 기분 좋게 잔 한번 부딪힐까? 🍻`
-          ]);
-        }
-        // 6. 직전 대화의 연장선 (짧은 대답이나 부연 설명일 때도 맥락을 놓치지 않고 이어감!)
-        else if (mem.lastTopic === 'worry' || mem.userMood === 'comfort') {
-          mem.userMood = 'normal'; // 한 템포 깊게 받아준 뒤 자연스럽게 전환
-          r1 = pickFreshLine([
-            `아, 그런 사정이 있었구나... 이제야 네가 왜 그렇게 말했는지 완전히 이해됐어. 혼자 끙끙 앓지 말고 앞으로도 답답할 땐 언제든 이렇게 불러내, 알았지?`,
-            `그 말 들으니까 네 마음이 훨씬 잘 느껴진다. 다 쏟아내고 나니까 속은 조금이라도 한결 나아졌어?`
-          ]);
-        }
-        // 7. 일상·취향·자유 주제 티키타카 (사용자의 단어를 자연스럽게 되받아치며 대화를 확장)
-        else {
-          r1 = pickFreshLine([
-            `"${keyPhrase || msg}" 얘기 나오니까 갑자기 생각난 건데, 너랑은 사소한 주제를 던져도 대화가 깊어져서 참 좋아. 거기서 네가 제일 재밌거나 인상 깊었던 게 뭐야?`,
-            `오, 난 그 관점으로는 미처 생각 못 해봤는데 네 말 듣고 보니까 진짜 일리 있다! 원래 그렇게 사람이나 상황을 섬세하게 잘 보는 편이야?`,
-            `맞아, 살다 보면 그런 순간들이 은근히 오래 기억에 남더라ㅎㅎ 좀 더 얘기해줘 봐, 듣다 보니까 네 이야기가 진짜 궁금해진다!`,
-            `너랑 대화하면 시간 가는 줄 모르겠어. 말도 잘 통하고 티키타카가 딱 맞아서 술이 달게 느껴질 정도야ㅋㅋ 요즘 네 머릿속을 제일 많이 차지하는 관심사는 뭐야?`
-          ]);
-          if (secondary) {
-            r2 = pickFreshLine([
-              `옆에서 듣고 있는데 두 사람 대화 결이 진짜 잘 맞는다ㅋㅋ 나도 끼어서 계속 듣고 싶어, 더 썰 풀어줘!`,
-              `인정ㅎㅎ 오늘 이 테이블 분위기 너무 따뜻하고 좋다. 이런 게 진짜 밤바다 포차 낭만이지!`
-            ]);
-          }
+          if (secondary) r2 = appState.isParisMode
+            ? `파리 밤하늘 아래서 두 사람 얘기 듣고 있으니까 영화 한 장면 같다ㅎㅎ 계속 얘기해줘!`
+            : `인정ㅎㅎ 오늘 우리 테이블 대화 온도 너무 따뜻하고 좋다!`;
         }
 
-        mem.lastTopic = detectedTopic;
         const out = [{ seat: primary.seat, name: primary.p.shortName, text: r1 }];
         if (secondary && r2) out.push({ seat: secondary.seat, name: secondary.p.shortName, text: r2 });
         return out;
       }
 
-      // Gemini LLM 직결 호출 + 심층 내장 엔진 하이브리드 대화 시스템
       async function requestDeepPochaConversation(userText) {
         if (!appState.aiChatEnabled) return;
-
-        // 옆테이블 원정 합석 중일 때
-        if (appState.visitingSide) {
-          const info = NEIGHBOR_TABLES_INFO[appState.visitingSide];
-          const host = info.patrons[Math.floor(Math.random() * info.patrons.length)];
-          setTimeout(() => {
-            if (!appState.aiChatEnabled) return;
-            const nReply = `와 ${appState.myName}님이랑 얘기해보니까 대화가 너무 잘 통해서 시간 순삭이네요! 처음 뵌 것 같지가 않아요ㅎㅎ 한 잔 더 짠해요! 🍻`;
-            showNeighborBubble(appState.visitingSide, nReply);
-            appendLocalChat(`${host.name}(옆테이블)`, nReply, 'other');
-          }, 550);
-          return;
-        }
-
         const aiSeats = getSeatedCompanions()
           .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
           .filter(Boolean);
@@ -5128,14 +5996,13 @@
         appState.deepMemory.history.push({ role: 'user', speaker: appState.myName, text: userText });
         if (appState.deepMemory.history.length > 14) appState.deepMemory.history.shift();
 
-        // 입력 중 인디케이터 표시
         const feed = document.getElementById('chatFeed');
         let typingEl = document.getElementById('v5AiTypingRow');
         if (!typingEl && feed) {
           typingEl = document.createElement('div');
           typingEl.id = 'v5AiTypingRow';
           typingEl.className = 'ai-typing-indicator';
-          typingEl.textContent = `💭 ${aiSeats.map(s => s.p.shortName).join('·')}님이 진심을 담아 대답을 생각하는 중...`;
+          typingEl.textContent = `💭 ${aiSeats.map(s => s.p.shortName).join('·')}님이 진심을 담아 대답하는 중...`;
           feed.appendChild(typingEl);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -5143,60 +6010,36 @@
         let finalReplies = null;
         const activeKey = (appState.geminiApiKey || '').trim();
 
-        // 1순위: Gemini API 키가 있거나 환경에서 지원될 경우 실제 LLM으로 깊이 있는 다중 턴 대화 수행
         if (activeKey) {
           try {
-            const seatInfo = aiSeats.map(s => {
-              const prof = PERSONA_PROFILES[s.p.shortName]?.role || '다정하고 대화가 잘 통하는 단짝 친구';
-              return `- seat: ${s.seat}, name: "${s.p.shortName}", 성격: ${prof}`;
-            }).join('\n');
-
-            const historyTranscript = appState.deepMemory.history
-              .map(h => `${h.speaker}: ${h.text}`)
-              .join('\n');
-
-            const systemPrompt = `당신은 부산 광안리 밤바다 포장마차에서 사용자("${appState.myName}")와 마주 앉아 술잔을 기울이는 찐친/호감 있는 캐릭터들입니다.
-현재 테이블 상태: 취기 ${appState.drunkPct}%, 안주(얼큰 김치수제비, 대방어회, 소맥 등).
-착석 중인 캐릭터들:
-${seatInfo}
-
-[대화 원칙 - 매우 중요]
-1. 기계적이거나 뻔한 AI 말투를 절대 쓰지 말고, 정말 대화가 잘 통하고 속이 깊은 사람 친구처럼 사용자의 감정·맥락·숨은 의도를 정확히 짚어 반응하세요.
-2. 사용자가 진지한 고민, 인생, 철학, 일상, 감정을 이야기하면 깊이 공감하고 통찰력 있는 생각이나 자연스러운 꼬리질문을 건네 대화가 계속 이어지게 하세요.
-3. 가벼운 농담이나 술자리 장난에는 재치 있고 유쾌한 티키타카로 받아치세요.
-4. 착석 캐릭터 중 1명(깊은 대화 시 1~2명)이 응답하며, 각 대사는 한국어 구어체(친근한 반말 또는 다정한 말투, 사용자의 어조에 맞춤)로 1~3문장(60~150자 내외)으로 풍부하고 자연스럽게 작성하세요.
-5. 반드시 순수 JSON 배열만 출력하세요: [{"seat": 좌석번호숫자, "name": "캐릭터이름", "text": "대사"}]`;
+            const seatInfo = aiSeats.map(s => `- seat: ${s.seat}, name: "${s.p.shortName}", 성격: ${PERSONA_PROFILES[s.p.shortName]?.role || '다정한 단짝'}`).join('\n');
+            const historyTranscript = appState.deepMemory.history.map(h => `${h.speaker}: ${h.text}`).join('\n');
+            const venueContext = appState.isParisMode
+              ? `현재 장소는 3차로 이동한 '프랑스 파리 에펠탑 루프탑 와인 살롱'입니다. 화이트 대리석 골드 테이블에 크루아상, 치즈 플래터, 보르도 레드와인과 샴페인이 세팅되어 있습니다.`
+              : `현재 장소는 부산 광안리 밤바다 포장마차입니다. 테이블에 얼큰 김치수제비, 대방어회, 소맥 등이 놓여 있습니다.`;
 
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(activeKey)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                contents: [{ role: 'user', parts: [{ text: `[지금까지의 대화 기록]\n${historyTranscript}\n\n방금 ${appState.myName}님의 말에 자연스럽고 깊이 있게 이어서 대답해 주세요.` }] }],
-                generationConfig: {
-                  temperature: 0.88,
-                  responseMimeType: 'application/json'
-                }
+                systemInstruction: {
+                  parts: [{
+                    text: `${venueContext}\n사용자 이름: "${appState.myName}", 취기: ${appState.drunkPct}%.\n착석 캐릭터:\n${seatInfo}\n속 깊고 대화가 잘 통하는 실제 사람 친구처럼 맥락과 감정을 짚어 1~3문장 구어체로 답하세요. 순수 JSON 배열만 출력: [{"seat": 숫자, "name": "이름", "text": "대사"}]`
+                  }]
+                },
+                contents: [{ role: 'user', parts: [{ text: `[대화 기록]\n${historyTranscript}\n\n방금 ${appState.myName}님의 말에 답해주세요.` }] }],
+                generationConfig: { temperature: 0.88, responseMimeType: 'application/json' }
               })
             });
-
             if (res.ok) {
               const data = await res.json();
-              const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-              const parsed = JSON.parse(rawText);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                finalReplies = parsed.slice(0, 2);
-              }
+              const parsed = JSON.parse(data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]');
+              if (Array.isArray(parsed) && parsed.length > 0) finalReplies = parsed.slice(0, 2);
             }
-          } catch (err) {
-            // 네트워크/키 오류 시 아래 심층 내장 엔진으로 끊김 없이 폴백
-          }
+          } catch (e) {}
         }
 
-        // 2순위: 키가 없더라도 문맥·감정·기억을 유지하는 내장 심층 대화 엔진 작동
-        if (!finalReplies) {
-          finalReplies = buildDeepContextualFallback(userText, aiSeats);
-        }
+        if (!finalReplies) finalReplies = buildDeepContextualFallback(userText, aiSeats);
 
         setTimeout(() => {
           const tEl = document.getElementById('v5AiTypingRow');
@@ -5215,18 +6058,55 @@ ${seatInfo}
               showSeatSpeechBubble(actualSeat, r.text);
               appendLocalChat(speakerName, r.text, 'other');
               appState.deepMemory.history.push({ role: 'ai', speaker: speakerName, text: r.text });
-              if (appState.deepMemory.history.length > 14) appState.deepMemory.history.shift();
             }, idx * 1050);
           });
-        }, activeKey ? 180 : 520);
+        }, activeKey ? 180 : 480);
       }
 
+      // ==================== 채팅 폼 직접 바인딩 & 폭넓은 명령어 인식 ====================
       window.handleChatSubmit = function (e) {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         const input = document.getElementById('chatInput');
+        if (!input) return false;
         const text = input.value.trim();
-        if (!text) return;
+        if (!text) return false;
         input.value = '';
+
+        appendLocalChat(appState.myName, text, 'me');
+        if (!appState.inRestroom) showSeatSpeechBubble('me', text);
+
+        const normalized = text.replace(/\s+/g, '');
+
+        // 1) 화장실 내부에서 복귀 명령어 ("다녀왔어", "복귀", "나갈게" 등)
+        if (appState.inRestroom && /(다녀왔|복귀|나갈|자리로|돌아갈|왔어|나왔)/.test(normalized)) {
+          window.returnFromRestroomToTable();
+          return false;
+        }
+
+        // 2) 화장실 이동 명령어 ("화장실 다녀올게", "화장실", "쉬하고 올게" 등 폭넓게 인식!)
+        if (!appState.inRestroom && /(화장실|쉬하러|쉬하고|볼일보고|손씻고|세수하고)/.test(normalized)) {
+          window.goToPochaRestroom();
+          return false;
+        }
+
+        // 3) 3차 프랑스 파리 이동 명령어 ("3차 가자", "3차 파리", "3차", "파리 가자", "프랑스" 등 모두 인식!)
+        if (!appState.isParisMode && /(3차|삼차|파리가|파리로|파리갈|프랑스가|프랑스로|에펠탑가)/.test(normalized)) {
+          window.transitionToParisThirdRound();
+          return false;
+        }
+
+        // 4) 파리에서 다시 1차 광안리로 가자고 할 때
+        if (appState.isParisMode && /(1차가|광안리가|광안리로|포차로돌아)/.test(normalized)) {
+          window.returnToGwangalliFirstRound();
+          return false;
+        }
+
+        // 5) 계산 명령어
+        if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
+          sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
+          setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
+          return false;
+        }
 
         getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
           const pref = typeof PARTNER_PREFS !== 'undefined' ? PARTNER_PREFS[p.shortName] : null;
@@ -5236,680 +6116,42 @@ ${seatInfo}
           }
         });
 
-        appendLocalChat(appState.myName, text, 'me');
-        showSeatSpeechBubble('me', text);
-
-        const normalized = text.replace(/\s+/g, '');
-        if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
-          sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
-          setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
-          return;
-        }
-
         sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
         renderAllVisuals();
 
         if (appState.aiChatEnabled) {
           requestDeepPochaConversation(text);
         }
+        return false;
       };
+
+      // form에 직접 재연결하여 이벤트 누락 원천 차단
+      const chatFormEl = document.getElementById('chatForm');
+      if (chatFormEl) {
+        chatFormEl.onsubmit = function (ev) { return window.handleChatSubmit(ev); };
+      }
 
       const _origExportSync = exportSyncPayload;
       exportSyncPayload = function () {
         const base = _origExportSync();
+        base.isParisMode = appState.isParisMode;
         base.kimchiSujebiOrdered = appState.kimchiSujebiOrdered;
         base.kimchiSujebiLeft = appState.kimchiSujebiLeft;
+        base.croissantOrdered = appState.croissantOrdered;
+        base.croissantLeft = appState.croissantLeft;
+        base.cheesePlatterOrdered = appState.cheesePlatterOrdered;
+        base.cheesePlatterLeft = appState.cheesePlatterLeft;
+        base.redWineOrdered = appState.redWineOrdered;
+        base.redWineLeft = appState.redWineLeft;
+        base.champagneOrdered = appState.champagneOrdered;
+        base.champagneLeft = appState.champagneLeft;
         return base;
       };
 
-      // 초기 전체 렌더링
       renderCharacterSelectorGrid();
       renderAllVisuals();
-      appendLocalChat('시스템', '✨ [V5.2 업데이트 완료] 우측 사이드바 깊은 대화창 이동 · 빈 접시 클릭 시 자동 리필 세팅 · 심층 AI 대화 엔진이 적용되었습니다!', 'system');
+      appendLocalChat('시스템', '✅ [V5.4 정상 로드 완료] 하단 [🚻 화장실 다녀오기] · [🗼 3차 파리 가자!] 버튼과 채팅 명령어("화장실 다녀올게", "3차 가자", "3차 파리")가 모두 연결되었습니다!', 'system');
     })();
   </script>
 </body>
-  <!-- ==================== 20. UPGRADE PACK V5 AUTO-PATCH (연예인 비주얼 + 합석 ON/OFF + AI대화 ON/OFF + 얼큰김치수제비) ==================== -->
-  <script>
-    (function installPochaUpgradePackV5() {
-      // 1. V5 전용 스타일 주입 (토글 버튼, 김치수제비 보글보글 애니메이션 등)
-      const v5Style = document.createElement('style');
-      v5Style.textContent = `
-        .top-pill-toggle-on {
-          background: linear-gradient(90deg, #059669, #10b981) !important;
-          border-color: #6ee7b7 !important;
-          color: #ffffff !important;
-          box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
-        }
-        .top-pill-toggle-off {
-          background: rgba(30, 41, 59, 0.92) !important;
-          border-color: #64748b !important;
-          color: #94a3b8 !important;
-        }
-        .top-pill-ai-on {
-          background: linear-gradient(90deg, #0284c7, #6366f1) !important;
-          border-color: #93c5fd !important;
-          color: #ffffff !important;
-          box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
-        }
-        .neighbor-disabled {
-          opacity: 0.45 !important;
-          filter: grayscale(0.6);
-        }
-        @keyframes sujebiBubble {
-          0%, 100% { transform: scale(0.82); opacity: 0.5; }
-          50% { transform: scale(1.25); opacity: 0.95; }
-        }
-        .sujebi-bubble { animation: sujebiBubble 1.3s ease-in-out infinite; transform-origin: center; }
-        .ai-typing-indicator {
-          font-size: 11px; color: #fde68a; font-weight: 800;
-          padding: 4px 10px; border-radius: 8px;
-          background: rgba(30, 41, 59, 0.85); border: 1px dashed rgba(251, 191, 36, 0.5);
-          display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
-        }
-      `;
-      document.head.appendChild(v5Style);
-
-      // 2. 상태값(appState) 확장: 합석 ON/OFF, AI 대화 ON/OFF, 얼큰 김치 수제비
-      appState.hapseokEnabled = true;
-      appState.aiChatEnabled = true;
-      appState.kimchiSujebiOrdered = true; // 기본 테이블에 바로 세팅 (원치 않으면 false로 변경 가능)
-      appState.kimchiSujebiLeft = 6;
-      appState.billQty.kimchiSujebi = 1;
-      appState.chatHistoryLog = [];
-
-      MENU_CATALOG.kimchiSujebi = { name: '얼큰 묵은지 김치수제비', unitPrice: 15000 };
-
-      // 3. 상단 헤더에 [합석 ON/OFF], [AI대화 ON/OFF] 스위치 버튼 자동 주입
-      const skyBtnGroup = document.querySelector('.sky-btn-group');
-      if (skyBtnGroup) {
-        const toggleWrap = document.createElement('span');
-        toggleWrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:6px;';
-        toggleWrap.innerHTML = `
-          <button id="hapseokMasterBtn" onclick="toggleHapseokMaster()" class="top-pill top-pill-toggle-on" title="합석 및 헌팅 허용 켜기/끄기">
-            🪑 합석 ON
-          </button>
-          <button id="aiChatMasterBtn" onclick="toggleAiChatMaster()" class="top-pill top-pill-ai-on" title="AI 자동 티키타카 대화 켜기/끄기">
-            🤖 AI대화 ON
-          </button>
-        `;
-        skyBtnGroup.insertBefore(toggleWrap, skyBtnGroup.firstChild);
-      }
-
-      // 4. 원형 테이블에 [얼큰 김치 수제비] 슬롯 주입 + 메뉴판 최상단에 주문 버튼 주입
-      const dishGrid = document.querySelector('.table-dish-grid');
-      if (dishGrid && !document.getElementById('dishSlot-kimchiSujebi')) {
-        const sujebiSlot = document.createElement('div');
-        sujebiSlot.id = 'dishSlot-kimchiSujebi';
-        sujebiSlot.className = 'dish-slot';
-        sujebiSlot.title = '클릭해서 보글보글 얼큰 김치 수제비 한 입 먹기!';
-        sujebiSlot.setAttribute('onclick', 'eatKimchiSujebi()');
-        sujebiSlot.innerHTML = `
-          <div id="kimchiSujebiSvgHolder" class="dish-art-lg"></div>
-          <div class="dish-pill-tag" style="background:rgba(127,29,29,0.95);border-color:#fb923c;">
-            <span>🍲 김치수제비</span>
-            <span id="kimchiSujebiCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
-          </div>
-        `;
-        dishGrid.insertBefore(sujebiSlot, dishGrid.firstChild);
-      }
-
-      const menuScrollBox = document.querySelector('#menuModal .pocha-modal-box > div:last-child');
-      if (menuScrollBox) {
-        const sujebiMenuBtn = document.createElement('button');
-        sujebiMenuBtn.className = 'menu-item-btn';
-        sujebiMenuBtn.style.borderColor = 'rgba(251, 146, 60, 0.85)';
-        sujebiMenuBtn.style.background = 'linear-gradient(90deg, rgba(127,29,29,0.55), rgba(30,41,59,0.95))';
-        sujebiMenuBtn.setAttribute('onclick', "orderMenuItem('kimchiSujebi')");
-        sujebiMenuBtn.innerHTML = `
-          <div>
-            <div style="font-weight:900;font-size:14px;color:#fed7aa;">
-              🍲🔥 얼큰 묵은지 김치수제비
-              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">NEW 시그니처</span>
-            </div>
-            <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">잘 익은 묵은지 + 손으로 직접 떼어 넣은 쫀득 수제비 전골 (6국자)</div>
-          </div>
-          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">15,000원</span>
-        `;
-        menuScrollBox.insertBefore(sujebiMenuBtn, menuScrollBox.firstChild);
-      }
-
-      // ==================== [기능 1] 연예인·아이돌급 고퀄리티 얼굴 SVG 교체 ====================
-      CHARACTER_STYLES.forEach(c => {
-        if (c.id === 'jisu') c.tag = '걸그룹 센터상 · 여신 S컬 웨이브';
-        if (c.id === 'seoyeon') c.tag = '청순 여배우상 · 시스루 허쉬컷';
-        if (c.id === 'hayoon') c.tag = '과즙미 아이돌상 · 로우번 모헤어';
-        if (c.id === 'dohyun') c.tag = '냉미남 배우상 · 차콜 코트 애즈펌';
-        if (c.id === 'junwoo') c.tag = '첫사랑 남주상 · 시스루 댄디니트';
-        if (c.id === 'minjae') c.tag = '모델 메인비주얼 · 시크 리프컷';
-      });
-
-      const CELEBRITY_FACE_PRESETS = {
-        jisu:    { skinA: '#fff4ef', skinB: '#f7d2c4', eye: '#4a2c2a', lip: '#f43f5e', hairA: '#1c161d', hairB: '#4a3b52', mole: [73.5, 59.5] },
-        seoyeon: { skinA: '#fff6f2', skinB: '#f5d5c8', eye: '#5c3a28', lip: '#ec4899', hairA: '#2e1d16', hairB: '#6d4c41', mole: [46.5, 57.5] },
-        hayoon:  { skinA: '#fff2eb', skinB: '#f6cebe', eye: '#3b231a', lip: '#fb7185', hairA: '#181518', hairB: '#3f3a45', mole: [72.0, 62.0] },
-        dohyun:  { skinA: '#fdf0e6', skinB: '#ecc3ad', eye: '#232329', lip: '#d97278', hairA: '#12131a', hairB: '#384152', mole: [45.0, 56.0] },
-        junwoo:  { skinA: '#fff3ea', skinB: '#efd.bb', eye: '#3e2723', lip: '#de787c', hairA: '#2b1e19', hairB: '#5d4037', mole: null },
-        minjae:  { skinA: '#fcefe6', skinB: '#eabfa8', eye: '#1e293b', lip: '#c96870', hairA: '#0f172a', hairB: '#475569', mole: [74.0, 56.5] }
-      };
-
-      window.renderRealisticPortraitSVG = function (styleId, drunkPct, seatKey, forceSantaHat = false) {
-        const st = CHARACTER_STYLES.find(s => s.id === styleId) || CHARACTER_STYLES[0];
-        const cel = CELEBRITY_FACE_PRESETS[st.id] || CELEBRITY_FACE_PRESETS.jisu;
-        const uid = `${st.id}_${seatKey}`;
-        const isFemale = st.gender === 'f';
-        const showSanta = forceSantaHat || appState.isChristmasMode;
-        const blushAlpha = Math.min(0.82, Math.max(0.18, (drunkPct / 100) * 0.82));
-        const sleepy = drunkPct >= 75 ? 1.1 : (drunkPct >= 45 ? 0.5 : 0);
-
-        // 헤어 뒷머리 레이어
-        let backHair = '';
-        if (st.id === 'jisu') {
-          backHair = `
-            <path d="M26,44 C15,72 17,108 26,135 L94,135 C103,108 105,72 94,44 C88,18 74,10 60,10 C46,10 32,18 26,44 Z" fill="url(#celHair_${uid})"/>
-            <path d="M23,78 Q32,96 25,124 M97,78 Q88,96 95,124" fill="none" stroke="${cel.hairB}" stroke-width="2.4" opacity="0.6"/>
-          `;
-        } else if (st.id === 'seoyeon') {
-          backHair = `
-            <path d="M29,44 C21,72 23,104 29,128 L91,128 C97,104 99,72 91,44 C85,18 73,11 60,11 C47,11 35,18 29,44 Z" fill="url(#celHair_${uid})"/>
-          `;
-        } else if (st.id === 'hayoon') {
-          backHair = `
-            <circle cx="85" cy="64" r="13.5" fill="url(#celHair_${uid})"/>
-            <circle cx="35" cy="64" r="7" fill="url(#celHair_${uid})" opacity="0.6"/>
-          `;
-        } else if (st.id === 'minjae') {
-          backHair = `
-            <path d="M31,48 L25,84 L35,81 L32,94 L88,94 L85,81 L95,84 L89,48 Z" fill="url(#celHair_${uid})"/>
-          `;
-        } else {
-          backHair = `<path d="M33,44 C30,62 34,78 38,86 L82,86 C86,78 90,62 87,44 Z" fill="url(#celHair_${uid})"/>`;
-        }
-
-        // 의상 레이어
-        let outfit = '';
-        if (isFemale) {
-          outfit = st.id === 'jisu'
-            ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-               <path d="M40,95 Q60,106 80,95" fill="none" stroke="#fdba74" stroke-width="2.6"/>
-               <circle cx="60" cy="100" r="1.8" fill="#fde047"/>`
-            : st.id === 'seoyeon'
-            ? `<path d="M18,136 C21,101 37,91 60,91 C83,91 99,101 102,136 Z" fill="#1e293b" stroke="#64748b" stroke-width="1"/>
-               <path d="M46,91 L60,118 L74,91 Z" fill="#fff1f2"/>
-               <circle cx="60" cy="123" r="2.2" fill="#fbbf24"/>`
-            : `<path d="M18,136 C21,102 37,92 60,92 C83,92 99,102 102,136 Z" fill="#fda4af"/>
-               <path d="M45,92 L60,117 L75,92 Z" fill="#fff1f2"/>`;
-        } else {
-          outfit = st.id === 'dohyun'
-            ? `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#1f2937"/>
-               <path d="M45,88 L60,136 L75,88 Z" fill="#09090b"/>
-               <path d="M37,89 L49,128 M83,89 L71,128" stroke="#4b5563" stroke-width="2"/>`
-            : st.id === 'junwoo'
-            ? `<path d="M15,136 C18,98 35,89 60,89 C85,89 102,98 105,136 Z" fill="#1e3a8a"/>
-               <polygon points="47,89 60,109 73,89" fill="#f8fafc"/>`
-            : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#18181b"/>
-               <path d="M46,89 Q60,104 74,89" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="2.5 2"/>`;
-        }
-
-        // 날렵한 연예인 턱선 (여배우 V라인 / 남배우 조각 턱선)
-        const jawPath = isFemale
-          ? 'M37.5,43 C37,61 42.5,73 54.5,79.2 C58,81 62,81 65.5,79.2 C77.5,73 83,61 82.5,43 C82,24 72,18 60,18 C48,18 38,24 37.5,43 Z'
-          : 'M36.5,42 C36.5,60 41.5,73 53.5,80 C57.5,82 62.5,82 66.5,80 C78.5,73 83.5,60 83.5,42 C83,23 72.5,17 60,17 C47.5,17 37,23 36.5,42 Z';
-
-        // 트렌디 앞머리 (시스루뱅, 애즈펌, 가일컷, 리프컷)
-        let frontHair = '';
-        if (isFemale) {
-          frontHair = `
-            <path d="M32,47 C30,20 44,10 60,10 C76,10 90,20 88,47 C83,31 75,24 66,23 C67,33 64,41 61,45 C60,34 58,26 55,23 C53,33 49,41 45,44 C45,33 42,26 38,26 C35,33 34,41 32,47 Z" fill="url(#celHair_${uid})"/>
-            <path d="M33,42 C30,62 33,84 38,98 C31,84 28,62 31,44 Z" fill="url(#celHair_${uid})"/>
-            <path d="M87,42 C90,62 87,84 82,98 C89,84 92,62 89,44 Z" fill="url(#celHair_${uid})"/>
-          `;
-        } else if (st.id === 'dohyun') {
-          frontHair = `
-            <path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 C85,31 77,23 67,22 C72,32 69,44 62,48 C65,37 64,27 58,22 C52,28 49,38 53,48 C44,43 42,32 48,22 C39,25 34,34 31,46 Z" fill="url(#celHair_${uid})"/>
-          `;
-        } else {
-          frontHair = `
-            <path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 L81,31 L76,45 L69,28 L62,46 L56,28 L49,45 L43,30 Z" fill="url(#celHair_${uid})"/>
-          `;
-        }
-
-        const moleSVG = cel.mole
-          ? `<circle cx="${cel.mole[0]}" cy="${cel.mole[1]}" r="0.85" fill="#3b231a" opacity="0.85"/>`
-          : '';
-
-        const earringSVG = isFemale
-          ? `<circle cx="35.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="35.5" y1="60" x2="35.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="35.5" cy="69.5" r="2" fill="#fffbeb"/>
-             <circle cx="84.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="84.5" y1="60" x2="84.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="84.5" cy="69.5" r="2" fill="#fffbeb"/>`
-          : `<circle cx="35.2" cy="59" r="2.6" fill="none" stroke="#e2e8f0" stroke-width="1.3"/>`;
-
-        const santaHatSVG = showSanta ? `
-          <path d="M33,26 C35,10 56,3 76,12 C84,16 90,22 93,27 L33,26 Z" fill="#dc2626"/>
-          <rect x="31" y="23" width="56" height="7" rx="3.5" fill="#ffffff"/>
-          <circle cx="94" cy="26" r="5" fill="#ffffff"/>
-        ` : '';
-
-        return `
-          <svg id="portraitSvg-${seatKey}" viewBox="0 0 120 136" class="portrait-breathe" style="filter:drop-shadow(0 8px 16px rgba(0,0,0,0.65));">
-            <defs>
-              <linearGradient id="celSkin_${uid}" x1="0.3" y1="0" x2="0.7" y2="1">
-                <stop offset="0%" stop-color="${cel.skinA}"/>
-                <stop offset="100%" stop-color="${cel.skinB}"/>
-              </linearGradient>
-              <linearGradient id="celHair_${uid}" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="${cel.hairB}"/>
-                <stop offset="45%" stop-color="${cel.hairA}"/>
-                <stop offset="100%" stop-color="#09090b"/>
-              </linearGradient>
-            </defs>
-
-            ${backHair}
-
-            <!-- 목 & 쇄골 음영 -->
-            <rect x="52" y="72" width="16" height="22" rx="6" fill="url(#celSkin_${uid})"/>
-            <path d="M52,76 Q60,82 68,76" fill="none" stroke="rgba(160,95,75,0.28)" stroke-width="1.4"/>
-
-            ${outfit}
-
-            <!-- 귀 & 쥬얼리 -->
-            <ellipse cx="35.8" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/>
-            <ellipse cx="84.2" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/>
-
-            <!-- 연예인 V라인 얼굴 -->
-            <path d="${jawPath}" fill="url(#celSkin_${uid})"/>
-
-            <!-- 수채화 치크 & 취기 블러셔 -->
-            <ellipse cx="45.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
-            <ellipse cx="74.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
-
-            <!-- 세련된 일자/아치 눈썹 -->
-            <path d="M42,${isFemale ? 43.2 : 42.2} Q49,${isFemale ? 40.8 : 40.2} 55.2,${isFemale ? 42.8 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
-            <path d="M64.8,${isFemale ? 42.8 : 42.2} Q71,${isFemale ? 40.8 : 40.2} 78,${isFemale ? 43.2 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
-
-            <!-- 초롱초롱 아이돌 눈망울 + 쌍꺼풀 + 애교살 + 속눈썹 -->
-            <g class="blink-lid">
-              <path d="M43.5,47.2 Q49.5,44.6 55.2,47.4 M64.8,47.4 Q70.5,44.6 76.5,47.2" fill="none" stroke="#a6735c" stroke-width="0.85" opacity="0.75"/>
-
-              <ellipse cx="49.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
-              <circle cx="49.6" cy="50.4" r="3.35" fill="${cel.eye}"/>
-              <circle cx="49.6" cy="50.5" r="1.65" fill="#09090b"/>
-              <circle cx="48.2" cy="49.1" r="1.2" fill="#ffffff"/>
-              <circle cx="51.2" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
-
-              <ellipse cx="70.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
-              <circle cx="70.4" cy="50.4" r="3.35" fill="${cel.eye}"/>
-              <circle cx="70.4" cy="50.5" r="1.65" fill="#09090b"/>
-              <circle cx="69.0" cy="49.1" r="1.2" fill="#ffffff"/>
-              <circle cx="72.0" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
-
-              <path d="M43,${(50.2 + sleepy).toFixed(1)} Q49.5,${(45.8 + sleepy).toFixed(1)} 55.8,${(50.4 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
-              <path d="M64.2,${(50.4 + sleepy).toFixed(1)} Q70.5,${(45.8 + sleepy).toFixed(1)} 77,${(50.2 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
-              ${isFemale ? `<path d="M43,50 L40.8,48 M77,50 L79.2,48" stroke="#141417" stroke-width="1.2" stroke-linecap="round"/>` : ''}
-
-              <!-- 도톰 애교살 하이라이트 -->
-              <path d="M45,54.8 Q49.5,56.3 54,54.7 M66,54.7 Q70.5,56.3 75,54.8" fill="none" stroke="#ffffff" stroke-width="0.9" opacity="0.55" stroke-linecap="round"/>
-            </g>
-
-            <!-- 오똑한 콧대 & 코끝 하이라이트 -->
-            <path d="M59.7,48.5 L59.1,58.4 Q60,60.3 61.8,59.2" fill="none" stroke="#c08870" stroke-width="1.1" stroke-linecap="round"/>
-            <ellipse cx="60.2" cy="58.3" rx="1.1" ry="0.8" fill="#ffffff" opacity="0.65"/>
-
-            <!-- 글로시 그라데이션 입술 -->
-            <g class="mouth-group">
-              <path d="M54.2,66.2 Q57.3,64.2 60,65.2 Q62.7,64.2 65.8,66.2 Q62.8,70.2 60,70.2 Q57.2,70.2 54.2,66.2 Z" fill="${cel.lip}" opacity="0.92"/>
-              <path d="M54.5,66.4 Q60,67.4 65.5,66.4" fill="none" stroke="#881337" stroke-width="0.8" opacity="0.7"/>
-              <ellipse cx="61.2" cy="68.0" rx="2.4" ry="0.75" fill="#ffffff" opacity="0.55"/>
-            </g>
-
-            ${moleSVG}
-            ${earringSVG}
-            ${frontHair}
-            ${santaHatSVG}
-          </svg>
-        `;
-      };
-
-      // ==================== [기능 2] 합석 기능 ON / OFF 완벽 제어 ====================
-      window.toggleHapseokMaster = function () {
-        appState.hapseokEnabled = !appState.hapseokEnabled;
-        const btn = document.getElementById('hapseokMasterBtn');
-        const podL = document.getElementById('neighborPod-left');
-        const podR = document.getElementById('neighborPod-right');
-
-        if (appState.hapseokEnabled) {
-          btn.textContent = '🪑 합석 ON';
-          btn.className = 'top-pill top-pill-toggle-on';
-          if (podL) podL.classList.remove('neighbor-disabled');
-          if (podR) podR.classList.remove('neighbor-disabled');
-          showToastMsg('🪑 합석 기능 ON! 이제 옆테이블 원정 합석 및 주변 헌팅이 허용됩니다!');
-          appendLocalChat('시스템', '✨ 합석 기능이 켜졌습니다. (옆테이블 원정 & 주변 헌팅 가능)', 'system');
-        } else {
-          btn.textContent = '🔒 합석 OFF';
-          btn.className = 'top-pill top-pill-toggle-off';
-          if (podL) podL.classList.add('neighbor-disabled');
-          if (podR) podR.classList.add('neighbor-disabled');
-
-          // 진행 중인 헌팅 팝업 닫기 및 옆테이블 원정 중이면 즉시 복귀
-          appState.activeHuntingCandidate = null;
-          document.getElementById('huntingApproachCard').classList.add('hidden');
-          if (appState.visitingSide) {
-            appState.visitingSide = null;
-          }
-          appState._huntedSeatGuest = null;
-
-          showToastMsg('🔒 합석 기능 OFF! 외부 합석·헌팅이 모두 차단된 프라이빗 모드입니다.');
-          appendLocalChat('시스템', '🔒 합석 기능이 꺼졌습니다. (우리끼리만 마시는 프라이빗 모드)', 'system');
-        }
-        renderAllVisuals();
-      };
-
-      const _origVisitNeighbor = window.visitNeighborTable;
-      window.visitNeighborTable = function (side) {
-        if (!appState.hapseokEnabled) {
-          showToastMsg('🔒 현재 [합석 OFF] 상태입니다! 상단의 [🔒 합석 OFF] 버튼을 눌러 ON으로 켜주세요.');
-          return;
-        }
-        _origVisitNeighbor(side);
-      };
-
-      const _origTriggerHunt = window.triggerHuntApproachEvent;
-      window.triggerHuntApproachEvent = function () {
-        if (!appState.hapseokEnabled) {
-          // 자동 타이머로 호출된 경우 조용히 무시, 버튼 클릭 시 안내
-          if (window.event && window.event.type === 'click') {
-            showToastMsg('🔒 현재 [합석 OFF] 상태라 헌팅을 받지 않습니다! 상단에서 합석 ON으로 켜주세요.');
-          }
-          return;
-        }
-        _origTriggerHunt();
-      };
-
-      // ==================== [기능 3] 얼큰 김치 수제비 안주 렌더링 & 주문 & 먹기 ====================
-      const _origRenderDishes = renderAllDishesSVG;
-      renderAllDishesSVG = function () {
-        _origRenderDishes();
-        const sSlot = document.getElementById('dishSlot-kimchiSujebi');
-        const sHolder = document.getElementById('kimchiSujebiSvgHolder');
-        const sPill = document.getElementById('kimchiSujebiCountPill');
-        if (!sSlot || !sHolder || !sPill) return;
-
-        if (appState.kimchiSujebiOrdered) {
-          sSlot.classList.remove('hidden');
-          sHolder.innerHTML = `
-            <svg viewBox="0 0 156 114" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.7));">
-              <!-- 양수 전골 뚝배기 손잡이 & 몸체 -->
-              <path d="M10,56 C2,56 2,70 10,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
-              <path d="M146,56 C154,56 154,70 146,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
-              <ellipse cx="78" cy="63" rx="66" ry="41" fill="#18181b" stroke="#52525b" stroke-width="2.5"/>
-              <ellipse cx="78" cy="61" rx="58" ry="34" fill="#7f1d1d"/>
-
-              ${appState.kimchiSujebiLeft > 0 ? `
-                <!-- 칼칼한 묵은지 김치 국물 -->
-                <ellipse cx="78" cy="61" rx="56" ry="32" fill="url(#maraBrothGrad)"/>
-                <circle class="sujebi-bubble" cx="48" cy="52" r="2.8" fill="#fca5a5"/>
-                <circle class="sujebi-bubble" cx="106" cy="56" r="2.5" fill="#fed7aa"/>
-                <circle class="sujebi-bubble" cx="66" cy="76" r="3.0" fill="#fca5a5"/>
-
-                <!-- 잘 익은 묵은지 김치 조각들 -->
-                <path d="M36,58 Q50,50 60,60 Q48,68 36,63 Z" fill="#b91c1c" stroke="#f87171" stroke-width="0.8"/>
-                <path d="M84,44 Q98,46 102,56 Q90,59 82,51 Z" fill="#b91c1c" stroke="#fb923c" stroke-width="0.8"/>
-                <path d="M74,73 Q92,69 104,78 Q88,85 73,79 Z" fill="#991b1b" stroke="#f87171" stroke-width="0.8"/>
-
-                <!-- 손으로 떼어 넣은 쫀득한 하얀 수제비 반죽들 -->
-                <path d="M50,48 C57,43 69,45 71,52 C72,58 61,62 53,59 C47,56 46,51 50,48 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.1"/>
-                <path d="M82,57 C90,53 104,57 103,65 C102,72 90,74 82,69 C77,65 76,60 82,57 Z" fill="#ffedd5" stroke="#fdba74" stroke-width="1.1"/>
-                <path d="M44,67 C52,63 65,65 66,72 C67,78 56,81 47,77 C41,75 40,70 44,67 Z" fill="#ffffff" stroke="#fed7aa" stroke-width="1.1"/>
-                <path d="M65,59 C71,56 80,58 81,64 C81,69 72,72 65,69 C61,66 61,61 65,59 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-
-                <!-- 어슷썬 대파, 홍고추, 김가루 & 통깨 -->
-                <ellipse cx="68" cy="54" rx="6" ry="2.5" transform="rotate(-22 68 54)" fill="#22c55e" stroke="#15803d" stroke-width="0.8"/>
-                <ellipse cx="88" cy="66" rx="6" ry="2.5" transform="rotate(18 88 66)" fill="#4ade80" stroke="#15803d" stroke-width="0.8"/>
-                <circle cx="76" cy="50" r="3" fill="#dc2626" stroke="#fef08a" stroke-width="0.9"/>
-                <path d="M68,61 L77,59 L75,65 L66,66 Z" fill="#1c1917" opacity="0.85"/>
-                <circle cx="71" cy="62" r="0.8" fill="#fef3c7"/><circle cx="74" cy="63" r="0.8" fill="#fef3c7"/>
-
-                <!-- 모락모락 김 -->
-                <path d="M54,34 Q48,20 56,10" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8" class="steam-wisp"/>
-                <path d="M78,31 Q84,17 76,8" fill="none" stroke="#fed7aa" stroke-width="2.4" opacity="0.82" class="steam-wisp"/>
-                <path d="M102,35 Q107,21 100,11" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.72" class="steam-wisp"/>
-              ` : '<text x="78" y="65" text-anchor="middle" font-size="11" font-weight="900" fill="#fed7aa">얼큰 국물까지 완뚝!</text>'}
-            </svg>
-          `;
-          sPill.textContent = `${appState.kimchiSujebiLeft}/6`;
-        } else {
-          sSlot.classList.add('hidden');
-        }
-      };
-
-      const _origOrderMenuItem = window.orderMenuItem;
-      window.orderMenuItem = function (itemKey, fromRemote = false, actorName = null) {
-        if (itemKey === 'kimchiSujebi') {
-          closeMenuModal();
-          const who = actorName || appState.myName;
-          appState.kimchiSujebiOrdered = true;
-          appState.kimchiSujebiLeft = 6;
-          appState.billQty.kimchiSujebi = (appState.billQty.kimchiSujebi || 0) + 1;
-          triggerChefWalkIn('👨‍🍳 사장님: "잘 익은 묵은지에 쫀득한 손수제비 듬뿍 넣은 얼큰 김치 수제비 보글보글 나왔습니데이~!"', () => renderAllVisuals());
-          renderAllVisuals();
-          appendLocalChat(who, `🍲 [얼큰 묵은지 김치수제비] 주문 완료! (+15,000원)`, 'action');
-          if (appState.aiChatEnabled) {
-            requestSmartPochaAI(`${who}님이 방금 보글보글 끓는 '얼큰 김치 수제비'를 새로 주문했습니다!`);
-          }
-          if (!fromRemote) sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
-          return;
-        }
-        _origOrderMenuItem(itemKey, fromRemote, actorName);
-      };
-
-      window.eatKimchiSujebi = function (fromRemote = false) {
-        if (appState.kimchiSujebiLeft <= 0) {
-          openMenuModal();
-          showToastMsg('🍲 얼큰 김치 수제비를 다 비웠어요! 메뉴판에서 리필 주문해보세요!');
-          return;
-        }
-        appState.kimchiSujebiLeft -= 1;
-        appState.eatenPiecesTotal += 1;
-        appState.drunkPct = Math.max(0, appState.drunkPct - 5); // 얼큰한 국물 해장 효과!
-
-        animateFoodToMouth(
-          'dishSlot-kimchiSujebi',
-          '<path d="M28,24 C34,19 46,21 47,28 C48,34 37,37 30,33 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/><circle cx="39" cy="27" r="2.5" fill="#dc2626"/>',
-          'me',
-          true,
-          '후루룩~ 묵은지 김치수제비 칼칼쫀득!! 🍲🔥'
-        );
-        showSeatSpeechBubble('me', '크으~ 묵은지 국물에 쫀득한 수제비! 해장하면서 동시에 술 부르는 맛!! 🍲');
-        triggerRandomCompanionReaction([
-          '와 김치수제비 국물 진짜 칼칼하다!! 소주 안주로 완전 미쳤는데?! 😍',
-          '수제비 반죽이 진짜 쫀득쫀득해ㅋㅋ 내 앞접시에도 국물이랑 한 국자 더 덜어줘!'
-        ]);
-        renderAllVisuals();
-        if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'kimchiSujebi', actor: appState.myName, state: exportSyncPayload() });
-      };
-
-      // [안주 먹기] 랜덤 버튼에도 얼큰 김치 수제비 포함
-      const _origEatRandom = window.eatRandomAnju;
-      window.eatRandomAnju = function () {
-        if (appState.kimchiSujebiOrdered && appState.kimchiSujebiLeft > 0 && Math.random() < 0.4) {
-          window.eatKimchiSujebi();
-          return;
-        }
-        _origEatRandom();
-      };
-
-      // ==================== [기능 4] AI 대화 ON / OFF 스위치 + 실시간 LLM 티키타카 대화 엔진 ====================
-      window.toggleAiChatMaster = function () {
-        appState.aiChatEnabled = !appState.aiChatEnabled;
-        const btn = document.getElementById('aiChatMasterBtn');
-        if (appState.aiChatEnabled) {
-          btn.textContent = '🤖 AI대화 ON';
-          btn.className = 'top-pill top-pill-ai-on';
-          showToastMsg('🤖 AI 대화 ON! 테이블 멤버들이 내 말과 안주에 실시간 티키타카로 대답합니다.');
-          appendLocalChat('시스템', '💬 AI 실시간 대화 기능이 켜졌습니다.', 'system');
-        } else {
-          btn.textContent = '🔇 AI대화 OFF';
-          btn.className = 'top-pill top-pill-toggle-off';
-          const ind = document.getElementById('v5AiTypingRow');
-          if (ind) ind.remove();
-          showToastMsg('🔇 AI 대화 OFF! AI 자동 대답과 말풍선 리액션이 모두 중지됩니다.');
-          appendLocalChat('시스템', '🔇 AI 대화 기능이 꺼졌습니다. (유저끼리만 조용히 채팅 가능)', 'system');
-        }
-      };
-
-      // AI 대화 OFF 상태일 때는 안주/건배 시 자동 말풍선 리액션도 정지
-      const _origCompanionReaction = triggerRandomCompanionReaction;
-      triggerRandomCompanionReaction = function (lines) {
-        if (!appState.aiChatEnabled) return;
-        _origCompanionReaction(lines);
-      };
-
-      async function requestSmartPochaAI(userText) {
-        if (!appState.aiChatEnabled) return;
-
-        // 옆테이블 원정 중일 때
-        if (appState.visitingSide) {
-          const info = NEIGHBOR_TABLES_INFO[appState.visitingSide];
-          const host = info.patrons[Math.floor(Math.random() * info.patrons.length)];
-          setTimeout(() => {
-            if (!appState.aiChatEnabled) return;
-            const nReply = `${appState.myName}님 입담 진짜 좋으시네요ㅋㅋ 저희 테이블 안주랑 술 편하게 더 드세요! 🍻`;
-            showNeighborBubble(appState.visitingSide, nReply);
-            appendLocalChat(`${host.name}(옆테이블)`, nReply, 'other');
-          }, 550);
-          return;
-        }
-
-        const aiSeats = getSeatedCompanions()
-          .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
-          .filter(Boolean);
-        if (aiSeats.length === 0) return;
-
-        appState.chatHistoryLog.push(`${appState.myName}: ${userText}`);
-        if (appState.chatHistoryLog.length > 8) appState.chatHistoryLog.shift();
-
-        // 채팅창 하단에 입력중 표시
-        const feed = document.getElementById('chatFeed');
-        let typingEl = document.getElementById('v5AiTypingRow');
-        if (!typingEl && feed) {
-          typingEl = document.createElement('div');
-          typingEl.id = 'v5AiTypingRow';
-          typingEl.className = 'ai-typing-indicator';
-          typingEl.textContent = `✨ ${aiSeats.map(s => s.p.shortName).join('·')}님이 대답하는 중...`;
-          feed.appendChild(typingEl);
-          feed.scrollTop = feed.scrollHeight;
-        }
-
-        let finalReplies = null;
-
-        // Gemini API 연동 시도 (키가 설정되어 있을 경우 초고품질 LLM 응답, 없을 경우 자연스러운 로컬 엔진 즉시 폴백)
-        const GEMINI_API_KEY = ""; // 필요 시 본인 Gemini API 키 입력 가능 (비워두어도 스마트 티키타카 엔진 작동!)
-        if (GEMINI_API_KEY) {
-          try {
-            const seatDesc = aiSeats.map(s => `seat:${s.seat}, name:"${s.p.shortName}"`).join(' / ');
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  role: 'user',
-                  parts: [{
-                    text: `광안리 밤바다 포차 술자리입니다. 내 이름: ${appState.myName}, 취기: ${appState.drunkPct}%, 안주: 얼큰 김치 수제비, 대방어, 소맥.
-착석 AI 친구들: [${seatDesc}].
-최근 대화:\n${appState.chatHistoryLog.join('\n')}
-방금 내 발화: "${userText}"
-착석 AI 중 1~2명이 찐친/썸 남녀처럼 설레고 재치있게 한국어 반말/존댓말로 1문장씩 티키타카 답장하세요. JSON 배열 형식으로만 응답: [{"seat":숫자,"name":"이름","text":"대사"}]`
-                  }]
-                }],
-                generationConfig: { responseMimeType: 'application/json' }
-              })
-            });
-            if (res.ok) {
-              const data = await res.json();
-              const parsed = JSON.parse(data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]');
-              if (Array.isArray(parsed) && parsed.length > 0) finalReplies = parsed.slice(0, 2);
-            }
-          } catch (e) {}
-        }
-
-        // 김치수제비 특화 대사 + 기존 티키타카 엔진 결합 폴백
-        if (!finalReplies) {
-          if (/(수제비|김치|묵은지)/.test(userText)) {
-            const pick = aiSeats[Math.floor(Math.random() * aiSeats.length)];
-            finalReplies = [{
-              seat: pick.seat,
-              name: pick.p.shortName,
-              text: `와 얼큰 김치 수제비 국물 빛깔 미쳤지ㅋㅋ 묵은지가 제대로 익어서 소맥이랑 먹으니까 극락이야! 🍲🔥`
-            }];
-          } else {
-            finalReplies = generateNaturalTikiTakaReplies(userText, aiSeats);
-          }
-        }
-
-        setTimeout(() => {
-          const tEl = document.getElementById('v5AiTypingRow');
-          if (tEl) tEl.remove();
-          if (!appState.aiChatEnabled) return;
-
-          finalReplies.forEach((r, idx) => {
-            setTimeout(() => {
-              if (!appState.aiChatEnabled) return;
-              showSeatSpeechBubble(r.seat, r.text);
-              appendLocalChat(r.name, r.text, 'other');
-              appState.chatHistoryLog.push(`${r.name}: ${r.text}`);
-            }, idx * 850);
-          });
-        }, 480);
-      }
-
-      // 채팅 전송 핸들러를 AI ON/OFF 완벽 호환 버전으로 교체
-      window.handleChatSubmit = function (e) {
-        e.preventDefault();
-        const input = document.getElementById('chatInput');
-        const text = input.value.trim();
-        if (!text) return;
-        input.value = '';
-
-        // 호감도 상승 반영
-        getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
-          const pref = typeof PARTNER_PREFS !== 'undefined' ? PARTNER_PREFS[p.shortName] : null;
-          const hit = pref && pref.favKeywords.some(k => text.includes(k));
-          if (typeof affectionMap !== 'undefined') {
-            affectionMap[p.shortName] = Math.min(100, (affectionMap[p.shortName] || 35) + (hit ? 14 : 6));
-          }
-        });
-
-        appendLocalChat(appState.myName, text, 'me');
-        showSeatSpeechBubble('me', text);
-
-        const normalized = text.replace(/\s+/g, '');
-        if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
-          sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
-          setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
-          return;
-        }
-
-        sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
-        renderAllVisuals();
-
-        // AI 대화가 켜져 있을 때만 AI 응답 호출!
-        if (appState.aiChatEnabled) {
-          requestSmartPochaAI(text);
-        }
-      };
-
-      // 멀티플레이 동기화 페이로드에 김치수제비 추가
-      const _origExportSync = exportSyncPayload;
-      exportSyncPayload = function () {
-        const base = _origExportSync();
-        base.kimchiSujebiOrdered = appState.kimchiSujebiOrdered;
-        base.kimchiSujebiLeft = appState.kimchiSujebiLeft;
-        return base;
-      };
-
-      // 초기 화면 즉시 갱신 (바뀐 연예인 얼굴 & 테이블 위 얼큰 김치 수제비 즉시 반영)
-      renderCharacterSelectorGrid();
-      renderAllVisuals();
-      appendLocalChat('시스템', '✨ [V5 업데이트 적용] 연예인급 비주얼 캐릭터 · 합석 ON/OFF · AI대화 ON/OFF · 얼큰 김치 수제비가 세팅되었습니다!', 'system');
-    })();
-  </script>
 </html>
