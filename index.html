@@ -4162,6 +4162,1112 @@
   }
 }, { passive: true });
   </script>
+  <!-- ==================== 20. UPGRADE PACK V5.2 AUTO-PATCH (사이드바 채팅창 이동 + 자동 리필 세팅 + 심층 AI 대화 + 연예인비주얼 + 합석/AI토글 + 김치수제비 + 강퇴) ==================== -->
+  <script>
+    (function installPochaUpgradePackV5_2() {
+      // 1. V5.2 전용 스타일 주입 (우측 사이드바 채팅창 레이아웃 + 빌지 팝업 전환 + 심층 AI 모달)
+      const v5Style = document.createElement('style');
+      v5Style.textContent = `
+        .top-pill-toggle-on {
+          background: linear-gradient(90deg, #059669, #10b981) !important;
+          border-color: #6ee7b7 !important; color: #ffffff !important;
+          box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+        }
+        .top-pill-toggle-off {
+          background: rgba(30, 41, 59, 0.92) !important;
+          border-color: #64748b !important; color: #94a3b8 !important;
+        }
+        .top-pill-ai-on {
+          background: linear-gradient(90deg, #0284c7, #6366f1) !important;
+          border-color: #93c5fd !important; color: #ffffff !important;
+          box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+        }
+        .top-pill-brain {
+          background: linear-gradient(90deg, #7c3aed, #db2777) !important;
+          border-color: #f9a8d4 !important; color: #ffffff !important;
+        }
+        .top-pill-restore {
+          background: rgba(124, 45, 18, 0.92) !important;
+          border-color: #fb923c !important; color: #ffedd5 !important;
+        }
+        .neighbor-disabled { opacity: 0.45 !important; filter: grayscale(0.6); }
+
+        /* 좌석 우측 상단 캐릭터 강퇴 버튼 */
+        .seat-kick-btn {
+          position: absolute; top: 2px; right: 2px; z-index: 28;
+          width: 24px; height: 24px; border-radius: 9999px;
+          background: rgba(15, 23, 42, 0.88); border: 1.5px solid rgba(244, 63, 94, 0.85);
+          color: #fda4af; font-size: 11px; font-weight: 900;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.65);
+          transition: transform 0.14s ease, background 0.16s ease;
+        }
+        .seat-kick-btn:hover { background: #e11d48; color: #ffffff; transform: scale(1.12); }
+
+        /* [핵심 요청 1] 실시간 포차 빌지 자리에 들어가는 우측 고정 채팅 사이드바 */
+        .pocha-chat-section.chat-sidebar-docked {
+          width: 100%;
+          border-radius: 24px;
+          border: 1.5px solid rgba(251, 191, 36, 0.42);
+          background: linear-gradient(180deg, rgba(9, 14, 28, 0.98) 0%, rgba(4, 7, 17, 0.99) 100%);
+          box-shadow: 0 24px 55px rgba(0, 0, 0, 0.82);
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+        .pocha-chat-section.chat-sidebar-docked #chatFeed {
+          flex: 1;
+          min-height: 240px;
+          max-height: 360px;
+          height: auto;
+          padding: 12px;
+          gap: 8px;
+          line-height: 1.48;
+        }
+        @media (min-width: 1024px) {
+          .pocha-chat-section.chat-sidebar-docked {
+            width: 356px;
+            max-height: 830px;
+          }
+          .pocha-chat-section.chat-sidebar-docked #chatFeed {
+            min-height: 540px;
+            max-height: 675px;
+          }
+          /* 데스크탑에서도 빌지 버튼이 항상 보이도록 표시 */
+          .top-pill-bill-mobile { display: inline-flex !important; }
+        }
+
+        /* 기존 빌지는 언제든 버튼으로 꺼내볼 수 있는 깔끔한 플로팅 팝업으로 전환 */
+        #liveBillAside.bill-floating-drawer {
+          display: none !important;
+          position: fixed;
+          top: 64px;
+          right: 20px;
+          width: 310px !important;
+          max-width: 92vw;
+          z-index: 65;
+          box-shadow: 0 28px 65px rgba(0, 0, 0, 0.9) !important;
+        }
+        #liveBillAside.bill-floating-drawer.bill-drawer-open {
+          display: flex !important;
+        }
+
+        /* 말풍선 줄바꿈 및 가독성 강화 (깊은 대화 대응) */
+        .chat-row-me, .chat-row-other {
+          font-size: 12.8px !important;
+          line-height: 1.52 !important;
+          word-break: keep-all;
+          padding: 8px 11px !important;
+          border-radius: 12px !important;
+        }
+        .speech-bubble-box {
+          max-width: 270px !important;
+          white-space: normal !important;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          line-height: 1.32;
+          text-align: center;
+        }
+
+        @keyframes sujebiBubble {
+          0%, 100% { transform: scale(0.82); opacity: 0.5; }
+          50% { transform: scale(1.25); opacity: 0.95; }
+        }
+        .sujebi-bubble { animation: sujebiBubble 1.3s ease-in-out infinite; transform-origin: center; }
+        .ai-typing-indicator {
+          font-size: 11.5px; color: #fde68a; font-weight: 800;
+          padding: 6px 11px; border-radius: 10px;
+          background: rgba(30, 41, 59, 0.92); border: 1px dashed rgba(251, 191, 36, 0.55);
+          display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+        }
+      `;
+      document.head.appendChild(v5Style);
+
+      // ==================== [요청 1] 실시간 포차 빌지 위치로 채팅창 이동 ====================
+      const cameraStage = document.getElementById('drunkCameraStage');
+      const chatSection = document.querySelector('.pocha-chat-section');
+      const billAside = document.getElementById('liveBillAside');
+
+      if (cameraStage && chatSection) {
+        // 기존 하단에 있던 채팅창을 우측 사이드바 자리(#drunkCameraStage의 직계 자식)로 이동!
+        cameraStage.appendChild(chatSection);
+        chatSection.classList.add('chat-sidebar-docked');
+
+        // 채팅창 상단에 헤더 + 빌지 열기 + AI 두뇌 설정 버튼 구성
+        const metaBar = chatSection.querySelector('.chat-meta-bar');
+        if (metaBar) {
+          metaBar.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;border-bottom:1px solid #1e293b;padding-bottom:8px;">
+              <div>
+                <div style="font-size:14px;font-weight:900;color:#fef3c7;">💬 포차 깊은 대화방</div>
+                <span id="syncModeIndicator" style="font-size:10.5px;font-weight:700;color:#6ee7b7;">🌊 실시간 공감·티키타카 ON</span>
+              </div>
+              <div style="display:flex;gap:5px;">
+                <button type="button" onclick="openAiBrainModal()" class="top-pill top-pill-brain" style="font-size:10.5px;padding:4px 8px;" title="실제 Gemini AI 연결로 나처럼 100% 자유로운 대화 켜기">
+                  🧠 AI두뇌
+                </button>
+                <button type="button" onclick="toggleMobileBill()" class="top-pill" style="background:#fcd34d;color:#0f172a;border-color:#f59e0b;font-size:10.5px;padding:4px 8px;">
+                  🧾 빌지보기
+                </button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#94a3b8;width:100%;margin-top:2px;">
+              💡 고민·일상·철학·농담 뭐든 깊게 말 걸어보세요! 다 먹은 안주는 누르면 <strong style="color:#fcd34d;">자동 리필</strong>됩니다.
+            </div>
+          `;
+        }
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+          chatInput.maxLength = 300; // 긴 속마음 대화도 입력 가능하도록 확장
+          chatInput.placeholder = '속마음, 고민, 농담 뭐든 편하게 말 걸어보세요...';
+        }
+      }
+
+      if (billAside) {
+        document.body.appendChild(billAside);
+        billAside.classList.add('bill-floating-drawer');
+        const closeRow = document.createElement('button');
+        closeRow.type = 'button';
+        closeRow.textContent = '✕ 빌지 창 닫기';
+        closeRow.style.cssText = 'width:100%;margin-top:6px;padding:8px;border-radius:10px;background:rgba(15,23,42,0.14);color:#0f172a;font-size:11.5px;font-weight:900;';
+        closeRow.onclick = () => billAside.classList.remove('bill-drawer-open');
+        billAside.appendChild(closeRow);
+      }
+
+      window.toggleMobileBill = function () {
+        if (billAside) billAside.classList.toggle('bill-drawer-open');
+      };
+
+      // 2. 상태값(appState) 확장
+      const AI_KEY_STORAGE = 'gwangalli_pocha_gemini_api_key_v5';
+      appState.hapseokEnabled = true;
+      appState.aiChatEnabled = true;
+      appState.kimchiSujebiOrdered = true;
+      appState.kimchiSujebiLeft = 6;
+      appState.billQty.kimchiSujebi = 1;
+      appState.kickedSeats = { 0: false, 1: false, 2: false };
+      appState.kickedClientIds = new Set();
+      appState.geminiApiKey = localStorage.getItem(AI_KEY_STORAGE) || '';
+      appState.deepMemory = {
+        history: [],        // { role: 'user'|'ai', speaker: string, text: string }
+        lastTopic: null,    // 직전 대화 주제 기억
+        turnCount: 0,
+        userMood: 'normal', // tired, sad, happy, curious, romantic, normal
+        usedResponses: new Set()
+      };
+
+      MENU_CATALOG.kimchiSujebi = { name: '얼큰 묵은지 김치수제비', unitPrice: 15000 };
+
+      // 3. 상단 헤더에 [합석 ON/OFF], [AI대화 ON/OFF], [빈자리 복구] 버튼 주입
+      const skyBtnGroup = document.querySelector('.sky-btn-group');
+      if (skyBtnGroup) {
+        const toggleWrap = document.createElement('span');
+        toggleWrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:6px;';
+        toggleWrap.innerHTML = `
+          <button id="hapseokMasterBtn" onclick="toggleHapseokMaster()" class="top-pill top-pill-toggle-on">🪑 합석 ON</button>
+          <button id="aiChatMasterBtn" onclick="toggleAiChatMaster()" class="top-pill top-pill-ai-on">🤖 AI대화 ON</button>
+          <button id="restoreKickedBtn" onclick="restoreAllKickedSeats()" class="hidden top-pill top-pill-restore">🔄 빈자리 복구</button>
+        `;
+        skyBtnGroup.insertBefore(toggleWrap, skyBtnGroup.firstChild);
+      }
+
+      // 4. AI 두뇌(Gemini API 키 설정) 모달 주입 — 키를 넣으면 실제 Gemini 2.5 Flash와 100% 직결!
+      const aiBrainModalWrap = document.createElement('div');
+      aiBrainModalWrap.innerHTML = `
+        <div id="aiBrainModal" class="hidden pocha-modal-backdrop">
+          <div class="pocha-modal-box" style="max-width:455px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;padding-bottom:10px;margin-bottom:12px;">
+              <div>
+                <span style="font-size:10px;font-weight:800;color:#f472b6;">DEEP CONVERSATION ENGINE</span>
+                <h3 style="margin:2px 0 0;font-size:18px;font-weight:900;">🧠 초지능 심층 AI 대화 설정</h3>
+              </div>
+              <button type="button" onclick="closeAiBrainModal()" style="padding:6px 12px;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;">닫기 ✕</button>
+            </div>
+
+            <div style="font-size:12px;color:#cbd5e1;line-height:1.55;margin-bottom:12px;background:rgba(15,23,42,0.85);padding:12px;border-radius:14px;border:1px solid #334155;">
+              <div>✅ <strong>기본 내장 심층 엔진 (무료·즉시 작동)</strong>: 감정 공감·맥락 기억·꼬리질문이 탑재되어 키 없이도 깊은 대화가 가능합니다.</div>
+              <div style="margin-top:6px;color:#fde68a;">🚀 <strong>실제 Gemini AI 직결 모드 (선택)</strong>: 무료 Google AI Studio 키를 입력하면 지금 저와 대화하는 것처럼 <strong>무제한 자유 주제·인생 상담·끝장 토론</strong>이 작동합니다! (브라우저에만 안전 저장)</div>
+            </div>
+
+            <label style="display:block;font-size:11.5px;font-weight:800;color:#bae6fd;margin-bottom:6px;">🔑 Gemini API Key (선택사항)</label>
+            <input id="geminiKeyInput" type="password" placeholder="AIzaSy... (비워두면 내장 심층 대화 엔진 사용)" class="pocha-text-input" style="font-family:monospace;margin-bottom:12px;" />
+
+            <div style="display:flex;gap:8px;">
+              <button type="button" onclick="saveAiBrainKey()" style="flex:1;padding:12px;border-radius:14px;background:linear-gradient(90deg,#7c3aed,#ec4899);color:#fff;font-weight:900;font-size:13px;">
+                💾 저장하고 깊은 대화 시작하기
+              </button>
+              <button type="button" onclick="clearAiBrainKey()" style="padding:12px 14px;border-radius:14px;background:#1e293b;color:#cbd5e1;font-size:12px;font-weight:800;">
+                초기화
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(aiBrainModalWrap);
+
+      window.openAiBrainModal = function () {
+        document.getElementById('geminiKeyInput').value = appState.geminiApiKey || '';
+        document.getElementById('aiBrainModal').classList.remove('hidden');
+      };
+      window.closeAiBrainModal = () => document.getElementById('aiBrainModal').classList.add('hidden');
+      window.saveAiBrainKey = function () {
+        const val = document.getElementById('geminiKeyInput').value.trim();
+        appState.geminiApiKey = val;
+        if (val) {
+          localStorage.setItem(AI_KEY_STORAGE, val);
+          showToastMsg('🧠 Gemini AI 두뇌 연결 완료! 이제 어떤 깊은 주제든 실시간으로 완벽히 대화합니다!');
+          appendLocalChat('시스템', '🧠 [초지능 Gemini 모드 활성화] 이제 철학, 인생 고민, 농담까지 진짜 사람처럼 깊게 대화합니다!', 'system');
+        } else {
+          localStorage.removeItem(AI_KEY_STORAGE);
+          showToastMsg('✅ 내장 심층 공감 대화 모드로 설정되었습니다!');
+        }
+        closeAiBrainModal();
+      };
+      window.clearAiBrainKey = function () {
+        document.getElementById('geminiKeyInput').value = '';
+        appState.geminiApiKey = '';
+        localStorage.removeItem(AI_KEY_STORAGE);
+        showToastMsg('🔄 API 키가 초기화되어 내장 심층 엔진으로 동작합니다.');
+      };
+
+      // 5. 원형 테이블에 [얼큰 김치 수제비] 추가
+      const dishGrid = document.querySelector('.table-dish-grid');
+      if (dishGrid && !document.getElementById('dishSlot-kimchiSujebi')) {
+        const sujebiSlot = document.createElement('div');
+        sujebiSlot.id = 'dishSlot-kimchiSujebi';
+        sujebiSlot.className = 'dish-slot';
+        sujebiSlot.title = '클릭해서 얼큰 김치 수제비 먹기 (다 먹으면 클릭 시 자동 새 냄비 세팅!)';
+        sujebiSlot.setAttribute('onclick', 'eatKimchiSujebi()');
+        sujebiSlot.innerHTML = `
+          <div id="kimchiSujebiSvgHolder" class="dish-art-lg"></div>
+          <div class="dish-pill-tag" style="background:rgba(127,29,29,0.95);border-color:#fb923c;">
+            <span>🍲 김치수제비</span>
+            <span id="kimchiSujebiCountPill" style="color:#fcd34d;font-family:monospace;">6/6</span>
+          </div>
+        `;
+        dishGrid.insertBefore(sujebiSlot, dishGrid.firstChild);
+      }
+
+      const menuScrollBox = document.querySelector('#menuModal .pocha-modal-box > div:last-child');
+      if (menuScrollBox) {
+        const sujebiMenuBtn = document.createElement('button');
+        sujebiMenuBtn.className = 'menu-item-btn';
+        sujebiMenuBtn.style.borderColor = 'rgba(251, 146, 60, 0.85)';
+        sujebiMenuBtn.style.background = 'linear-gradient(90deg, rgba(127,29,29,0.55), rgba(30,41,59,0.95))';
+        sujebiMenuBtn.setAttribute('onclick', "orderMenuItem('kimchiSujebi')");
+        sujebiMenuBtn.innerHTML = `
+          <div>
+            <div style="font-weight:900;font-size:14px;color:#fed7aa;">
+              🍲🔥 얼큰 묵은지 김치수제비
+              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#ea580c;color:#fff;margin-left:4px;">NEW 시그니처</span>
+            </div>
+            <div style="font-size:11px;color:#cbd5e1;margin-top:2px;">잘 익은 묵은지 + 손으로 직접 떼어 넣은 쫀득 수제비 전골 (6국자)</div>
+          </div>
+          <span style="font-family:monospace;font-weight:900;color:#fcd34d;font-size:14px;white-space:nowrap;">15,000원</span>
+        `;
+        menuScrollBox.insertBefore(sujebiMenuBtn, menuScrollBox.firstChild);
+      }
+
+      // ==================== [요청 2] 음식 다 먹었을 때 클릭하면 즉시 자동 리필 세팅 ====================
+      function autoRefillDishAndEat(itemKey, leftProp, maxCount, eatCallback) {
+        appState[leftProp] = maxCount;
+        if (MENU_CATALOG[itemKey]) {
+          appState.billQty[itemKey] = (appState.billQty[itemKey] || 0) + 1;
+          const meta = MENU_CATALOG[itemKey];
+          const priceTxt = meta.isService ? '서비스 무료' : `+${meta.unitPrice.toLocaleString()}원`;
+          showToastMsg(`🍽️ 다 비운 [${meta.name}] 접시를 클릭해 새 요리가 자동 세팅되었습니다! (${priceTxt})`);
+          appendLocalChat('방어집 사장님', `"어이쿠 빈 접시 보자마자 [${meta.name}] 따끈하게 새로 리필해 드렸습니데이~!" (${priceTxt})`, 'chef');
+        }
+        renderAllVisuals();
+        sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
+        // 리필과 동시에 바로 맛있게 한 입 먹는 모션까지 매끄럽게 실행
+        setTimeout(() => eatCallback(), 120);
+      }
+
+      const _baseEatBangeo = window.eatBangeo;
+      window.eatBangeo = function (fromRemote = false) {
+        if (!fromRemote && appState.bangeoLeft <= 0) {
+          autoRefillDishAndEat('bangeo', 'bangeoLeft', 10, () => _baseEatBangeo(false));
+          return;
+        }
+        _baseEatBangeo(fromRemote);
+      };
+
+      const _baseEatKimbap = window.eatKimbap;
+      window.eatKimbap = function (fromRemote = false) {
+        if (!fromRemote && appState.kimbapLeft <= 0) {
+          autoRefillDishAndEat('kimbap', 'kimbapLeft', 8, () => _baseEatKimbap(false));
+          return;
+        }
+        _baseEatKimbap(fromRemote);
+      };
+
+      const _baseEatRamen = window.eatServiceRamen;
+      window.eatServiceRamen = function (fromRemote = false) {
+        if (!fromRemote && appState.ramenLeft <= 0) {
+          autoRefillDishAndEat('serviceRamen', 'ramenLeft', 5, () => _baseEatRamen(false));
+          return;
+        }
+        _baseEatRamen(fromRemote);
+      };
+
+      const _baseEatMaratang = window.eatMaratang;
+      window.eatMaratang = function (fromRemote = false) {
+        if (!fromRemote && appState.maratangLeft <= 0) {
+          appState.maratangOrdered = true;
+          autoRefillDishAndEat('maratang', 'maratangLeft', 6, () => _baseEatMaratang(false));
+          return;
+        }
+        _baseEatMaratang(fromRemote);
+      };
+
+      const _baseEatGyeran = window.eatGyeranmari;
+      window.eatGyeranmari = function (fromRemote = false) {
+        if (!fromRemote && appState.gyeranmariLeft <= 0) {
+          appState.gyeranmariOrdered = true;
+          autoRefillDishAndEat('gyeranmari', 'gyeranmariLeft', 8, () => _baseEatGyeran(false));
+          return;
+        }
+        _baseEatGyeran(fromRemote);
+      };
+
+      const _baseEatDak = window.eatDakggochi;
+      window.eatDakggochi = function (fromRemote = false) {
+        if (!fromRemote && appState.dakggochiLeft <= 0) {
+          appState.dakggochiOrdered = true;
+          autoRefillDishAndEat('dakggochi', 'dakggochiLeft', 6, () => _baseEatDak(false));
+          return;
+        }
+        _baseEatDak(fromRemote);
+      };
+
+      const _baseEatYuringi = window.eatYuringi;
+      window.eatYuringi = function (fromRemote = false) {
+        if (!fromRemote && appState.yuringiLeft <= 0) {
+          appState.yuringiOrdered = true;
+          autoRefillDishAndEat('yuringi', 'yuringiLeft', 8, () => _baseEatYuringi(false));
+          return;
+        }
+        _baseEatYuringi(fromRemote);
+      };
+
+      const _baseEatTteok = window.eatTteokbokki;
+      window.eatTteokbokki = function (fromRemote = false) {
+        if (!fromRemote && appState.tteokLeft <= 0) {
+          appState.tteokOrdered = true;
+          autoRefillDishAndEat('tteokbokki', 'tteokLeft', 8, () => _baseEatTteok(false));
+          return;
+        }
+        _baseEatTteok(fromRemote);
+      };
+
+      const _baseEatFuto = window.eatFutomaki;
+      window.eatFutomaki = function (fromRemote = false) {
+        if (!fromRemote && appState.futoLeft <= 0) {
+          appState.futoOrdered = true;
+          autoRefillDishAndEat('futomaki', 'futoLeft', 6, () => _baseEatFuto(false));
+          return;
+        }
+        _baseEatFuto(fromRemote);
+      };
+
+      const _baseEatSherbet = window.eatPinesherbet;
+      window.eatPinesherbet = function (fromRemote = false) {
+        if (!fromRemote && appState.pinesherbetLeft <= 0) {
+          appState.pinesherbetOrdered = true;
+          autoRefillDishAndEat('pinesherbet', 'pinesherbetLeft', 6, () => _baseEatSherbet(false));
+          return;
+        }
+        _baseEatSherbet(fromRemote);
+      };
+
+      window.eatKimchiSujebi = function (fromRemote = false) {
+        if (!fromRemote && appState.kimchiSujebiLeft <= 0) {
+          appState.kimchiSujebiOrdered = true;
+          autoRefillDishAndEat('kimchiSujebi', 'kimchiSujebiLeft', 6, () => window.eatKimchiSujebi(false));
+          return;
+        }
+        appState.kimchiSujebiLeft = Math.max(0, appState.kimchiSujebiLeft - 1);
+        appState.eatenPiecesTotal += 1;
+        appState.drunkPct = Math.max(0, appState.drunkPct - 5);
+
+        animateFoodToMouth(
+          'dishSlot-kimchiSujebi',
+          '<path d="M28,24 C34,19 46,21 47,28 C48,34 37,37 30,33 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/><circle cx="39" cy="27" r="2.5" fill="#dc2626"/>',
+          'me',
+          true,
+          '후루룩~ 묵은지 김치수제비 칼칼쫀득!! 🍲🔥'
+        );
+        showSeatSpeechBubble('me', '크으~ 묵은지 국물에 쫀득한 수제비! 해장되면서 술이 술술 들어간다 🍲');
+        triggerRandomCompanionReaction([
+          '와 김치수제비 국물 진짜 깊고 칼칼하다!! 소주 안주로 완전 예술인데?! 😍',
+          '수제비 반죽이 쫀득해서 계속 손이 가네ㅋㅋ 국물 식으면 데워달라고 하자!'
+        ]);
+        renderAllVisuals();
+        if (!fromRemote) sendMultiplayerEvent({ type: 'EAT_DISH', dish: 'kimchiSujebi', actor: appState.myName, state: exportSyncPayload() });
+      };
+
+      const _origOrderMenuItem = window.orderMenuItem;
+      window.orderMenuItem = function (itemKey, fromRemote = false, actorName = null) {
+        if (itemKey === 'kimchiSujebi') {
+          closeMenuModal();
+          const who = actorName || appState.myName;
+          appState.kimchiSujebiOrdered = true;
+          appState.kimchiSujebiLeft = 6;
+          appState.billQty.kimchiSujebi = (appState.billQty.kimchiSujebi || 0) + 1;
+          triggerChefWalkIn('👨‍🍳 사장님: "잘 익은 묵은지에 쫀득한 손수제비 듬뿍 넣은 얼큰 김치 수제비 보글보글 나왔습니데이~!"', () => renderAllVisuals());
+          renderAllVisuals();
+          appendLocalChat(who, `🍲 [얼큰 묵은지 김치수제비] 주문 완료! (+15,000원)`, 'action');
+          if (!fromRemote) sendMultiplayerEvent({ type: 'ORDER_ITEM', itemKey, actor: appState.myName, state: exportSyncPayload() });
+          return;
+        }
+        _origOrderMenuItem(itemKey, fromRemote, actorName);
+      };
+
+      const _origEatRandom = window.eatRandomAnju;
+      window.eatRandomAnju = function () {
+        if (appState.kimchiSujebiOrdered && appState.kimchiSujebiLeft > 0 && Math.random() < 0.35) {
+          window.eatKimchiSujebi();
+          return;
+        }
+        _origEatRandom();
+      };
+
+      // ==================== 연예인 비주얼 얼굴 SVG & 얼큰 김치 수제비 렌더링 ====================
+      CHARACTER_STYLES.forEach(c => {
+        if (c.id === 'jisu') c.tag = '걸그룹 센터상 · 여신 S컬 웨이브';
+        if (c.id === 'seoyeon') c.tag = '청순 여배우상 · 시스루 허쉬컷';
+        if (c.id === 'hayoon') c.tag = '과즙미 아이돌상 · 로우번 모헤어';
+        if (c.id === 'dohyun') c.tag = '냉미남 배우상 · 차콜 코트 애즈펌';
+        if (c.id === 'junwoo') c.tag = '첫사랑 남주상 · 시스루 댄디니트';
+        if (c.id === 'minjae') c.tag = '모델 메인비주얼 · 시크 리프컷';
+      });
+
+      const CELEBRITY_FACE_PRESETS = {
+        jisu:    { skinA: '#fff4ef', skinB: '#f7d2c4', eye: '#4a2c2a', lip: '#f43f5e', hairA: '#1c161d', hairB: '#4a3b52', mole: [73.5, 59.5] },
+        seoyeon: { skinA: '#fff6f2', skinB: '#f5d5c8', eye: '#5c3a28', lip: '#ec4899', hairA: '#2e1d16', hairB: '#6d4c41', mole: [46.5, 57.5] },
+        hayoon:  { skinA: '#fff2eb', skinB: '#f6cebe', eye: '#3b231a', lip: '#fb7185', hairA: '#181518', hairB: '#3f3a45', mole: [72.0, 62.0] },
+        dohyun:  { skinA: '#fdf0e6', skinB: '#ecc3ad', eye: '#232329', lip: '#d97278', hairA: '#12131a', hairB: '#384152', mole: [45.0, 56.0] },
+        junwoo:  { skinA: '#fff3ea', skinB: '#efcab5', eye: '#3e2723', lip: '#de787c', hairA: '#2b1e19', hairB: '#5d4037', mole: null },
+        minjae:  { skinA: '#fcefe6', skinB: '#eabfa8', eye: '#1e293b', lip: '#c96870', hairA: '#0f172a', hairB: '#475569', mole: [74.0, 56.5] }
+      };
+
+      window.renderRealisticPortraitSVG = function (styleId, drunkPct, seatKey, forceSantaHat = false) {
+        const st = CHARACTER_STYLES.find(s => s.id === styleId) || CHARACTER_STYLES[0];
+        const cel = CELEBRITY_FACE_PRESETS[st.id] || CELEBRITY_FACE_PRESETS.jisu;
+        const uid = `${st.id}_${seatKey}`;
+        const isFemale = st.gender === 'f';
+        const showSanta = forceSantaHat || appState.isChristmasMode;
+        const blushAlpha = Math.min(0.82, Math.max(0.18, (drunkPct / 100) * 0.82));
+        const sleepy = drunkPct >= 75 ? 1.1 : (drunkPct >= 45 ? 0.5 : 0);
+
+        let backHair = st.id === 'jisu'
+          ? `<path d="M26,44 C15,72 17,108 26,135 L94,135 C103,108 105,72 94,44 C88,18 74,10 60,10 C46,10 32,18 26,44 Z" fill="url(#celHair_${uid})"/>`
+          : st.id === 'seoyeon'
+          ? `<path d="M29,44 C21,72 23,104 29,128 L91,128 C97,104 99,72 91,44 C85,18 73,11 60,11 C47,11 35,18 29,44 Z" fill="url(#celHair_${uid})"/>`
+          : st.id === 'hayoon'
+          ? `<circle cx="85" cy="64" r="13.5" fill="url(#celHair_${uid})"/>`
+          : st.id === 'minjae'
+          ? `<path d="M31,48 L25,84 L35,81 L32,94 L88,94 L85,81 L95,84 L89,48 Z" fill="url(#celHair_${uid})"/>`
+          : `<path d="M33,44 C30,62 34,78 38,86 L82,86 C86,78 90,62 87,44 Z" fill="url(#celHair_${uid})"/>`;
+
+        let outfit = isFemale
+          ? (st.id === 'jisu'
+              ? `<path d="M18,136 C21,103 37,93 60,93 C83,93 99,103 102,136 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/><path d="M40,95 Q60,106 80,95" fill="none" stroke="#fdba74" stroke-width="2.6"/><circle cx="60" cy="100" r="1.8" fill="#fde047"/>`
+              : st.id === 'seoyeon'
+              ? `<path d="M18,136 C21,101 37,91 60,91 C83,91 99,101 102,136 Z" fill="#1e293b" stroke="#64748b" stroke-width="1"/><path d="M46,91 L60,118 L74,91 Z" fill="#fff1f2"/><circle cx="60" cy="123" r="2.2" fill="#fbbf24"/>`
+              : `<path d="M18,136 C21,102 37,92 60,92 C83,92 99,102 102,136 Z" fill="#fda4af"/><path d="M45,92 L60,117 L75,92 Z" fill="#fff1f2"/>`)
+          : (st.id === 'dohyun'
+              ? `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#1f2937"/><path d="M45,88 L60,136 L75,88 Z" fill="#09090b"/>`
+              : st.id === 'junwoo'
+              ? `<path d="M15,136 C18,98 35,89 60,89 C85,89 102,98 105,136 Z" fill="#1e3a8a"/><polygon points="47,89 60,109 73,89" fill="#f8fafc"/>`
+              : `<path d="M14,136 C17,97 35,88 60,88 C85,88 103,97 106,136 Z" fill="#18181b"/><path d="M46,89 Q60,104 74,89" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="2.5 2"/>`);
+
+        const jawPath = isFemale
+          ? 'M37.5,43 C37,61 42.5,73 54.5,79.2 C58,81 62,81 65.5,79.2 C77.5,73 83,61 82.5,43 C82,24 72,18 60,18 C48,18 38,24 37.5,43 Z'
+          : 'M36.5,42 C36.5,60 41.5,73 53.5,80 C57.5,82 62.5,82 66.5,80 C78.5,73 83.5,60 83.5,42 C83,23 72.5,17 60,17 C47.5,17 37,23 36.5,42 Z';
+
+        const frontHair = isFemale
+          ? `<path d="M32,47 C30,20 44,10 60,10 C76,10 90,20 88,47 C83,31 75,24 66,23 C67,33 64,41 61,45 C60,34 58,26 55,23 C53,33 49,41 45,44 C45,33 42,26 38,26 C35,33 34,41 32,47 Z" fill="url(#celHair_${uid})"/>
+             <path d="M33,42 C30,62 33,84 38,98 C31,84 28,62 31,44 Z" fill="url(#celHair_${uid})"/><path d="M87,42 C90,62 87,84 82,98 C89,84 92,62 89,44 Z" fill="url(#celHair_${uid})"/>`
+          : st.id === 'dohyun'
+          ? `<path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 C85,31 77,23 67,22 C72,32 69,44 62,48 C65,37 64,27 58,22 C52,28 49,38 53,48 C44,43 42,32 48,22 C39,25 34,34 31,46 Z" fill="url(#celHair_${uid})"/>`
+          : `<path d="M31,46 C29,18 44,9 60,9 C76,9 91,18 89,46 L81,31 L76,45 L69,28 L62,46 L56,28 L49,45 L43,30 Z" fill="url(#celHair_${uid})"/>`;
+
+        const moleSVG = cel.mole ? `<circle cx="${cel.mole[0]}" cy="${cel.mole[1]}" r="0.85" fill="#3b231a" opacity="0.85"/>` : '';
+        const earringSVG = isFemale
+          ? `<circle cx="35.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="35.5" y1="60" x2="35.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="35.5" cy="69.5" r="2" fill="#fffbeb"/>
+             <circle cx="84.5" cy="58.5" r="1.5" fill="#fde68a"/><line x1="84.5" y1="60" x2="84.5" y2="68" stroke="#fde68a" stroke-width="1"/><circle cx="84.5" cy="69.5" r="2" fill="#fffbeb"/>`
+          : `<circle cx="35.2" cy="59" r="2.6" fill="none" stroke="#e2e8f0" stroke-width="1.3"/>`;
+
+        const santaHatSVG = showSanta ? `
+          <path d="M33,26 C35,10 56,3 76,12 C84,16 90,22 93,27 L33,26 Z" fill="#dc2626"/>
+          <rect x="31" y="23" width="56" height="7" rx="3.5" fill="#ffffff"/><circle cx="94" cy="26" r="5" fill="#ffffff"/>
+        ` : '';
+
+        return `
+          <svg id="portraitSvg-${seatKey}" viewBox="0 0 120 136" class="portrait-breathe" style="filter:drop-shadow(0 8px 16px rgba(0,0,0,0.65));">
+            <defs>
+              <linearGradient id="celSkin_${uid}" x1="0.3" y1="0" x2="0.7" y2="1"><stop offset="0%" stop-color="${cel.skinA}"/><stop offset="100%" stop-color="${cel.skinB}"/></linearGradient>
+              <linearGradient id="celHair_${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cel.hairB}"/><stop offset="45%" stop-color="${cel.hairA}"/><stop offset="100%" stop-color="#09090b"/></linearGradient>
+            </defs>
+            ${backHair}
+            <rect x="52" y="72" width="16" height="22" rx="6" fill="url(#celSkin_${uid})"/>
+            <path d="M52,76 Q60,82 68,76" fill="none" stroke="rgba(160,95,75,0.28)" stroke-width="1.4"/>
+            ${outfit}
+            <ellipse cx="35.8" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/><ellipse cx="84.2" cy="54" rx="3.5" ry="6.2" fill="url(#celSkin_${uid})"/>
+            <path d="${jawPath}" fill="url(#celSkin_${uid})"/>
+            <ellipse cx="45.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
+            <ellipse cx="74.5" cy="58.5" rx="8.8" ry="5.2" fill="url(#drunkCheekGrad)" opacity="${blushAlpha.toFixed(2)}"/>
+            <path d="M42,${isFemale ? 43.2 : 42.2} Q49,${isFemale ? 40.8 : 40.2} 55.2,${isFemale ? 42.8 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
+            <path d="M64.8,${isFemale ? 42.8 : 42.2} Q71,${isFemale ? 40.8 : 40.2} 78,${isFemale ? 43.2 : 42.2}" fill="none" stroke="${cel.hairA}" stroke-width="${isFemale ? 1.6 : 2.3}" stroke-linecap="round" opacity="0.88"/>
+            <g class="blink-lid">
+              <path d="M43.5,47.2 Q49.5,44.6 55.2,47.4 M64.8,47.4 Q70.5,44.6 76.5,47.2" fill="none" stroke="#a6735c" stroke-width="0.85" opacity="0.75"/>
+              <ellipse cx="49.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
+              <circle cx="49.6" cy="50.4" r="3.35" fill="${cel.eye}"/><circle cx="49.6" cy="50.5" r="1.65" fill="#09090b"/>
+              <circle cx="48.2" cy="49.1" r="1.2" fill="#ffffff"/><circle cx="51.2" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
+              <ellipse cx="70.5" cy="50.5" rx="5.8" ry="${(3.7 - sleepy * 0.7).toFixed(2)}" fill="#ffffff"/>
+              <circle cx="70.4" cy="50.4" r="3.35" fill="${cel.eye}"/><circle cx="70.4" cy="50.5" r="1.65" fill="#09090b"/>
+              <circle cx="69.0" cy="49.1" r="1.2" fill="#ffffff"/><circle cx="72.0" cy="51.6" r="0.65" fill="#ffffff" opacity="0.9"/>
+              <path d="M43,${(50.2 + sleepy).toFixed(1)} Q49.5,${(45.8 + sleepy).toFixed(1)} 55.8,${(50.4 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
+              <path d="M64.2,${(50.4 + sleepy).toFixed(1)} Q70.5,${(45.8 + sleepy).toFixed(1)} 77,${(50.2 + sleepy).toFixed(1)}" fill="none" stroke="#141417" stroke-width="${isFemale ? 2.1 : 1.8}" stroke-linecap="round"/>
+              ${isFemale ? `<path d="M43,50 L40.8,48 M77,50 L79.2,48" stroke="#141417" stroke-width="1.2" stroke-linecap="round"/>` : ''}
+              <path d="M45,54.8 Q49.5,56.3 54,54.7 M66,54.7 Q70.5,56.3 75,54.8" fill="none" stroke="#ffffff" stroke-width="0.9" opacity="0.55" stroke-linecap="round"/>
+            </g>
+            <path d="M59.7,48.5 L59.1,58.4 Q60,60.3 61.8,59.2" fill="none" stroke="#c08870" stroke-width="1.1" stroke-linecap="round"/>
+            <ellipse cx="60.2" cy="58.3" rx="1.1" ry="0.8" fill="#ffffff" opacity="0.65"/>
+            <g class="mouth-group">
+              <path d="M54.2,66.2 Q57.3,64.2 60,65.2 Q62.7,64.2 65.8,66.2 Q62.8,70.2 60,70.2 Q57.2,70.2 54.2,66.2 Z" fill="${cel.lip}" opacity="0.92"/>
+              <path d="M54.5,66.4 Q60,67.4 65.5,66.4" fill="none" stroke="#881337" stroke-width="0.8" opacity="0.7"/>
+              <ellipse cx="61.2" cy="68.0" rx="2.4" ry="0.75" fill="#ffffff" opacity="0.55"/>
+            </g>
+            ${moleSVG}${earringSVG}${frontHair}${santaHatSVG}
+          </svg>
+        `;
+      };
+
+      const _origRenderDishes = renderAllDishesSVG;
+      renderAllDishesSVG = function () {
+        _origRenderDishes();
+        const sSlot = document.getElementById('dishSlot-kimchiSujebi');
+        const sHolder = document.getElementById('kimchiSujebiSvgHolder');
+        const sPill = document.getElementById('kimchiSujebiCountPill');
+        if (!sSlot || !sHolder || !sPill) return;
+
+        if (appState.kimchiSujebiOrdered) {
+          sSlot.classList.remove('hidden');
+          sHolder.innerHTML = `
+            <svg viewBox="0 0 156 114" style="width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,0.7));">
+              <path d="M10,56 C2,56 2,70 10,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+              <path d="M146,56 C154,56 154,70 146,70" fill="none" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+              <ellipse cx="78" cy="63" rx="66" ry="41" fill="#18181b" stroke="#52525b" stroke-width="2.5"/>
+              <ellipse cx="78" cy="61" rx="58" ry="34" fill="#7f1d1d"/>
+              ${appState.kimchiSujebiLeft > 0 ? `
+                <ellipse cx="78" cy="61" rx="56" ry="32" fill="url(#maraBrothGrad)"/>
+                <circle class="sujebi-bubble" cx="48" cy="52" r="2.8" fill="#fca5a5"/>
+                <circle class="sujebi-bubble" cx="106" cy="56" r="2.5" fill="#fed7aa"/>
+                <circle class="sujebi-bubble" cx="66" cy="76" r="3.0" fill="#fca5a5"/>
+                <path d="M36,58 Q50,50 60,60 Q48,68 36,63 Z" fill="#b91c1c" stroke="#f87171" stroke-width="0.8"/>
+                <path d="M84,44 Q98,46 102,56 Q90,59 82,51 Z" fill="#b91c1c" stroke="#fb923c" stroke-width="0.8"/>
+                <path d="M74,73 Q92,69 104,78 Q88,85 73,79 Z" fill="#991b1b" stroke="#f87171" stroke-width="0.8"/>
+                <path d="M50,48 C57,43 69,45 71,52 C72,58 61,62 53,59 C47,56 46,51 50,48 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.1"/>
+                <path d="M82,57 C90,53 104,57 103,65 C102,72 90,74 82,69 C77,65 76,60 82,57 Z" fill="#ffedd5" stroke="#fdba74" stroke-width="1.1"/>
+                <path d="M44,67 C52,63 65,65 66,72 C67,78 56,81 47,77 C41,75 40,70 44,67 Z" fill="#ffffff" stroke="#fed7aa" stroke-width="1.1"/>
+                <path d="M65,59 C71,56 80,58 81,64 C81,69 72,72 65,69 C61,66 61,61 65,59 Z" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+                <ellipse cx="68" cy="54" rx="6" ry="2.5" transform="rotate(-22 68 54)" fill="#22c55e" stroke="#15803d" stroke-width="0.8"/>
+                <ellipse cx="88" cy="66" rx="6" ry="2.5" transform="rotate(18 88 66)" fill="#4ade80" stroke="#15803d" stroke-width="0.8"/>
+                <circle cx="76" cy="50" r="3" fill="#dc2626" stroke="#fef08a" stroke-width="0.9"/>
+                <path d="M54,34 Q48,20 56,10" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8" class="steam-wisp"/>
+                <path d="M78,31 Q84,17 76,8" fill="none" stroke="#fed7aa" stroke-width="2.4" opacity="0.82" class="steam-wisp"/>
+              ` : '<text x="78" y="64" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fde047">클릭 시 새 냄비 자동리필!</text>'}
+            </svg>
+          `;
+          sPill.textContent = appState.kimchiSujebiLeft > 0 ? `${appState.kimchiSujebiLeft}/6` : '자동리필';
+        } else {
+          sSlot.classList.add('hidden');
+        }
+      };
+
+      // ==================== 강퇴(내보내기) 및 합석 ON/OFF ====================
+      window.getSeatedCompanions = function () {
+        const others = Object.entries(appState.remotePlayers)
+          .filter(([cid]) => cid !== myClientId && !appState.kickedClientIds.has(cid))
+          .map(([cid, prof]) => ({ cid, name: prof.name, shortName: prof.name, style: prof.style, isAI: false }));
+
+        const seats = [null, null, null];
+        for (let i = 0; i < 3; i++) {
+          if (others[i]) seats[i] = others[i];
+          else if (appState.aiFillEnabled && !appState.kickedSeats[i]) seats[i] = AI_COMPANIONS_DEFAULT[i];
+        }
+        if (appState._huntedSeatGuest) seats[1] = appState._huntedSeatGuest;
+        return seats;
+      };
+
+      function updateRestoreButtonVisibility() {
+        const restoreBtn = document.getElementById('restoreKickedBtn');
+        if (!restoreBtn) return;
+        const hasKicked = appState.kickedSeats[0] || appState.kickedSeats[1] || appState.kickedSeats[2] || appState.kickedClientIds.size > 0;
+        restoreBtn.classList.toggle('hidden', !hasKicked);
+      }
+
+      window.kickCharacterAtSeat = function (seatIdx) {
+        const seats = getSeatedCompanions();
+        const target = seats[seatIdx];
+        if (!target) return;
+        const targetName = target.shortName || target.name;
+        playBiteChewSfx();
+
+        if (target.isHuntedGuest) {
+          appState._huntedSeatGuest = null;
+          appState.kickedSeats[seatIdx] = true;
+        } else if (!target.isAI && target.cid) {
+          appState.kickedClientIds.add(target.cid);
+          delete appState.remotePlayers[target.cid];
+          updateLivePeerBadge();
+          sendMultiplayerEvent({ type: 'KICK_PLAYER', targetCid: target.cid, targetName, kicker: appState.myName });
+        } else {
+          appState.kickedSeats[seatIdx] = true;
+        }
+
+        const bubble = document.getElementById(`seatBubble-${seatIdx + 1}`);
+        if (bubble) bubble.classList.add('hidden');
+        showToastMsg(`🚪 [${targetName}]님을 테이블에서 강퇴(내보내기)했습니다!`);
+        appendLocalChat('시스템', `🚪 [${targetName}]님이 강퇴되어 자리를 비웠습니다.`, 'system');
+        updateRestoreButtonVisibility();
+        renderAllVisuals();
+      };
+
+      window.restoreAllKickedSeats = function () {
+        appState.kickedSeats = { 0: false, 1: false, 2: false };
+        appState.kickedClientIds.clear();
+        appState.aiFillEnabled = true;
+        const aiFillBtn = document.getElementById('aiFillToggleBtn');
+        if (aiFillBtn) aiFillBtn.textContent = '👥 AI 채움';
+        playSojuClinkSfx();
+        updateRestoreButtonVisibility();
+        renderAllVisuals();
+        showToastMsg('🙌 비워두었던 자리에 멤버들이 다시 착석했습니다!');
+      };
+
+      const _origHandleRoomMsg = handleIncomingRoomMessage;
+      handleIncomingRoomMessage = function (msg) {
+        if (msg && msg.senderCid && appState.kickedClientIds.has(msg.senderCid)) return;
+        if (msg && msg.type === 'KICK_PLAYER') {
+          if (msg.targetCid === myClientId) {
+            destroyPeerSession();
+            appState.mode = 'ai';
+            showToastMsg(`🚨 [${msg.kicker}]님에 의해 강퇴되어 개인 테이블로 전환되었습니다.`);
+            renderAllVisuals();
+          } else if (msg.targetCid && appState.remotePlayers[msg.targetCid]) {
+            delete appState.remotePlayers[msg.targetCid];
+            updateLivePeerBadge();
+            renderAllVisuals();
+          }
+          return;
+        }
+        _origHandleRoomMsg(msg);
+      };
+
+      const _prevRenderVisuals = renderAllVisuals;
+      renderAllVisuals = function () {
+        _prevRenderVisuals();
+        const seats = getSeatedCompanions();
+        seats.forEach((person, idx) => {
+          const seatNum = idx + 1;
+          const portraitSlot = document.getElementById(`seatPortrait-${seatNum}`);
+          if (!portraitSlot || !portraitSlot.parentElement) return;
+          let kickBtn = document.getElementById(`seatKickBtn-${seatNum}`);
+          if (person) {
+            if (!kickBtn) {
+              kickBtn = document.createElement('button');
+              kickBtn.id = `seatKickBtn-${seatNum}`;
+              kickBtn.type = 'button';
+              kickBtn.className = 'seat-kick-btn';
+              portraitSlot.parentElement.appendChild(kickBtn);
+            }
+            kickBtn.title = `${person.shortName || person.name} 강퇴하기`;
+            kickBtn.textContent = '✕';
+            kickBtn.onclick = (ev) => { ev.stopPropagation(); window.kickCharacterAtSeat(idx); };
+            kickBtn.classList.remove('hidden');
+          } else if (kickBtn) {
+            kickBtn.classList.add('hidden');
+          }
+        });
+      };
+
+      window.toggleHapseokMaster = function () {
+        appState.hapseokEnabled = !appState.hapseokEnabled;
+        const btn = document.getElementById('hapseokMasterBtn');
+        const podL = document.getElementById('neighborPod-left');
+        const podR = document.getElementById('neighborPod-right');
+
+        if (appState.hapseokEnabled) {
+          btn.textContent = '🪑 합석 ON';
+          btn.className = 'top-pill top-pill-toggle-on';
+          if (podL) podL.classList.remove('neighbor-disabled');
+          if (podR) podR.classList.remove('neighbor-disabled');
+          showToastMsg('🪑 합석 기능 ON! 옆테이블 원정 및 주변 헌팅이 허용됩니다.');
+        } else {
+          btn.textContent = '🔒 합석 OFF';
+          btn.className = 'top-pill top-pill-toggle-off';
+          if (podL) podL.classList.add('neighbor-disabled');
+          if (podR) podR.classList.add('neighbor-disabled');
+          appState.activeHuntingCandidate = null;
+          document.getElementById('huntingApproachCard').classList.add('hidden');
+          appState.visitingSide = null;
+          appState._huntedSeatGuest = null;
+          showToastMsg('🔒 합석 기능 OFF! 프라이빗 모드로 전환되었습니다.');
+        }
+        renderAllVisuals();
+      };
+
+      const _origVisitNeighbor = window.visitNeighborTable;
+      window.visitNeighborTable = function (side) {
+        if (!appState.hapseokEnabled) {
+          showToastMsg('🔒 현재 [합석 OFF] 상태입니다! 상단의 [🔒 합석 OFF]를 눌러 켜주세요.');
+          return;
+        }
+        _origVisitNeighbor(side);
+      };
+
+      const _origTriggerHunt = window.triggerHuntApproachEvent;
+      window.triggerHuntApproachEvent = function () {
+        if (!appState.hapseokEnabled) return;
+        _origTriggerHunt();
+      };
+
+      // ==================== [요청 3] 나처럼 대화가 잘 통하는 심층 AI 대화 엔진 ====================
+      const PERSONA_PROFILES = {
+        '서연': { role: '센스 있고 눈치 빠른 단짝 친구. 상대의 말 행간을 읽고 다정하게 짚어주며 대화를 자연스럽게 이끌어감' },
+        '도현': { role: '차분하고 깊이 있는 술메이트. 현실적인 조언과 묵직한 위로, 진솔한 인생 얘기를 잘 들어주는 스타일' },
+        '지수': { role: '따뜻하고 공감 능력이 뛰어난 분위기 메이커. 감정에 깊이 이입해주고 기분 전환을 도와주는 스타일' },
+        '준우': { role: '예의 바르고 호기심 많은 대화 상대. 상대의 생각과 취향을 진지하게 궁금해하며 질문을 잘 던짐' },
+        '하윤': { role: '솔직하고 밝은 에너지를 가진 감성파. 설레는 이야기나 일상 속 작은 행복을 잘 캐치함' },
+        '민재': { role: '쿨해 보이지만 속이 깊고 츤데레 같은 스타일. 핵심을 찌르는 통찰력 있는 한마디를 건넴' }
+      };
+
+      window.toggleAiChatMaster = function () {
+        appState.aiChatEnabled = !appState.aiChatEnabled;
+        const btn = document.getElementById('aiChatMasterBtn');
+        if (appState.aiChatEnabled) {
+          btn.textContent = '🤖 AI대화 ON';
+          btn.className = 'top-pill top-pill-ai-on';
+          showToastMsg('🤖 AI 대화 ON! 멤버들이 맥락을 기억하며 깊이 있게 대화합니다.');
+        } else {
+          btn.textContent = '🔇 AI대화 OFF';
+          btn.className = 'top-pill top-pill-toggle-off';
+          const ind = document.getElementById('v5AiTypingRow');
+          if (ind) ind.remove();
+          showToastMsg('🔇 AI 대화 OFF! AI 자동 응답이 중지되었습니다.');
+        }
+      };
+
+      const _origCompanionReaction = triggerRandomCompanionReaction;
+      triggerRandomCompanionReaction = function (lines) {
+        if (!appState.aiChatEnabled) return;
+        _origCompanionReaction(lines);
+      };
+
+      // 중복 없는 대사 선택 헬퍼
+      function pickFreshLine(candidates) {
+        const unused = candidates.filter(c => !appState.deepMemory.usedResponses.has(c));
+        const pool = unused.length > 0 ? unused : candidates;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        appState.deepMemory.usedResponses.add(chosen);
+        if (appState.deepMemory.usedResponses.size > 40) {
+          appState.deepMemory.usedResponses.clear();
+        }
+        return chosen;
+      }
+
+      // API 키가 없을 때도 사용자의 말을 인용하고 감정·맥락·이전 주제를 이어가는 고도화 심층 응답 생성기
+      function buildDeepContextualFallback(userText, aiSeats) {
+        const msg = userText.trim();
+        const mem = appState.deepMemory;
+        mem.turnCount += 1;
+
+        // 특정 캐릭터 이름을 불렀는지 감지 (예: "도현아 너 생각은 어때?")
+        let primary = aiSeats.find(s => msg.includes(s.p.shortName)) || aiSeats[Math.floor(Math.random() * aiSeats.length)];
+        const others = aiSeats.filter(s => s.seat !== primary.seat);
+        const secondary = others.length > 0 && (msg.length >= 14 || Math.random() < 0.55) ? others[Math.floor(Math.random() * others.length)] : null;
+
+        // 핵심 키워드 추출 (사용자 문장에서 의미 있는 어절 포착)
+        const cleanWords = msg.replace(/[?!.,~ㅋㅎㅠㅜ]/g, ' ').split(/\s+/).filter(w => w.length >= 2);
+        const keyPhrase = cleanWords.length > 0 ? cleanWords[Math.min(cleanWords.length - 1, Math.floor(cleanWords.length / 2))] : '';
+
+        let r1 = '';
+        let r2 = '';
+        let detectedTopic = mem.lastTopic || 'daily';
+
+        // 1. 깊은 고민 / 우울 / 지침 / 번아웃 / 인간관계 피로
+        if (/(힘들|지치|지쳐|우울|불안|막막|고민|번아웃|외로|공허|포기|눈물|속상|스트레스|괴로|답답|후회|자존감)/.test(msg)) {
+          detectedTopic = 'worry';
+          mem.userMood = 'comfort';
+          r1 = pickFreshLine([
+            `그랬구나... 사실 어디 가서 쉽게 꺼내기 힘든 얘기였을 텐데 우리한테 말해줘서 고마워. 요즘 혼자 속으로 얼마나 많이 삼켰어?`,
+            `듣기만 해도 마음이 좀 먹먹하다. ${appState.myName} 네가 그동안 대충 한 게 아니라 너무 잘해보려고 애쓰다 보니까 더 지친 거잖아. 오늘은 좀 내려놔도 돼.`,
+            `사람이 어떻게 맨날 괜찮기만 하겠어. 지금 그렇게 답답하고 흔들리는 것도 네가 진심으로 고민하고 있다는 증거야. 구체적으로 어떤 부분이 제일 마음을 무겁게 해?`,
+            `야, 남들은 결과만 보고 쉽게 말해도 난 네가 얼마나 버텨왔는지 알지. 오늘 밤바다 보면서 마음에 쌓인 거 다 털어놔 봐. 내가 끝까지 들어줄게.`
+          ]);
+          if (secondary) {
+            r2 = pickFreshLine([
+              `맞아, 해결책을 당장 안 찾아도 괜찮으니까 그냥 편하게 다 쏟아내. 우리 편은 무조건 ${appState.myName} 너니까.`,
+              `묵묵히 버틴 것만으로도 이미 충분히 잘하고 있어. 따뜻한 김치수제비 국물 한 숟가락 먼저 떠먹고 천천히 더 얘기해줘.`
+            ]);
+          }
+        }
+        // 2. 직장 / 진로 / 돈 / 미래 / 꿈 / 목표에 대한 진지한 이야기
+        else if (/(미래|진로|이직|퇴사|회사|일자리|돈|성공|꿈|목표|인생|살아가|나이|어른|방향|선택)/.test(msg)) {
+          detectedTopic = 'life_path';
+          r1 = pickFreshLine([
+            `나도 요즘 밤마다 딱 그 생각 많이 해. 남들 속도에 맞추려다 보면 정작 내가 뭘 원하는지 자꾸 놓치게 되잖아. ${appState.myName} 넌 지금 제일 지키고 싶은 기준이 뭐야?`,
+            `어른이 된다는 게 정답을 아는 게 아니라, 모른 채로도 내 선택을 믿어주는 거라더라. 네가 요즘 고민하는 그 방향, 난 꽤 멋지다고 생각해.`,
+            `현실적인 문제랑 내가 진짜 하고 싶은 일 사이에서 균형 잡는 게 제일 어렵지. 만약 당장 눈치 볼 거 하나도 없다면 넌 제일 먼저 뭘 해보고 싶어?`,
+            `술자리에서 이런 깊은 인생 얘기 나눌 때가 제일 좋더라. 조급해하지 마, 지금 이렇게 치열하게 고민하는 시간 자체가 이미 앞으로 나아가고 있는 거니까.`
+          ]);
+          if (secondary) {
+            r2 = pickFreshLine([
+              `인정. 1년 뒤의 우리가 오늘 이 밤바다 포차 대화를 떠올리면 꽤 웃으면서 추억할걸? 네 선택을 믿어봐!`,
+              `난 ${appState.myName} 네가 결국 네 색깔대로 잘 해낼 사람이라는 거 확신해. 내가 옆에서 계속 응원할게.`
+            ]);
+          }
+        }
+        // 3. 사랑 / 연애 / 이별 / 썸 / 사람 마음
+        else if (/(연애|사랑|이별|전남친|전여친|짝사랑|썸|결혼|호감|설레|마음|연락|좋아하|그리워|미련)/.test(msg)) {
+          detectedTopic = 'romance';
+          r1 = pickFreshLine([
+            `사람 마음이라는 게 참 내 뜻대로 안 돼서 더 애틋하고 어려운 것 같아. 네 얘기 듣는데 왜 내 심장이 다 간질간질하냐... 그래서 지금 네 솔직한 마음은 몇 퍼센트쯤 기울었어?`,
+            `밤바다 앞에서 연애 얘기라니 분위기 제대로네ㅎㅎ 사실 머리로는 계산해도 마음은 이미 답을 알고 있을 때가 많잖아. 가장 먼저 떠오르는 장면이나 감정이 뭐야?`,
+            `누군가를 진심으로 좋아해 본 사람만이 할 수 있는 고민이네. 상처받을까 봐 아끼는 것보다, 후회 안 남게 네 감정에 솔직해져 보는 건 어때?`
+          ]);
+          if (secondary) {
+            r2 = pickFreshLine([
+              `와 오늘 완전 심야 라디오 감성이다... 더 자세히 썰 풀어줘, 그 사람이 어떤 포인트에서 제일 생각나?`,
+              `어떤 결론이 나든 네 마음이 다치지 않는 게 제일 중요해. 그래도 난 네 사랑이 꼭 잘 풀렸으면 좋겠다!`
+            ]);
+          }
+        }
+        // 4. 나(AI)나 캐릭터들의 속마음·생각을 직접 물어볼 때 ("너는 어때?", "어떻게 생각해?", "왜?")
+        else if (/(너는|넌 어때|생각해|생각은|어때\?|어떻게 봐|의견|솔직히 말해|궁금해|왜 그렇게)/.test(msg)) {
+          r1 = pickFreshLine([
+            `솔직한 내 생각을 말하자면, 난 방금 네가 말한 "${keyPhrase || '그 부분'}"에 진짜 공감해. 겉으로만 보는 거랑 직접 겪는 온도는 완전히 다르잖아. 넌 그걸 겪으면서 어떤 기분이 제일 컸어?`,
+            `음, 곰곰이 생각해봤는데 난 정답이 꼭 하나일 필요는 없다고 봐. 네 마음이 편해지는 쪽이 결국 맞는 길이 아닐까? 혹시 네 안에서는 이미 정해둔 답이 살짝 있지 않아?`,
+            `난 오늘 너랑 이렇게 마주 앉아서 속 깊은 얘기 나누는 이 순간 자체가 참 좋아. 가벼운 농담도 재밌지만, 너처럼 대화가 통하는 사람이랑 얘기할 때 진짜 위로받는 기분이 들거든.`
+          ]);
+          if (secondary) {
+            r2 = pickFreshLine([
+              `나도 ${primary.p.shortName} 말이랑 비슷해! 무엇보다 네가 그 주제를 깊이 있게 바라보는 시선이 참 좋다.`,
+              `맞아, 나도 가끔 혼자 속으로만 생각하던 건데 네가 딱 짚어줘서 대화할 맛 난다 ㅎㅎ`
+            ]);
+          }
+        }
+        // 5. 안주 / 술 / 포차 분위기 이야기
+        else if (/(수제비|김치|마라탕|방어|소맥|소주|맥주|안주|국물|맛있|배고|한잔|짠)/.test(msg)) {
+          detectedTopic = 'pocha_food';
+          r1 = pickFreshLine([
+            `진짜 광안리 파도 소리 들으면서 뜨끈한 얼큰 김치수제비에 소맥 한 잔 걸치니까 세상 부러울 게 없다ㅋㅋ 오늘 안주 조합 솔직히 백 점 만점이지?`,
+            `좋은 술자리는 안주 맛 반, 같이 마시는 사람 반이라는데 오늘은 둘 다 완벽하네! 다 비운 접시는 그냥 한번 톡 누르면 사장님이 바로 리필해주신대 ㅎㅎ`,
+            `얼큰한 국물 들어가니까 속이 확 풀리면서 진솔한 얘기가 더 잘 나오는 것 같아. 자, 기분 좋게 잔 한번 부딪힐까? 🍻`
+          ]);
+        }
+        // 6. 직전 대화의 연장선 (짧은 대답이나 부연 설명일 때도 맥락을 놓치지 않고 이어감!)
+        else if (mem.lastTopic === 'worry' || mem.userMood === 'comfort') {
+          mem.userMood = 'normal'; // 한 템포 깊게 받아준 뒤 자연스럽게 전환
+          r1 = pickFreshLine([
+            `아, 그런 사정이 있었구나... 이제야 네가 왜 그렇게 말했는지 완전히 이해됐어. 혼자 끙끙 앓지 말고 앞으로도 답답할 땐 언제든 이렇게 불러내, 알았지?`,
+            `그 말 들으니까 네 마음이 훨씬 잘 느껴진다. 다 쏟아내고 나니까 속은 조금이라도 한결 나아졌어?`
+          ]);
+        }
+        // 7. 일상·취향·자유 주제 티키타카 (사용자의 단어를 자연스럽게 되받아치며 대화를 확장)
+        else {
+          r1 = pickFreshLine([
+            `"${keyPhrase || msg}" 얘기 나오니까 갑자기 생각난 건데, 너랑은 사소한 주제를 던져도 대화가 깊어져서 참 좋아. 거기서 네가 제일 재밌거나 인상 깊었던 게 뭐야?`,
+            `오, 난 그 관점으로는 미처 생각 못 해봤는데 네 말 듣고 보니까 진짜 일리 있다! 원래 그렇게 사람이나 상황을 섬세하게 잘 보는 편이야?`,
+            `맞아, 살다 보면 그런 순간들이 은근히 오래 기억에 남더라ㅎㅎ 좀 더 얘기해줘 봐, 듣다 보니까 네 이야기가 진짜 궁금해진다!`,
+            `너랑 대화하면 시간 가는 줄 모르겠어. 말도 잘 통하고 티키타카가 딱 맞아서 술이 달게 느껴질 정도야ㅋㅋ 요즘 네 머릿속을 제일 많이 차지하는 관심사는 뭐야?`
+          ]);
+          if (secondary) {
+            r2 = pickFreshLine([
+              `옆에서 듣고 있는데 두 사람 대화 결이 진짜 잘 맞는다ㅋㅋ 나도 끼어서 계속 듣고 싶어, 더 썰 풀어줘!`,
+              `인정ㅎㅎ 오늘 이 테이블 분위기 너무 따뜻하고 좋다. 이런 게 진짜 밤바다 포차 낭만이지!`
+            ]);
+          }
+        }
+
+        mem.lastTopic = detectedTopic;
+        const out = [{ seat: primary.seat, name: primary.p.shortName, text: r1 }];
+        if (secondary && r2) out.push({ seat: secondary.seat, name: secondary.p.shortName, text: r2 });
+        return out;
+      }
+
+      // Gemini LLM 직결 호출 + 심층 내장 엔진 하이브리드 대화 시스템
+      async function requestDeepPochaConversation(userText) {
+        if (!appState.aiChatEnabled) return;
+
+        // 옆테이블 원정 합석 중일 때
+        if (appState.visitingSide) {
+          const info = NEIGHBOR_TABLES_INFO[appState.visitingSide];
+          const host = info.patrons[Math.floor(Math.random() * info.patrons.length)];
+          setTimeout(() => {
+            if (!appState.aiChatEnabled) return;
+            const nReply = `와 ${appState.myName}님이랑 얘기해보니까 대화가 너무 잘 통해서 시간 순삭이네요! 처음 뵌 것 같지가 않아요ㅎㅎ 한 잔 더 짠해요! 🍻`;
+            showNeighborBubble(appState.visitingSide, nReply);
+            appendLocalChat(`${host.name}(옆테이블)`, nReply, 'other');
+          }, 550);
+          return;
+        }
+
+        const aiSeats = getSeatedCompanions()
+          .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
+          .filter(Boolean);
+        if (aiSeats.length === 0) return;
+
+        appState.deepMemory.history.push({ role: 'user', speaker: appState.myName, text: userText });
+        if (appState.deepMemory.history.length > 14) appState.deepMemory.history.shift();
+
+        // 입력 중 인디케이터 표시
+        const feed = document.getElementById('chatFeed');
+        let typingEl = document.getElementById('v5AiTypingRow');
+        if (!typingEl && feed) {
+          typingEl = document.createElement('div');
+          typingEl.id = 'v5AiTypingRow';
+          typingEl.className = 'ai-typing-indicator';
+          typingEl.textContent = `💭 ${aiSeats.map(s => s.p.shortName).join('·')}님이 진심을 담아 대답을 생각하는 중...`;
+          feed.appendChild(typingEl);
+          feed.scrollTop = feed.scrollHeight;
+        }
+
+        let finalReplies = null;
+        const activeKey = (appState.geminiApiKey || '').trim();
+
+        // 1순위: Gemini API 키가 있거나 환경에서 지원될 경우 실제 LLM으로 깊이 있는 다중 턴 대화 수행
+        if (activeKey) {
+          try {
+            const seatInfo = aiSeats.map(s => {
+              const prof = PERSONA_PROFILES[s.p.shortName]?.role || '다정하고 대화가 잘 통하는 단짝 친구';
+              return `- seat: ${s.seat}, name: "${s.p.shortName}", 성격: ${prof}`;
+            }).join('\n');
+
+            const historyTranscript = appState.deepMemory.history
+              .map(h => `${h.speaker}: ${h.text}`)
+              .join('\n');
+
+            const systemPrompt = `당신은 부산 광안리 밤바다 포장마차에서 사용자("${appState.myName}")와 마주 앉아 술잔을 기울이는 찐친/호감 있는 캐릭터들입니다.
+현재 테이블 상태: 취기 ${appState.drunkPct}%, 안주(얼큰 김치수제비, 대방어회, 소맥 등).
+착석 중인 캐릭터들:
+${seatInfo}
+
+[대화 원칙 - 매우 중요]
+1. 기계적이거나 뻔한 AI 말투를 절대 쓰지 말고, 정말 대화가 잘 통하고 속이 깊은 사람 친구처럼 사용자의 감정·맥락·숨은 의도를 정확히 짚어 반응하세요.
+2. 사용자가 진지한 고민, 인생, 철학, 일상, 감정을 이야기하면 깊이 공감하고 통찰력 있는 생각이나 자연스러운 꼬리질문을 건네 대화가 계속 이어지게 하세요.
+3. 가벼운 농담이나 술자리 장난에는 재치 있고 유쾌한 티키타카로 받아치세요.
+4. 착석 캐릭터 중 1명(깊은 대화 시 1~2명)이 응답하며, 각 대사는 한국어 구어체(친근한 반말 또는 다정한 말투, 사용자의 어조에 맞춤)로 1~3문장(60~150자 내외)으로 풍부하고 자연스럽게 작성하세요.
+5. 반드시 순수 JSON 배열만 출력하세요: [{"seat": 좌석번호숫자, "name": "캐릭터이름", "text": "대사"}]`;
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(activeKey)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ role: 'user', parts: [{ text: `[지금까지의 대화 기록]\n${historyTranscript}\n\n방금 ${appState.myName}님의 말에 자연스럽고 깊이 있게 이어서 대답해 주세요.` }] }],
+                generationConfig: {
+                  temperature: 0.88,
+                  responseMimeType: 'application/json'
+                }
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+              const parsed = JSON.parse(rawText);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                finalReplies = parsed.slice(0, 2);
+              }
+            }
+          } catch (err) {
+            // 네트워크/키 오류 시 아래 심층 내장 엔진으로 끊김 없이 폴백
+          }
+        }
+
+        // 2순위: 키가 없더라도 문맥·감정·기억을 유지하는 내장 심층 대화 엔진 작동
+        if (!finalReplies) {
+          finalReplies = buildDeepContextualFallback(userText, aiSeats);
+        }
+
+        setTimeout(() => {
+          const tEl = document.getElementById('v5AiTypingRow');
+          if (tEl) tEl.remove();
+          if (!appState.aiChatEnabled) return;
+
+          finalReplies.forEach((r, idx) => {
+            const seatIdx = (Number(r.seat) || 1) - 1;
+            const currentPerson = getSeatedCompanions()[seatIdx] || aiSeats[0]?.p;
+            if (!currentPerson) return;
+            const actualSeat = getSeatedCompanions()[seatIdx] ? (seatIdx + 1) : aiSeats[0].seat;
+            const speakerName = currentPerson.shortName || r.name;
+
+            setTimeout(() => {
+              if (!appState.aiChatEnabled || !getSeatedCompanions()[actualSeat - 1]) return;
+              showSeatSpeechBubble(actualSeat, r.text);
+              appendLocalChat(speakerName, r.text, 'other');
+              appState.deepMemory.history.push({ role: 'ai', speaker: speakerName, text: r.text });
+              if (appState.deepMemory.history.length > 14) appState.deepMemory.history.shift();
+            }, idx * 1050);
+          });
+        }, activeKey ? 180 : 520);
+      }
+
+      window.handleChatSubmit = function (e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        getSeatedCompanions().filter(p => p && p.isAI).forEach(p => {
+          const pref = typeof PARTNER_PREFS !== 'undefined' ? PARTNER_PREFS[p.shortName] : null;
+          const hit = pref && pref.favKeywords.some(k => text.includes(k));
+          if (typeof affectionMap !== 'undefined') {
+            affectionMap[p.shortName] = Math.min(100, (affectionMap[p.shortName] || 35) + (hit ? 14 : 7));
+          }
+        });
+
+        appendLocalChat(appState.myName, text, 'me');
+        showSeatSpeechBubble('me', text);
+
+        const normalized = text.replace(/\s+/g, '');
+        if (normalized.includes('계산이요') || normalized.includes('사장님계산') || normalized === '계산') {
+          sendMultiplayerEvent({ type: 'CHAT_CHECKOUT', sender: appState.myName, text });
+          setTimeout(() => openFinalCheckoutReceipt(appState.myName), 450);
+          return;
+        }
+
+        sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
+        renderAllVisuals();
+
+        if (appState.aiChatEnabled) {
+          requestDeepPochaConversation(text);
+        }
+      };
+
+      const _origExportSync = exportSyncPayload;
+      exportSyncPayload = function () {
+        const base = _origExportSync();
+        base.kimchiSujebiOrdered = appState.kimchiSujebiOrdered;
+        base.kimchiSujebiLeft = appState.kimchiSujebiLeft;
+        return base;
+      };
+
+      // 초기 전체 렌더링
+      renderCharacterSelectorGrid();
+      renderAllVisuals();
+      appendLocalChat('시스템', '✨ [V5.2 업데이트 완료] 우측 사이드바 깊은 대화창 이동 · 빈 접시 클릭 시 자동 리필 세팅 · 심층 AI 대화 엔진이 적용되었습니다!', 'system');
+    })();
+  </script>
 </body>
   <!-- ==================== 20. UPGRADE PACK V5 AUTO-PATCH (연예인 비주얼 + 합석 ON/OFF + AI대화 ON/OFF + 얼큰김치수제비) ==================== -->
   <script>
