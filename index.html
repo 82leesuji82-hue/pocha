@@ -6506,4 +6506,255 @@ document.addEventListener('pointerdown', () => {
     })();
   </script>
 </body>
+  <!-- ==================== 22. CUSTOM PATCH V6.0 (얼굴 사진 합성 + 장미/버스킹/인스타/합석 제거 + 3차 메뉴 조건부 노출) ==================== -->
+  <script>
+    (function installCustomPatchV6() {
+      if (window.__POCHA_V6_INSTALLED__) return;
+      window.__POCHA_V6_INSTALLED__ = true;
+
+      // 1. 사진 업로드 UI 스타일 & 불필요 요소 숨김 CSS
+      const v6Style = document.createElement('style');
+      v6Style.textContent = `
+        /* 합석 / 옆테이블 / 헌팅 / 장미·버스킹 / 인스타 / 호감도 숨김 */
+        .neighbor-tables-layer,
+        #neighborVisitPanel,
+        #huntingApproachCard,
+        #streetEventCard,
+        #contactExchangeBanner,
+        .affection-pill,
+        #hapseokMasterBtn,
+        .top-pill-visit,
+        .top-pill-hunt {
+          display: none !important;
+        }
+
+        /* 얼굴 사진 업로드 박스 스타일 */
+        .face-photo-box {
+          margin-top: 12px;
+          padding: 12px;
+          border-radius: 16px;
+          background: rgba(15, 23, 42, 0.85);
+          border: 1.5px dashed rgba(251, 191, 36, 0.55);
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .face-photo-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .face-photo-preview {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: 2px solid #fbbf24;
+          background: #1e293b;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          flex-shrink: 0;
+        }
+        .face-photo-preview img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .face-photo-btns {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          flex: 1;
+        }
+        .face-upload-btn {
+          padding: 7px 11px;
+          border-radius: 10px;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #fff;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+      `;
+      document.head.appendChild(v6Style);
+
+      // 2. 단골도감 내 연락처(인스타) 영역 제거
+      const contactsEl = document.getElementById('savedContactsList');
+      if (contactsEl) {
+        if (contactsEl.previousElementSibling) contactsEl.previousElementSibling.remove();
+        contactsEl.remove();
+      }
+
+      // 3. 장미꽃·버스킹·헌팅·합석·인스타 함수 무력화
+      clearInterval(window._autoHuntInterval);
+      clearInterval(window._pochaRandomEventsTimer);
+
+      appState.hapseokEnabled = false;
+      appState.activeHuntingCandidate = null;
+      appState.visitingSide = null;
+
+      window.triggerHuntApproachEvent = function () {};
+      window.visitNeighborTable = function () {};
+      window.tryVisitRandomNeighborTable = function () {};
+      window.triggerStreetVendorOrBusker = function () {};
+      window.handleStreetEventPurchase = function () {};
+      window.claimPartnerContact = function () {};
+      window.scheduleGoldenBellAndBusker = function () {
+        clearInterval(window._pochaRandomEventsTimer);
+      };
+
+      // 입장 시 자동 실행되는 헌팅/버스킹 타이머 즉시 차단
+      const _prevEnterPocha = window.enterPocha;
+      window.enterPocha = function (mode) {
+        _prevEnterPocha(mode);
+        clearInterval(window._autoHuntInterval);
+        clearInterval(window._pochaRandomEventsTimer);
+      };
+
+      // 4. 3차(파리) 전용 안주는 3차 갔을 때만 메뉴판에 보이도록 처리
+      const PARIS_ONLY_KEYS = ['cheesePlatter', 'croissant', 'redWine', 'champagne'];
+      function syncMenuModalByRound() {
+        const menuBtns = document.querySelectorAll('#menuModal .menu-item-btn');
+        menuBtns.forEach(btn => {
+          const onclickStr = btn.getAttribute('onclick') || '';
+          const isParisItem = PARIS_ONLY_KEYS.some(k => onclickStr.includes(`'${k}'`));
+          if (isParisItem) {
+            btn.classList.toggle('hidden', !appState.isParisMode);
+          }
+        });
+      }
+
+      const _prevOpenMenuModal = window.openMenuModal;
+      window.openMenuModal = function () {
+        syncMenuModalByRound();
+        _prevOpenMenuModal();
+      };
+      syncMenuModalByRound();
+
+      // 5. 내 얼굴 사진 찍기 / 앨범에서 넣기 기능
+      const PHOTO_STORAGE_KEY = 'gwangalli_pocha_my_face_photo_v6';
+      appState.myFacePhoto = localStorage.getItem(PHOTO_STORAGE_KEY) || '';
+
+      // 입장 모달에 사진 선택 UI 삽입
+      const charGrid = document.getElementById('characterSelectorGrid');
+      if (charGrid && charGrid.parentElement) {
+        const photoBox = document.createElement('div');
+        photoBox.className = 'face-photo-box';
+        photoBox.innerHTML = `
+          <div style="font-size:11.5px;font-weight:900;color:#fde68a;">
+            📸 내 얼굴 사진 적용 (카메라 촬영 또는 앨범 선택)
+          </div>
+          <div class="face-photo-row">
+            <div id="facePhotoPreviewBox" class="face-photo-preview">🙂</div>
+            <div class="face-photo-btns">
+              <label class="face-upload-btn" style="background:linear-gradient(90deg,#0284c7,#2563eb);">
+                📷 사진 찍기
+                <input id="faceCameraInput" type="file" accept="image/*" capture="user" style="display:none;" />
+              </label>
+              <label class="face-upload-btn" style="background:linear-gradient(90deg,#059669,#0d9488);">
+                🖼️ 앨범에서 넣기
+                <input id="faceGalleryInput" type="file" accept="image/*" style="display:none;" />
+              </label>
+              <button type="button" onclick="clearMyFacePhoto()" class="face-upload-btn" style="background:#334155;border:1px solid #64748b;">
+                🔄 기본 얼굴로
+              </button>
+            </div>
+          </div>
+        `;
+        charGrid.parentElement.appendChild(photoBox);
+
+        const updatePreviewUI = () => {
+          const box = document.getElementById('facePhotoPreviewBox');
+          if (!box) return;
+          box.innerHTML = appState.myFacePhoto
+            ? `<img src="${appState.myFacePhoto}" alt="내 얼굴 미리보기" />`
+            : '🙂';
+        };
+        updatePreviewUI();
+
+        // 이미지를 160x160 정사각형으로 중앙 크롭 및 압축
+        function handleFaceFileSelect(e) {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function (ev) {
+            const img = new Image();
+            img.onload = function () {
+              const size = 160;
+              const canvas = document.createElement('canvas');
+              canvas.width = size;
+              canvas.height = size;
+              const ctx = canvas.getContext('2d');
+              const minSide = Math.min(img.width, img.height);
+              const sx = (img.width - minSide) / 2;
+              const sy = (img.height - minSide) / 2;
+              ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+              appState.myFacePhoto = compressedDataUrl;
+              try { localStorage.setItem(PHOTO_STORAGE_KEY, compressedDataUrl); } catch (err) {}
+
+              updatePreviewUI();
+              renderAllVisuals();
+              if (typeof showToastMsg === 'function') {
+                showToastMsg('📸 내 얼굴 사진이 캐릭터에 적용되었습니다!');
+              }
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+          e.target.value = '';
+        }
+
+        document.getElementById('faceCameraInput').addEventListener('change', handleFaceFileSelect);
+        document.getElementById('faceGalleryInput').addEventListener('change', handleFaceFileSelect);
+
+        window.clearMyFacePhoto = function () {
+          appState.myFacePhoto = '';
+          localStorage.removeItem(PHOTO_STORAGE_KEY);
+          updatePreviewUI();
+          renderAllVisuals();
+          if (typeof showToastMsg === 'function') {
+            showToastMsg('🔄 기본 캐릭터 얼굴로 되돌렸습니다.');
+          }
+        };
+      }
+
+      // 6. 캐릭터 SVG 렌더링 시 얼굴 위치에 내 사진 합성
+      const _prevRenderPortrait = window.renderRealisticPortraitSVG;
+      window.renderRealisticPortraitSVG = function (styleId, drunkPct, seatKey, forceSantaHat = false) {
+        let svgStr = _prevRenderPortrait(styleId, drunkPct, seatKey, forceSantaHat);
+
+        // 내 캐릭터(테이블 내 자리, 화장실 거울, 걸어가는 모습)인지 확인
+        const isMyAvatar = seatKey === 'me' || seatKey === 'wc_mirror' || seatKey === 'walker_go' || seatKey === 'walker_back';
+        const photoUrl = isMyAvatar ? appState.myFacePhoto : '';
+
+        if (photoUrl) {
+          const clipId = `facePhotoClip_${seatKey}_${Math.random().toString(36).slice(2, 6)}`;
+          const blushAlpha = Math.min(0.45, Math.max(0, (drunkPct / 100) * 0.45));
+          const photoOverlay = `
+            <defs>
+              <clipPath id="${clipId}">
+                <circle cx="60" cy="49" r="24.5" />
+              </clipPath>
+            </defs>
+            <circle cx="60" cy="49" r="25.2" fill="#0f172a" stroke="#fbbf24" stroke-width="1.4" />
+            <image href="${photoUrl}" x="35.5" y="24.5" width="49" height="49" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" />
+            ${blushAlpha > 0.05 ? `<circle cx="60" cy="49" r="24.5" fill="#f43f5e" opacity="${blushAlpha.toFixed(2)}" />` : ''}
+          `;
+          // </svg> 닫히기 직전에 얼굴 사진 레이어 삽입
+          svgStr = svgStr.replace('</svg>', `${photoOverlay}</svg>`);
+        }
+        return svgStr;
+      };
+
+      // 초기 화면 즉시 반영
+      renderAllVisuals();
+    })();
+  </script>
 </html>
