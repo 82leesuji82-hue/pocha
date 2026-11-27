@@ -6505,17 +6505,16 @@ document.addEventListener('pointerdown', () => {
       }, 150);
     })();
   </script>
-</body>
-  <!-- ==================== 22. CUSTOM PATCH V6.0 (얼굴 사진 합성 + 장미/버스킹/인스타/합석 제거 + 3차 메뉴 조건부 노출) ==================== -->
+  <!-- ==================== 22. CUSTOM PATCH V7.0 (채팅명령어 + 바다/에펠탑확대 + 이름강퇴 + 말풍선/대화강화 + 이름변경 + 얼굴사진확대) ==================== -->
   <script>
-    (function installCustomPatchV6() {
-      if (window.__POCHA_V6_INSTALLED__) return;
-      window.__POCHA_V6_INSTALLED__ = true;
+    (function installCustomPatchV7() {
+      if (window.__POCHA_V7_INSTALLED__) return;
+      window.__POCHA_V7_INSTALLED__ = true;
 
-      // 1. 사진 업로드 UI 스타일 & 불필요 요소 숨김 CSS
-      const v6Style = document.createElement('style');
-      v6Style.textContent = `
-        /* 합석 / 옆테이블 / 헌팅 / 장미·버스킹 / 인스타 / 호감도 숨김 */
+      // 1. 통합 스타일 주입
+      const v7Style = document.createElement('style');
+      v7Style.textContent = `
+        /* 합석 / 옆테이블 / 헌팅 / 장미·버스킹 / 인스타 / 호감도 / 하단 8버튼 / 화장실문 / X강퇴버튼 제거 */
         .neighbor-tables-layer,
         #neighborVisitPanel,
         #huntingApproachCard,
@@ -6524,39 +6523,127 @@ document.addEventListener('pointerdown', () => {
         .affection-pill,
         #hapseokMasterBtn,
         .top-pill-visit,
-        .top-pill-hunt {
+        .top-pill-hunt,
+        .pocha-action-bar,
+        #pochaRestroomDoor,
+        .seat-kick-btn {
           display: none !important;
         }
 
-        /* 얼굴 사진 업로드 박스 스타일 */
+        /* 광안리 바다 & 3차 파리 에펠탑이 시원하게 보이도록 상단 뷰포트 확대 */
+        .pocha-sky-header {
+          height: 240px !important;
+        }
+        @media (min-width: 640px) {
+          .pocha-sky-header {
+            height: 270px !important;
+          }
+        }
+        @media (max-width: 1023px) {
+          .pocha-sky-header {
+            height: 152px !important;
+          }
+        }
+        .sky-top-bar {
+          background: linear-gradient(180deg, rgba(2,6,23,0.68) 0%, rgba(2,6,23,0.18) 65%, transparent 100%) !important;
+          padding: 6px 10px !important;
+        }
+
+        /* 말풍선이 가려지지 않고 선명하게 잘 보이도록 개선 */
+        .seats-top-grid {
+          margin-top: 34px !important;
+        }
+        .speech-bubble-box {
+          top: -48px !important;
+          z-index: 48 !important;
+          padding: 6px 12px !important;
+          border-radius: 16px !important;
+          font-size: 11.5px !important;
+          font-weight: 800 !important;
+          line-height: 1.38 !important;
+          max-width: 245px !important;
+          min-width: 96px !important;
+          white-space: normal !important;
+          word-break: keep-all !important;
+          display: block !important;
+          -webkit-line-clamp: unset !important;
+          overflow: visible !important;
+          border: 2px solid #fbbf24 !important;
+          box-shadow: 0 10px 26px rgba(0, 0, 0, 0.72) !important;
+        }
+        .speech-bubble-box::after {
+          content: '';
+          position: absolute;
+          bottom: -7px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 7px 6px 0 6px;
+          border-style: solid;
+          border-color: #fbbf24 transparent transparent transparent;
+        }
+        .speech-bubble-mine {
+          top: -46px !important;
+        }
+        @media (max-width: 1023px) {
+          .seats-top-grid {
+            margin-top: 20px !important;
+          }
+          .speech-bubble-box {
+            top: -36px !important;
+            font-size: 10.5px !important;
+            padding: 4px 9px !important;
+            max-width: 175px !important;
+          }
+        }
+
+        /* 내 캐릭터(사진 넣는 영역) 더 크게 */
+        #myPortraitContainer {
+          width: 122px !important;
+          height: 138px !important;
+        }
+        @media (min-width: 640px) {
+          #myPortraitContainer {
+            width: 148px !important;
+            height: 164px !important;
+          }
+        }
+        @media (max-width: 1023px) {
+          #myPortraitContainer {
+            width: 82px !important;
+            height: 92px !important;
+          }
+        }
+
+        /* 얼굴 사진 업로드 박스 크게 & 보기 좋게 */
         .face-photo-box {
           margin-top: 12px;
-          padding: 12px;
-          border-radius: 16px;
-          background: rgba(15, 23, 42, 0.85);
-          border: 1.5px dashed rgba(251, 191, 36, 0.55);
+          padding: 14px;
+          border-radius: 18px;
+          background: rgba(15, 23, 42, 0.9);
+          border: 2px dashed rgba(251, 191, 36, 0.7);
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
         }
         .face-photo-row {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 14px;
           flex-wrap: wrap;
         }
         .face-photo-preview {
-          width: 48px;
-          height: 48px;
+          width: 88px;
+          height: 88px;
           border-radius: 50%;
-          border: 2px solid #fbbf24;
+          border: 3px solid #fbbf24;
           background: #1e293b;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
+          font-size: 34px;
           flex-shrink: 0;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
         }
         .face-photo-preview img {
           width: 100%;
@@ -6565,39 +6652,71 @@ document.addEventListener('pointerdown', () => {
         }
         .face-photo-btns {
           display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
+          flex-direction: column;
+          gap: 7px;
           flex: 1;
+          min-width: 150px;
         }
         .face-upload-btn {
-          padding: 7px 11px;
-          border-radius: 10px;
-          font-size: 11.5px;
-          font-weight: 800;
+          padding: 9px 13px;
+          border-radius: 12px;
+          font-size: 12.5px;
+          font-weight: 900;
           color: #fff;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
+          justify-content: center;
+          gap: 5px;
         }
       `;
-      document.head.appendChild(v6Style);
+      document.head.appendChild(v7Style);
 
-      // 2. 단골도감 내 연락처(인스타) 영역 제거
+      // 2. 캐릭터 이름 변경 (소희, 도윤, 지현, 진영, 채원, 시우)
+      const NAME_MAP = {
+        seoyeon: { name: '소희', tag: '청순 여배우상 · 시스루 허쉬컷' },
+        dohyun:  { name: '도윤', tag: '냉미남 배우상 · 차콜 코트 애즈펌' },
+        jisu:    { name: '지현', tag: '걸그룹 센터상 · 여신 S컬 웨이브' },
+        junwoo:  { name: '진영', tag: '첫사랑 남주상 · 시스루 댄디니트' },
+        hayoon:  { name: '채원', tag: '과즙미 아이돌상 · 로우번 모헤어' },
+        minjae:  { name: '시우', tag: '모델 메인비주얼 · 시크 리프컷' }
+      };
+
+      CHARACTER_STYLES.forEach(c => {
+        if (NAME_MAP[c.id]) {
+          c.name = NAME_MAP[c.id].name;
+          c.tag = NAME_MAP[c.id].tag;
+        }
+      });
+
+      if (AI_COMPANIONS_DEFAULT[0]) {
+        AI_COMPANIONS_DEFAULT[0].name = '소희 (찐친)';
+        AI_COMPANIONS_DEFAULT[0].shortName = '소희';
+        AI_COMPANIONS_DEFAULT[0].style = 'seoyeon';
+      }
+      if (AI_COMPANIONS_DEFAULT[1]) {
+        AI_COMPANIONS_DEFAULT[1].name = '도윤 (술메이트)';
+        AI_COMPANIONS_DEFAULT[1].shortName = '도윤';
+        AI_COMPANIONS_DEFAULT[1].style = 'dohyun';
+      }
+      if (AI_COMPANIONS_DEFAULT[2]) {
+        AI_COMPANIONS_DEFAULT[2].name = '지현 (맛잘알)';
+        AI_COMPANIONS_DEFAULT[2].shortName = '지현';
+        AI_COMPANIONS_DEFAULT[2].style = 'jisu';
+      }
+
+      // 3. 불필요 기능(장미/버스킹/인스타/합석/헌팅) 완전 차단
       const contactsEl = document.getElementById('savedContactsList');
       if (contactsEl) {
         if (contactsEl.previousElementSibling) contactsEl.previousElementSibling.remove();
         contactsEl.remove();
       }
-
-      // 3. 장미꽃·버스킹·헌팅·합석·인스타 함수 무력화
       clearInterval(window._autoHuntInterval);
       clearInterval(window._pochaRandomEventsTimer);
 
       appState.hapseokEnabled = false;
       appState.activeHuntingCandidate = null;
       appState.visitingSide = null;
-
       window.triggerHuntApproachEvent = function () {};
       window.visitNeighborTable = function () {};
       window.tryVisitRandomNeighborTable = function () {};
@@ -6608,27 +6727,23 @@ document.addEventListener('pointerdown', () => {
         clearInterval(window._pochaRandomEventsTimer);
       };
 
-      // 입장 시 자동 실행되는 헌팅/버스킹 타이머 즉시 차단
       const _prevEnterPocha = window.enterPocha;
       window.enterPocha = function (mode) {
         _prevEnterPocha(mode);
         clearInterval(window._autoHuntInterval);
         clearInterval(window._pochaRandomEventsTimer);
+        if (typeof resizeSkyCanvas === 'function') resizeSkyCanvas();
       };
 
-      // 4. 3차(파리) 전용 안주는 3차 갔을 때만 메뉴판에 보이도록 처리
+      // 4. 3차(파리) 전용 안주는 3차 갔을 때만 메뉴판에 표시
       const PARIS_ONLY_KEYS = ['cheesePlatter', 'croissant', 'redWine', 'champagne'];
       function syncMenuModalByRound() {
-        const menuBtns = document.querySelectorAll('#menuModal .menu-item-btn');
-        menuBtns.forEach(btn => {
+        document.querySelectorAll('#menuModal .menu-item-btn').forEach(btn => {
           const onclickStr = btn.getAttribute('onclick') || '';
           const isParisItem = PARIS_ONLY_KEYS.some(k => onclickStr.includes(`'${k}'`));
-          if (isParisItem) {
-            btn.classList.toggle('hidden', !appState.isParisMode);
-          }
+          if (isParisItem) btn.classList.toggle('hidden', !appState.isParisMode);
         });
       }
-
       const _prevOpenMenuModal = window.openMenuModal;
       window.openMenuModal = function () {
         syncMenuModalByRound();
@@ -6636,32 +6751,160 @@ document.addEventListener('pointerdown', () => {
       };
       syncMenuModalByRound();
 
-      // 5. 내 얼굴 사진 찍기 / 앨범에서 넣기 기능
-      const PHOTO_STORAGE_KEY = 'gwangalli_pocha_my_face_photo_v6';
-      appState.myFacePhoto = localStorage.getItem(PHOTO_STORAGE_KEY) || '';
+      // 5. 말풍선 유지 시간 연장 (4.5초)
+      window.showSeatSpeechBubble = function (seatKey, text) {
+        const el = seatKey === 'me'
+          ? document.getElementById('mySeatBubble')
+          : document.getElementById(`seatBubble-${seatKey}`);
+        if (!el) return;
+        el.textContent = text;
+        el.classList.remove('hidden');
+        clearTimeout(el._hideTimer);
+        el._hideTimer = setTimeout(() => el.classList.add('hidden'), 4500);
+      };
 
-      // 입장 모달에 사진 선택 UI 삽입
+      // 6. 광안리 바다 물결 강화 & 3차 파리 에펠탑 반짝임 대폭 업그레이드
+      const skyHeader = document.querySelector('.pocha-sky-header');
+      let enhParisCanvas = document.getElementById('parisEiffelCanvas');
+      if (!enhParisCanvas && skyHeader) {
+        enhParisCanvas = document.createElement('canvas');
+        enhParisCanvas.id = 'parisEiffelCanvas';
+        enhParisCanvas.className = 'hidden';
+        enhParisCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;';
+        skyHeader.insertBefore(enhParisCanvas, skyHeader.firstChild.nextSibling);
+      }
+
+      // 3차 파리 전용 고휘도 반짝임 오버레이 캔버스
+      let parisSparkleCanvas = null;
+      let parisSparkleCtx = null;
+      if (skyHeader) {
+        parisSparkleCanvas = document.createElement('canvas');
+        parisSparkleCanvas.id = 'parisSparkleBoostCanvas';
+        parisSparkleCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:7;pointer-events:none;';
+        skyHeader.insertBefore(parisSparkleCanvas, skyHeader.querySelector('.sky-top-bar'));
+        parisSparkleCtx = parisSparkleCanvas.getContext('2d');
+      }
+
+      const boostSparkles = Array.from({ length: 105 }, () => ({
+        rx: (Math.random() - 0.5),
+        ry: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        speed: 3.5 + Math.random() * 5.5,
+        size: 1.1 + Math.random() * 1.9
+      }));
+      const seaGlints = Array.from({ length: 38 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        len: 8 + Math.random() * 22
+      }));
+
+      let boostTick = 0;
+      function renderSkyBoostLoop() {
+        requestAnimationFrame(renderSkyBoostLoop);
+        if (!parisSparkleCanvas || !parisSparkleCtx) return;
+        const rect = parisSparkleCanvas.parentElement.getBoundingClientRect();
+        const w = Math.max(320, Math.floor(rect.width));
+        const h = Math.max(150, Math.floor(rect.height));
+        if (parisSparkleCanvas.width !== w || parisSparkleCanvas.height !== h) {
+          parisSparkleCanvas.width = w;
+          parisSparkleCanvas.height = h;
+        }
+        parisSparkleCtx.clearRect(0, 0, w, h);
+        boostTick += 0.04;
+
+        const horizonY = h * 0.66;
+
+        if (!appState.isParisMode) {
+          // 광안리 밤바다 반짝이는 윤슬(물결 빛) 강조
+          seaGlints.forEach(g => {
+            const alpha = 0.16 + 0.42 * Math.max(0, Math.sin(boostTick * 1.6 + g.phase));
+            const gx = g.x * w + Math.sin(boostTick + g.phase) * 6;
+            const gy = horizonY + 8 + g.y * (h - horizonY - 28);
+            parisSparkleCtx.strokeStyle = appState.isChristmasMode
+              ? `rgba(253, 224, 71, ${alpha.toFixed(2)})`
+              : `rgba(125, 211, 252, ${alpha.toFixed(2)})`;
+            parisSparkleCtx.lineWidth = 1.8;
+            parisSparkleCtx.beginPath();
+            parisSparkleCtx.moveTo(gx - g.len * 0.5, gy);
+            parisSparkleCtx.lineTo(gx + g.len * 0.5, gy);
+            parisSparkleCtx.stroke();
+          });
+        } else {
+          // 3차 파리: 에펠탑 황금 후광 + 화이트·골드 다이아몬드 반짝임 대폭 강화!
+          const cx = w * 0.5;
+          const topY = h * 0.10;
+          const baseY = h * 0.70;
+
+          // 황금 후광 글로우
+          const glow = parisSparkleCtx.createRadialGradient(cx, (topY + baseY) * 0.52, 8, cx, (topY + baseY) * 0.52, h * 0.48);
+          glow.addColorStop(0, 'rgba(253, 224, 71, 0.28)');
+          glow.addColorStop(0.55, 'rgba(245, 158, 11, 0.10)');
+          glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
+          parisSparkleCtx.fillStyle = glow;
+          parisSparkleCtx.fillRect(0, 0, w, h);
+
+          // 에펠탑 본체 반짝이는 105개 다이아몬드 트윙클 (십자 별빛)
+          boostSparkles.forEach(sp => {
+            const py = topY + 6 + sp.ry * (baseY - topY - 8);
+            const spread = 3.5 + Math.pow(sp.ry, 1.55) * 34;
+            const px = cx + sp.rx * spread * 2;
+            const blink = Math.sin(boostTick * sp.speed + sp.phase);
+            if (blink > 0.25) {
+              const a = Math.min(1, (blink - 0.25) * 1.45);
+              parisSparkleCtx.save();
+              parisSparkleCtx.globalAlpha = a;
+              parisSparkleCtx.fillStyle = blink > 0.72 ? '#ffffff' : '#fef08a';
+              parisSparkleCtx.beginPath();
+              parisSparkleCtx.arc(px, py, sp.size, 0, Math.PI * 2);
+              parisSparkleCtx.fill();
+
+              // 강한 반짝임일 때 십자 빛줄기 표현
+              if (blink > 0.78) {
+                parisSparkleCtx.strokeStyle = '#ffffff';
+                parisSparkleCtx.lineWidth = 1;
+                parisSparkleCtx.beginPath();
+                parisSparkleCtx.moveTo(px - sp.size * 2.8, py);
+                parisSparkleCtx.lineTo(px + sp.size * 2.8, py);
+                parisSparkleCtx.moveTo(px, py - sp.size * 2.8);
+                parisSparkleCtx.lineTo(px, py + sp.size * 2.8);
+                parisSparkleCtx.stroke();
+              }
+              parisSparkleCtx.restore();
+            }
+          });
+        }
+      }
+      renderSkyBoostLoop();
+
+      // 7. 사람 얼굴 사진 찍기 / 앨범에서 넣기 (크기 대폭 확대!)
+      const PHOTO_STORAGE_KEY = 'gwangalli_pocha_my_face_photo_v7';
+      appState.myFacePhoto = localStorage.getItem(PHOTO_STORAGE_KEY) || localStorage.getItem('gwangalli_pocha_my_face_photo_v6') || '';
+
       const charGrid = document.getElementById('characterSelectorGrid');
       if (charGrid && charGrid.parentElement) {
+        const oldBox = charGrid.parentElement.querySelector('.face-photo-box');
+        if (oldBox) oldBox.remove();
+
         const photoBox = document.createElement('div');
         photoBox.className = 'face-photo-box';
         photoBox.innerHTML = `
-          <div style="font-size:11.5px;font-weight:900;color:#fde68a;">
-            📸 내 얼굴 사진 적용 (카메라 촬영 또는 앨범 선택)
+          <div style="font-size:12.5px;font-weight:900;color:#fde68a;">
+            📸 내 얼굴 사진 넣기 (직접 촬영 또는 앨범 선택)
           </div>
           <div class="face-photo-row">
             <div id="facePhotoPreviewBox" class="face-photo-preview">🙂</div>
             <div class="face-photo-btns">
               <label class="face-upload-btn" style="background:linear-gradient(90deg,#0284c7,#2563eb);">
-                📷 사진 찍기
+                📷 카메라로 사진 찍기
                 <input id="faceCameraInput" type="file" accept="image/*" capture="user" style="display:none;" />
               </label>
               <label class="face-upload-btn" style="background:linear-gradient(90deg,#059669,#0d9488);">
-                🖼️ 앨범에서 넣기
+                🖼️ 내 앨범에서 사진 넣기
                 <input id="faceGalleryInput" type="file" accept="image/*" style="display:none;" />
               </label>
               <button type="button" onclick="clearMyFacePhoto()" class="face-upload-btn" style="background:#334155;border:1px solid #64748b;">
-                🔄 기본 얼굴로
+                🔄 기본 캐릭터 얼굴로 돌아가기
               </button>
             </div>
           </div>
@@ -6677,7 +6920,6 @@ document.addEventListener('pointerdown', () => {
         };
         updatePreviewUI();
 
-        // 이미지를 160x160 정사각형으로 중앙 크롭 및 압축
         function handleFaceFileSelect(e) {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
@@ -6685,7 +6927,7 @@ document.addEventListener('pointerdown', () => {
           reader.onload = function (ev) {
             const img = new Image();
             img.onload = function () {
-              const size = 160;
+              const size = 240;
               const canvas = document.createElement('canvas');
               canvas.width = size;
               canvas.height = size;
@@ -6695,14 +6937,14 @@ document.addEventListener('pointerdown', () => {
               const sy = (img.height - minSide) / 2;
               ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
 
-              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
               appState.myFacePhoto = compressedDataUrl;
               try { localStorage.setItem(PHOTO_STORAGE_KEY, compressedDataUrl); } catch (err) {}
 
               updatePreviewUI();
               renderAllVisuals();
               if (typeof showToastMsg === 'function') {
-                showToastMsg('📸 내 얼굴 사진이 캐릭터에 적용되었습니다!');
+                showToastMsg('📸 내 얼굴 사진이 크게 적용되었습니다!');
               }
             };
             img.src = ev.target.result;
@@ -6717,6 +6959,7 @@ document.addEventListener('pointerdown', () => {
         window.clearMyFacePhoto = function () {
           appState.myFacePhoto = '';
           localStorage.removeItem(PHOTO_STORAGE_KEY);
+          localStorage.removeItem('gwangalli_pocha_my_face_photo_v6');
           updatePreviewUI();
           renderAllVisuals();
           if (typeof showToastMsg === 'function') {
@@ -6725,36 +6968,310 @@ document.addEventListener('pointerdown', () => {
         };
       }
 
-      // 6. 캐릭터 SVG 렌더링 시 얼굴 위치에 내 사진 합성
+      // 얼굴 사진 합성 크기를 66x66 (r=33)로 크게 확대!
       const _prevRenderPortrait = window.renderRealisticPortraitSVG;
       window.renderRealisticPortraitSVG = function (styleId, drunkPct, seatKey, forceSantaHat = false) {
         let svgStr = _prevRenderPortrait(styleId, drunkPct, seatKey, forceSantaHat);
-
-        // 내 캐릭터(테이블 내 자리, 화장실 거울, 걸어가는 모습)인지 확인
         const isMyAvatar = seatKey === 'me' || seatKey === 'wc_mirror' || seatKey === 'walker_go' || seatKey === 'walker_back';
         const photoUrl = isMyAvatar ? appState.myFacePhoto : '';
 
         if (photoUrl) {
-          const clipId = `facePhotoClip_${seatKey}_${Math.random().toString(36).slice(2, 6)}`;
-          const blushAlpha = Math.min(0.45, Math.max(0, (drunkPct / 100) * 0.45));
+          const clipId = `facePhotoClipBig_${seatKey}_${Math.random().toString(36).slice(2, 6)}`;
+          const blushAlpha = Math.min(0.42, Math.max(0, (drunkPct / 100) * 0.42));
           const photoOverlay = `
             <defs>
               <clipPath id="${clipId}">
-                <circle cx="60" cy="49" r="24.5" />
+                <circle cx="60" cy="48" r="33" />
               </clipPath>
             </defs>
-            <circle cx="60" cy="49" r="25.2" fill="#0f172a" stroke="#fbbf24" stroke-width="1.4" />
-            <image href="${photoUrl}" x="35.5" y="24.5" width="49" height="49" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" />
-            ${blushAlpha > 0.05 ? `<circle cx="60" cy="49" r="24.5" fill="#f43f5e" opacity="${blushAlpha.toFixed(2)}" />` : ''}
+            <circle cx="60" cy="48" r="34.5" fill="#0f172a" stroke="#fbbf24" stroke-width="2" />
+            <image href="${photoUrl}" x="27" y="15" width="66" height="66" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" />
+            ${blushAlpha > 0.05 ? `<circle cx="60" cy="48" r="33" fill="#f43f5e" opacity="${blushAlpha.toFixed(2)}" />` : ''}
           `;
-          // </svg> 닫히기 직전에 얼굴 사진 레이어 삽입
           svgStr = svgStr.replace('</svg>', `${photoOverlay}</svg>`);
         }
         return svgStr;
       };
 
-      // 초기 화면 즉시 반영
+      // 8. 대화가 훨씬 잘 통하는 심층 공감 티키타카 응답 생성기
+      const usedReplySet = new Set();
+      function pickUnique(list) {
+        const fresh = list.filter(item => !usedReplySet.has(item));
+        const pool = fresh.length ? fresh : list;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        usedReplySet.add(chosen);
+        if (usedReplySet.size > 45) usedReplySet.clear();
+        return chosen;
+      }
+
+      function generateSmartFriendReply(userText, aiSeats) {
+        const msg = userText.trim();
+        const lower = msg.toLowerCase();
+        const mentioned = aiSeats.find(s => msg.includes(s.p.shortName));
+        const primary = mentioned || aiSeats[Math.floor(Math.random() * aiSeats.length)];
+        const others = aiSeats.filter(s => s.seat !== primary.seat);
+        const secondary = others.length && (msg.length >= 10 || Math.random() < 0.55)
+          ? others[Math.floor(Math.random() * others.length)]
+          : null;
+
+        let r1 = '', r2 = '';
+
+        if (/^(안녕|하이|ㅎㅇ|반가|왔어|안뇽|헬로)/.test(lower)) {
+          r1 = pickUnique([
+            `어 ${appState.myName} 왔어?! 오늘 분위기 딱 좋다~ 편하게 앉아서 한잔하자!`,
+            `반가워 ${appState.myName}! 기다리고 있었어. 오늘 하루 어땠어?`
+          ]);
+          if (secondary) r2 = `진짜 잘 왔어ㅋㅋ 오늘 밤은 시간 신경 쓰지 말고 편하게 놀자!`;
+        } else if (/(힘들|지치|지쳐|피곤|우울|스트레스|속상|짜증|번아웃|외로|눈물|고민|답답)/.test(lower)) {
+          r1 = pickUnique([
+            `헉 그랬구나... 오늘 진짜 많이 지쳤겠다. 여기선 아무 눈치 보지 말고 다 털어놔도 돼.`,
+            `그 마음 너무 이해돼. 혼자 끙끙 앓느라 고생 많았어 ${appState.myName}. 무슨 일이 제일 힘들었어?`,
+            `듣기만 해도 속상하네... 오늘만큼은 복잡한 생각 다 내려놓고 우리랑 실컷 웃다 가자.`
+          ]);
+          if (secondary) r2 = `맞아, 우린 무조건 ${appState.myName} 편이니까 편하게 다 말해줘!`;
+        } else if (/(연애|썸|남친|여친|좋아하|사랑|이상형|이별|전남친|전여친)/.test(lower)) {
+          r1 = pickUnique([
+            `오 뭐야뭐야~ 연애 얘기 나오니까 눈이 번쩍 뜨이네! 자세히 썰 좀 풀어봐 👀`,
+            `밤바다 보면서 하는 연애 얘기가 제일 재밌는 법이지ㅋㅋ 요즘 마음에 두고 있는 사람 있어?`
+          ]);
+          if (secondary) r2 = `나도 궁금해! 숨기지 말고 다 말해줘 ㅋㅋ`;
+        } else if (/(회사|직장|상사|퇴사|이직|알바|학교|과제|시험|공부|취업|돈|미래)/.test(lower)) {
+          r1 = pickUnique([
+            `진짜 현생 살기 쉽지 않지... 그래도 ${appState.myName} 너는 늘 열심히 하니까 분명 잘 풀릴 거야.`,
+            `그거 진짜 공감돼. 나도 요즘 비슷한 고민 많이 하거든. 당장 제일 신경 쓰이는 게 뭐야?`
+          ]);
+          if (secondary) r2 = `오늘 술자리에서 스트레스 싹 풀고 내일 다시 힘내자!`;
+        } else if (/(예쁘|이쁘|멋있|잘생|귀엽|최고|좋아|고마워|사랑해|재밌|행복)/.test(lower)) {
+          r1 = pickUnique([
+            `에이 갑자기 그렇게 말해주니까 괜히 기분 엄청 좋아지네ㅎㅎ 고마워 ${appState.myName}!`,
+            `ㅋㅋㅋ 너랑 같이 있으니까 나도 오늘 텐션 제대로 올라왔어! 진짜 재밌다!`
+          ]);
+          if (secondary) r2 = `오늘 멤버 조합이 진짜 레전드인 듯 ㅎㅎ`;
+        } else if (/(바다|야경|광안|에펠탑|파리|노래|음악|분위기|날씨|바람)/.test(lower)) {
+          r1 = appState.isParisMode
+            ? pickUnique([
+                `저기 에펠탑 반짝이는 거 봐... 진짜 영화 속에 들어온 기분이야! 와인 한 모금 마시니까 완벽하다 🗼✨`,
+                `파리 밤공기랑 반짝이는 야경 보니까 평소 못 하던 속얘기도 다 나오네 ㅎㅎ`
+              ])
+            : pickUnique([
+                `광안대교 불빛이 바다에 비치는 거 진짜 예쁘지 않아? 이 맛에 밤바다 포차 오는 거지 🌊`,
+                `바닷바람도 딱 시원하고 야경도 좋아서 술이 술술 들어가네!`
+              ]);
+        } else if (/(뭐해|뭐할까|심심|추천|어때|할까|갈까|\?)/.test(lower)) {
+          r1 = pickUnique([
+            `음 나는 ${appState.myName} 네가 하고 싶은 거면 다 좋아! 지금 제일 끌리는 게 뭐야?`,
+            `오 그거 완전 찬성! 솔직히 지금 분위기면 뭐든 재밌을 것 같아ㅋㅋ 바로 해볼까?`,
+            `난 너무 좋지! 혹시 또 생각해 둔 거 있어?`
+          ]);
+          if (secondary) r2 = `나도 콜! ${appState.myName} 의견대로 가자 ㅎㅎ`;
+        } else {
+          // 사용자가 쓴 단어 일부를 자연스럽게 받아서 이어가는 티키타카
+          const words = msg.replace(/[?!.,~ㅋㅎㅠㅜ]/g, ' ').split(/\s+/).filter(w => w.length >= 2);
+          const pickWord = words.length ? words[words.length - 1] : '';
+          r1 = pickUnique([
+            pickWord ? `아 "${pickWord}" 얘기구나! 듣고 보니까 완전 공감돼. 그때 기분이 어땠어?` : `아 진짜? ㅋㅋㅋ 듣다 보니까 완전 재밌는데 좀 더 들려줘 봐!`,
+            `오 그 생각 진짜 괜찮다! 나도 비슷한 경험 있어서 그런지 네 말이 확 와닿아.`,
+            `ㅋㅋㅋ 너 진짜 말 센스 있게 잘한다! 너랑 수다 떨면 시간 가는 줄 모른다니까.`,
+            `맞아 맞아, 나도 그 말에 백 퍼센트 동의해! 그다음엔 어떻게 됐어?`
+          ]);
+          if (secondary) r2 = `인정ㅎㅎ 오늘 대화 진짜 잘 통한다!`;
+        }
+
+        const out = [{ seat: primary.seat, name: primary.p.shortName, text: r1 }];
+        if (secondary && r2) out.push({ seat: secondary.seat, name: secondary.p.shortName, text: r2 });
+        return out;
+      }
+
+      // 9. 채팅 안내 문구 업데이트 & 채팅 명령어 통합 바인딩
+      const chatHelpDiv = document.querySelector('.pocha-chat-section .chat-meta-bar > div:last-child');
+      if (chatHelpDiv) {
+        chatHelpDiv.innerHTML = `
+          💡 채팅 명령어: <strong style="color:#fde68a;">짠 / 소맥 / 안주 먹자 / 메뉴 주문 / 서비스 / 계산 / 화장실 / 3차 파리 / (이름) 강퇴</strong>
+        `;
+      }
+      const chatInputEl = document.getElementById('chatInput');
+      if (chatInputEl) {
+        chatInputEl.placeholder = '대화나 명령어 입력 (예: 짠, 소맥, 메뉴, 화장실, 3차 파리, 소희 강퇴)';
+      }
+
+      window.handleChatSubmit = function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const input = document.getElementById('chatInput');
+        if (!input) return false;
+        const text = input.value.trim();
+        if (!text) return false;
+        input.value = '';
+
+        appendLocalChat(appState.myName, text, 'me');
+        if (!appState.inRestroom) showSeatSpeechBubble('me', text);
+
+        const norm = text.replace(/\s+/g, '');
+
+        // (1) 캐릭터 강퇴 명령어: "소희 강퇴", "도윤강퇴" 등
+        if (norm.includes('강퇴') || norm.includes('내보내')) {
+          const seats = getSeatedCompanions();
+          const targetIdx = seats.findIndex(p => p && (norm.includes(p.shortName) || norm.includes(p.name)));
+          if (targetIdx !== -1) {
+            window.kickCharacterAtSeat(targetIdx);
+          } else {
+            showToastMsg('❓ 강퇴할 캐릭터 이름을 함께 적어주세요! (예: 소희 강퇴)');
+            appendLocalChat('시스템', '강퇴할 캐릭터 이름을 정확히 입력해 주세요. (예: 소희 강퇴, 도윤 강퇴, 지현 강퇴)', 'system');
+          }
+          return false;
+        }
+
+        // (2) 강퇴한 자리 복구 명령어
+        if (/(복구|다시불러|자리채워)/.test(norm)) {
+          window.restoreAllKickedSeats();
+          return false;
+        }
+
+        // (3) 화장실 출입 / 복귀
+        if (appState.inRestroom && /(다녀왔|복귀|나갈|자리로|돌아갈|왔어|나왔)/.test(norm)) {
+          window.returnFromRestroomToTable();
+          return false;
+        }
+        if (!appState.inRestroom && /(화장실|쉬하러|쉬하고|볼일보고|손씻고|세수하고)/.test(norm)) {
+          window.goToPochaRestroom();
+          return false;
+        }
+
+        // (4) 1차 / 2차 / 3차 이동
+        if (!appState.isParisMode && /(3차|삼차|파리가|파리로|파리갈|프랑스가|프랑스로|에펠탑)/.test(norm)) {
+          window.transitionToParisThirdRound();
+          return false;
+        }
+        if (appState.isParisMode && /(1차가|광안리가|광안리로|포차로돌아)/.test(norm)) {
+          window.returnToGwangalliFirstRound();
+          return false;
+        }
+        if (/(2차가|이차가|크리스마스포차)/.test(norm)) {
+          window.resetForNewParty();
+          return false;
+        }
+
+        // (5) 계산
+        if (/(계산이요|사장님계산|영수증)/.test(norm) || norm === '계산') {
+          window.triggerCheckoutFromButton();
+          return false;
+        }
+
+        // (6) 메뉴판 열기 / 주문
+        if (/(메뉴판|차림표|안주주문|술주문)/.test(norm) || norm === '주문' || norm === '메뉴') {
+          window.openMenuModal();
+          return false;
+        }
+
+        // (7) 사장님/소믈리에 서비스
+        if (/(사장님서비스|소믈리에서비스|서비스줘|서비스주세요)/.test(norm) || norm === '서비스') {
+          window.summonChefService();
+          return false;
+        }
+
+        // (8) 술 건배 / 소맥 / 와인 / 샴페인
+        if (/(소맥타|소맥말|황금소맥)/.test(norm) || norm === '소맥') {
+          if (appState.isParisMode) window.drinkChampagne();
+          else window.openDiySomaekModal();
+          return false;
+        }
+        if (appState.isParisMode && /(샴페인|축배)/.test(norm)) {
+          window.drinkChampagne();
+          return false;
+        }
+        if (appState.isParisMode && /(와인|짠|건배)/.test(norm)) {
+          window.drinkRedWine();
+          return false;
+        }
+        if (!appState.isParisMode && (/(소주짠|다같이짠|원샷|건배)/.test(norm) || norm === '짠' || norm === '소주')) {
+          window.cheersAll();
+          return false;
+        }
+
+        // (9) 안주 먹기
+        if (/(안주먹|한입먹|냠냠)/.test(norm) || norm === '안주' || norm === '먹자') {
+          window.eatRandomAnju();
+          return false;
+        }
+
+        // (10) 일반 대화 전송 & AI 심층 공감 응답
+        sendMultiplayerEvent({ type: 'CHAT_MSG', sender: appState.myName, text, kind: 'other' });
+        renderAllVisuals();
+
+        if (appState.aiChatEnabled) {
+          const aiSeats = getSeatedCompanions()
+            .map((p, idx) => (p && p.isAI ? { p, seat: idx + 1 } : null))
+            .filter(Boolean);
+          if (aiSeats.length > 0) {
+            const activeKey = (appState.geminiApiKey || '').trim();
+            if (activeKey) {
+              // Gemini API 키가 등록되어 있으면 실제 Gemini로 깊은 대화 수행
+              (async () => {
+                try {
+                  appState.deepMemory.history.push({ role: 'user', speaker: appState.myName, text });
+                  if (appState.deepMemory.history.length > 14) appState.deepMemory.history.shift();
+                  const seatInfo = aiSeats.map(s => `- seat: ${s.seat}, name: "${s.p.shortName}"`).join('\n');
+                  const transcript = appState.deepMemory.history.map(h => `${h.speaker}: ${h.text}`).join('\n');
+                  const venue = appState.isParisMode ? '프랑스 파리 에펠탑 루프탑 와인바' : '부산 광안리 밤바다 포차';
+                  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(activeKey)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      systemInstruction: {
+                        parts: [{ text: `현재 장소는 ${venue}입니다. 사용자 "${appState.myName}"와 대화가 잘 통하는 실제 친한 친구처럼 자연스럽고 다정하게 1~2문장으로 답하세요. 착석 멤버:\n${seatInfo}\n순수 JSON 배열만 출력: [{"seat": 숫자, "name": "이름", "text": "대사"}]` }]
+                      },
+                      contents: [{ role: 'user', parts: [{ text: transcript }] }],
+                      generationConfig: { temperature: 0.85, responseMimeType: 'application/json' }
+                    })
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    const parsed = JSON.parse(data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]');
+                    if (Array.isArray(parsed) && parsed.length) {
+                      parsed.slice(0, 2).forEach((r, idx) => {
+                        setTimeout(() => {
+                          showSeatSpeechBubble(r.seat || aiSeats[0].seat, r.text);
+                          appendLocalChat(r.name || aiSeats[0].p.shortName, r.text, 'other');
+                          appState.deepMemory.history.push({ role: 'ai', speaker: r.name, text: r.text });
+                        }, 400 + idx * 1000);
+                      });
+                      return;
+                    }
+                  }
+                } catch (err) {}
+                const fallback = generateSmartFriendReply(text, aiSeats);
+                fallback.forEach((r, idx) => {
+                  setTimeout(() => {
+                    showSeatSpeechBubble(r.seat, r.text);
+                    appendLocalChat(r.name, r.text, 'other');
+                  }, 500 + idx * 950);
+                });
+              })();
+            } else {
+              const replies = generateSmartFriendReply(text, aiSeats);
+              replies.forEach((r, idx) => {
+                setTimeout(() => {
+                  showSeatSpeechBubble(r.seat, r.text);
+                  appendLocalChat(r.name, r.text, 'other');
+                }, 500 + idx * 950);
+              });
+            }
+          }
+        }
+        return false;
+      };
+
+      const chatFormEl = document.getElementById('chatForm');
+      if (chatFormEl) {
+        chatFormEl.onsubmit = function (ev) { return window.handleChatSubmit(ev); };
+      }
+
+      // 초기 화면 즉시 반영 + 상단 바다/에펠탑 캔버스 리사이즈
+      renderCharacterSelectorGrid();
       renderAllVisuals();
+      setTimeout(() => {
+        if (typeof resizeSkyCanvas === 'function') resizeSkyCanvas();
+      }, 120);
     })();
   </script>
+</body>
 </html>
