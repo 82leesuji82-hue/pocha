@@ -7630,5 +7630,55 @@ document.addEventListener('pointerdown', () => {
       renderAllVisuals();
     })();
   </script>
+  <!-- ==================== 24. CUSTOM PATCH V7.2 (말풍선 숨김 충돌 수정 · 채팅 시에만 표시 후 2초 뒤 자동 삭제) ==================== -->
+  <script>
+    (function installBubbleFixV7_2() {
+      if (window.__POCHA_V72_INSTALLED__) return;
+      window.__POCHA_V72_INSTALLED__ = true;
+
+      // 1. .hidden 클래스가 항상 최우선으로 적용되도록 CSS 수정
+      const fixStyle = document.createElement('style');
+      fixStyle.textContent = `
+        .speech-bubble-box.hidden,
+        #mySeatBubble.hidden,
+        #seatBubble-1.hidden,
+        #seatBubble-2.hidden,
+        #seatBubble-3.hidden {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      `;
+      document.head.appendChild(fixStyle);
+
+      // 2. 평상시 모든 말풍선 즉시 숨김 및 텍스트 초기화
+      const bubbleIds = ['mySeatBubble', 'seatBubble-1', 'seatBubble-2', 'seatBubble-3'];
+      bubbleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = '';
+          el.classList.add('hidden');
+        }
+      });
+
+      // 3. 말풍선 표시 후 정확히 2초(2000ms) 뒤 자동 삭제
+      window.showSeatSpeechBubble = function (seatKey, text) {
+        const cleanText = String(text || '').trim();
+        if (!cleanText) return;
+        const el = seatKey === 'me'
+          ? document.getElementById('mySeatBubble')
+          : document.getElementById(`seatBubble-${seatKey}`);
+        if (!el) return;
+
+        el.textContent = cleanText;
+        el.classList.remove('hidden');
+        clearTimeout(el._hideTimer);
+        el._hideTimer = setTimeout(() => {
+          el.classList.add('hidden');
+          el.textContent = '';
+        }, 2000);
+      };
+    })();
+  </script>
 </body>
 </html>
