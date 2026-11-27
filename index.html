@@ -7680,5 +7680,51 @@ document.addEventListener('pointerdown', () => {
       };
     })();
   </script>
+  <!-- 카카오페이 후원 버튼 -->
+<div class="donate-wrapper">
+  <a 
+    href="https://qr.kakaopay.com/Ej9FTIuK7" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    class="kakaopay-btn"
+  >
+    🍶 재밌었다면 개발자에게 소주 한 잔 사주기
+  </a>
+</div>
+
+<style>
+  .donate-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 0 16px;
+  }
+
+  .kakaopay-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 14px 20px;
+    background-color: #FEE500; /* 카카오 노란색 */
+    color: #191919;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .kakaopay-btn:hover {
+    background-color: #F4DC00;
+  }
+
+  .kakaopay-btn:active {
+    transform: scale(0.97);
+  }
+</style>
 </body>
 </html>
