@@ -7680,10 +7680,10 @@ document.addEventListener('pointerdown', () => {
       };
     })();
   </script>
-  <!-- 카카오페이 후원 버튼 -->
+<!-- 카카오페이 후원 버튼 (심플 버전) -->
 <div class="donate-wrapper">
   <a 
-    href="https://qr.kakaopay.com/Ej9FTIuK7"
+    href="https://qr.kakaopay.com/Ej9FTIuK7" 
     target="_blank" 
     rel="noopener noreferrer" 
     class="kakaopay-btn"
@@ -7696,34 +7696,23 @@ document.addEventListener('pointerdown', () => {
   .donate-wrapper {
     display: flex;
     justify-content: center;
-    margin: 20px 0;
-    padding: 0 16px;
+    margin: 12px 0;
   }
 
   .kakaopay-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    max-width: 340px;
-    padding: 14px 20px;
-    background-color: #FEE500; /* 카카오 노란색 */
-    color: #191919;
-    font-size: 15px;
-    font-weight: 700;
+    background: transparent;
+    color: #888888; /* 어두운/밝은 배경 모두 무난한 회색 */
+    font-size: 12px;
+    font-weight: 400;
     text-decoration: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    transition: transform 0.15s ease, background-color 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
+    padding: 4px 8px;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
   }
 
   .kakaopay-btn:hover {
-    background-color: #F4DC00;
-  }
-
-  .kakaopay-btn:active {
-    transform: scale(0.97);
+    opacity: 1;
+    text-decoration: underline;
   }
 </style>
 </body>
